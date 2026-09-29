@@ -2393,8 +2393,24 @@ function randomAct(){
 
 /* ---------------- RENDER ---------------- */
 const app=()=>document.getElementById('app');
-function renderAll(){ if(!S)return; renderHeader(); renderTab(app().dataset.tab||'life',true); }
+function renderAll(){ if(!S)return; applyTextSize(); renderHeader(); renderTab(app().dataset.tab||'life',true); }
 function initials(n){ return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+function doAgeUp(){
+  const b=document.getElementById('ageBtn');
+  if(b){ b.classList.add('pulse'); setTimeout(()=>b.classList.remove('pulse'),320); }
+  ageUp();
+}
+function setTextSize(k){
+  S.textSize=k;
+  const el=document.getElementById('app');
+  if(el)el.dataset.text=k;
+  save(); renderAll();
+  popupOK('Text size','Set to '+({s:'smaller',m:'normal',l:'larger',xl:'largest'}[k]||k)+'.');
+}
+function applyTextSize(){
+  const el=document.getElementById('app');
+  if(el&&S)el.dataset.text=S.textSize||'m';
+}
 function toggleStats(){ S.statsOpen=!S.statsOpen; renderHeader(); }
 function bar(n,v,ic){ v=Math.round(v);
   const c=v>=70?'g':v>=40?'a':'r';
@@ -2818,11 +2834,22 @@ function moneyBanking(){
      <button class="mini" onclick="fin('sellc')">Sell all</button>
    </div></div>`;
 }
+function setJobFilter(v){ S.jobFilter=v; renderTab('money',true); }
 function moneyCareers(){
   if(S.age<14)return `<div class="card"><div class="muted">You are ${S.age}. Part-time work opens at 14.</div></div>`;
-  return `<div class="card"><div class="ct">Careers</div>
+  const q=(S.jobFilter||'').toLowerCase();
+  const openOnly=S.jobOpenOnly;
+  return `<div class="card"><div class="ct">Find work</div>
+    <input class="search" placeholder="Search jobs, e.g. nurse or chef" value="${esc(S.jobFilter||'')}"
+      oninput="setJobFilter(this.value)">
+    <button class="row" onclick="S.jobOpenOnly=!S.jobOpenOnly;renderTab('money',true)">
+      <div class="rn">Only show jobs I can apply for</div><i>${openOnly?'\u2713':'\u25CB'}</i></button></div>
+   <div class="card"><div class="ct">Careers</div>
    ${Object.keys(DATA.fieldNames).map(f=>{
-      const js=DATA.jobs.filter(j=>j.field===f); if(!js.length)return '';
+      let js=DATA.jobs.filter(j=>j.field===f);
+      if(q)js=js.filter(j=>j.t.toLowerCase().includes(q)||DATA.fieldNames[f].toLowerCase().includes(q));
+      if(openOnly)js=js.filter(j=>!jobLocked(j));
+      if(!js.length)return '';
       return `<div class="fieldhdr">${DATA.fieldNames[f]}</div>`+js.map(j=>{const lk=jobLocked(j);
         return `<button class="row ${lk?'locked':''}" ${lk?'':`onclick="applyJobId('${j.id}')"`}>
           <div><div class="rn">${esc(j.t)}</div><div class="hsub dim">${money(Math.round(j.pay*country().sal))}/yr${lk?' \u00b7 '+esc(lk):''}</div></div>
@@ -3574,6 +3601,12 @@ function viewStats(){
       ['Countries lived in',(S.countriesLived||[]).length],
       ['Formative moments',(S.echoes&&S.echoes.length)?S.echoes.map(e=>e.n+' ('+e.age+')').join(', '):'None yet'],['Born',DATA.wealthTiers[S.birthTier].name]]
      .map(([k,v])=>`<div class="kv"><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div>
+   <div class="card"><div class="ct">Reading</div>
+   <div class="hsub dim mb">This is a game made of text. Set it to a size you can read comfortably.</div>
+   <div class="grid3">
+     ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>
+       `<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}
+   </div></div>
    <div class="card"><div class="ct">Game</div>
    <button class="row" onclick="save();popupOK('Saved','Your life has been saved.')"><div class="rn">Save now</div><i>›</i></button>
    <button class="row" onclick="lowerDiff()"><div><div class="rn">Lower the difficulty</div>
@@ -3770,9 +3803,11 @@ if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener(
   renderTitle();
   document.getElementById('ageBtn').addEventListener('click',()=>{
     if(!S||!S.alive)return;
-    const b=document.getElementById('ageBtn'); b.classList.add('pulse');
-    setTimeout(()=>b.classList.remove('pulse'),320);
-    ageUp();
+    if(S.actionsLeft>0&&!S.skipAgeWarning&&S.age>=5){
+      return confirmDo(`Age up with ${S.actionsLeft} action${S.actionsLeft>1?'s':''} left?`,
+        'A year you do not use is gone for good.',()=>{ S.skipAgeWarningOnce=true; doAgeUp(); });
+    }
+    doAgeUp();
   });
   const topLevelHttp = (location.protocol==='http:'||location.protocol==='https:') && window.top===window.self;
   if(topLevelHttp && !/[?&]nosw/.test(location.search) && 'serviceWorker' in navigator){

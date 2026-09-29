@@ -53,6 +53,35 @@ jobs:
       - name: Create the Android project
         run: npx cap add android || npx cap sync android
 
+      - name: Generate launcher icons and splash from resources/
+        run: npm run icons || echo "asset generation skipped"
+
+      - name: Stamp a version that always installs over the last build
+        run: |
+          # versionCode must increase for Android to accept the upgrade
+          CODE=$(( 1000 + GITHUB_RUN_NUMBER ))
+          NAME="1.0.$GITHUB_RUN_NUMBER"
+          echo "versionCode=$CODE versionName=$NAME"
+          sed -i "s/versionCode [0-9]*/versionCode $CODE/" android/app/build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"$NAME\"/" android/app/build.gradle
+          grep -E "versionCode|versionName" android/app/build.gradle
+
+      - name: Sign with a stable key so builds replace each other
+        run: |
+          # Android refuses to upgrade an app signed by a different key. CI
+          # generates a fresh debug key each run, so we use a fixed one.
+          mkdir -p ~/.android
+          if [ -n "${{ secrets.DEBUG_KEYSTORE_B64 }}" ]; then
+            echo "${{ secrets.DEBUG_KEYSTORE_B64 }}" | base64 -d > ~/.android/debug.keystore
+            echo "using the project debug keystore from secrets"
+          else
+            keytool -genkeypair -v -keystore ~/.android/debug.keystore \
+              -storepass android -keypass android -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Bequest Debug,O=Yination,C=GB" >/dev/null 2>&1
+            echo "::warning::No DEBUG_KEYSTORE_B64 secret set. This build is signed with a throwaway key and will NOT install over a previous build. See BUILD-APK.md."
+          fi
+
       - name: Sync web assets into Android
         run: npx cap sync android
 

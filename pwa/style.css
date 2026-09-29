@@ -445,3 +445,15 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
 .secttitle{font-size:19px;font-weight:750}
 .personhead{display:flex;gap:12px;align-items:center}
 .personhead .npcav{flex:0 0 54px;border-radius:15px;overflow:hidden;display:flex}
+
+/* accessibility and search */
+#app[data-text="s"]{font-size:13.5px}
+#app[data-text="m"]{font-size:15px}
+#app[data-text="l"]{font-size:16.5px}
+#app[data-text="xl"]{font-size:18.5px}
+#app[data-text="l"] .rn,#app[data-text="xl"] .rn{font-size:15.5px}
+#app[data-text="l"] .pb,#app[data-text="xl"] .pb{font-size:16px}
+#app[data-text="l"] .hsub,#app[data-text="xl"] .hsub{font-size:13px}
+.search{width:100%;padding:11px 12px;border-radius:11px;border:1px solid var(--line);
+  background:var(--bg2);color:var(--tx);font-size:14.5px;margin-bottom:8px}
+.mini.on{border-color:var(--am);color:var(--am);background:rgba(240,166,60,.1)}

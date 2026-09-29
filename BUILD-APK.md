@@ -42,6 +42,48 @@ Thinnest possible wrapper, but requires the game to be hosted on HTTPS and a
 `.well-known/assetlinks.json` on that domain. Use `bubblewrap init`. Chosen only
 if you want the app to auto-update without store releases.
 
+## Making every build install over the last one
+
+Android refuses to upgrade an app when the new APK is signed with a different
+key, and it refuses to install an APK whose `versionCode` is not higher than the
+one already on the device. CI handles the version automatically, but the
+**signing key must be stable**, and a GitHub runner generates a fresh debug key
+on every run unless you give it one.
+
+### One-off: create a key and store it as a secret
+
+    keytool -genkeypair -v -keystore bequest-debug.keystore \
+      -storepass android -keypass android -alias androiddebugkey \
+      -keyalg RSA -keysize 2048 -validity 10000 \
+      -dname "CN=Bequest Debug,O=Yination,C=GB"
+
+    base64 -w0 bequest-debug.keystore     # copy the output
+
+Then in GitHub: **Settings → Secrets and variables → Actions → New repository
+secret**, named `DEBUG_KEYSTORE_B64`, pasting that base64 string.
+
+Keep `bequest-debug.keystore` somewhere safe and **out of the repository**.
+Without this secret the workflow still builds, but it prints a warning and the
+APK will not install over an earlier one — you would have to uninstall first.
+
+### What CI stamps
+
+| | |
+|---|---|
+| `versionCode` | `1000 + run number` — always increases |
+| `versionName` | `1.0.<run number>` |
+| Launcher icon | generated from `resources/icon.png` (the amber dot) |
+| Adaptive icon | `resources/icon-foreground.png` on `#080c16` |
+| Splash | `resources/splash.png` |
+
+### Release builds
+
+A debug key is fine for testing on your own phone. For Google Play you need a
+**separate release keystore**, which must never be committed and must never be
+lost — it is the only way to update the app for its entire life. Store it as
+`RELEASE_KEYSTORE_B64` plus passwords as secrets, and switch the workflow's
+final step to `./gradlew bundleRelease`.
+
 ## Before you publish
 
 1. **Signing.** Generate an upload keystore and add it to `android/app/build.gradle`.
