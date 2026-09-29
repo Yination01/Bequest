@@ -442,6 +442,22 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
 .statpanel{width:calc(100% - 22px);max-height:70vh;overflow-y:auto;background:var(--card);
   border:1px solid var(--line);border-radius:16px;padding:14px;animation:up .2s ease}
 
+/* hubs and sections */
+.hubgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hub{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;
+  padding:12px 11px;border-radius:13px;border:1px solid var(--line);background:var(--bg2);
+  color:var(--tx);cursor:pointer}
+.hub:active{background:var(--card2)}
+.hub.danger{border-color:#4a2330;background:#1d1524}
+.hubi{font-size:17px;color:var(--am);line-height:1}
+.hub.danger .hubi{color:#f08a8e}
+.hubn{font-size:14px;font-weight:700;margin-top:3px}
+.hubc{font-size:11px;color:var(--dim)}
+.secthead{background:linear-gradient(145deg,#1a2540,#131c2e)}
+.backbtn{background:none;border:0;color:var(--am);font-size:12.5px;font-weight:650;cursor:pointer;
+  padding:0 0 8px}
+.secttitle{font-size:19px;font-weight:750}
+
 </style>
 </head>
 <body>
@@ -3743,7 +3759,7 @@ function ageUp(){
   try{ PREV_YEAR = JSON.stringify(S); }catch(e){ PREV_YEAR = null; }
   S.age++; QUEUE=[];
   S.ledger={income:[],spend:[]};
-  S.actionsLeft=actionsPerYear(); S.buysThisYear=0; S.lifestyleThisYear=0; S.jumpGroup=null;
+  S.actionsLeft=actionsPerYear(); S.buysThisYear=0; S.lifestyleThisYear=0; S.jumpGroup=null; S.section=null; S.msection=null;
   const notes=[];
   if(S.parole>0)S.parole--;
   /* people who depend on you do not do so forever */
@@ -5070,6 +5086,14 @@ function ACTS(){
       } else { applyEff({happiness:-10}); popupOK('Not this round','It did not take. You can try again.'); }
     });
   }
+  /* ---------- CRIME ---------- */
+  if(S.jailLeft===0){
+    DATA.crimes.filter(c=>S.age>=c.minAge&&(!c.needJob||S.job)).forEach(c=>{
+      let pc=c.base+(S.skills[c.skill]||0)/250; pc=Math.round(Math.max(3,Math.min(95,pc*100)));
+      A('crime_'+c.id, c.n, 'Crime', `${pc}% success \u00b7 up to ${c.sentence[1]}y prison`,
+        ()=>crimeConfirm(c.id));
+    });
+  }
   A('rest','Rest','Health','Take it easy this year',()=>{applyEff({health:4,happiness:5});popupOK('Rest','Health +4, Happiness +5.');});
   A('walk','Go outdoors','Health','Free',()=>{applyEff({health:2,happiness:3});popupOK('Outdoors','Health +2, Happiness +3.');});
 
@@ -5288,8 +5312,11 @@ function ACTS(){
   if(a>=16&&!S.job&&!S.flags.retired)A('findjob','Look for work','Work','Opens the careers list',()=>setTab('money'));
   if(S.job&&a>=16){
     A('promote','Ask for promotion','Work','',()=>tryPromote());
-    A('overtime','Work overtime','Work','',()=>{const b=Math.round(S.job.pay*0.15);applyEff({money:b,health:-4,happiness:-6,discipline:3});popupOK('Overtime',`You earned an extra ${money(b)}.`);});
-    A('quit','Quit your job','Work','',()=>confirmDo('Quit?',`Leave your role as ${S.job.t}?`,()=>{S.job=null;applyEff({happiness:6});popupOK('Resigned','You quit.');}));
+    A('overtime','Work overtime','Work','Money now, experience too',()=>{
+      if(!S.job)return popupOK('No job','You are not working.');
+      const b=Math.round(S.job.pay*0.15);applyEff({money:b,health:-4,happiness:-6,discipline:3});popupOK('Overtime',`You earned an extra ${money(b)}.`);});
+    A('quit','Quit your job','Work','',()=>{ if(!S.job)return popupOK('No job','You are not working.');
+      return confirmDo('Quit?',`Leave your role as ${S.job.t}?`,()=>{S.job=null;applyEff({happiness:6});popupOK('Resigned','You quit.');}); });
   }
   if(a>=18&&!S.flags.inCollege&&S.edu<3)
     A('college','Enrol at university','Education',`$${Math.round(24000*country().edu).toLocaleString()}/yr`,()=>{
@@ -5525,7 +5552,7 @@ function viewLife(){
       <div class="rn">${esc(r.n)}</div>
       <div class="hsub dim">${next?`${next.need-S.track.progress} more to ${esc(next.n)}`:'You are at the top.'}</div>
       <div class="bt" style="margin-top:8px"><i class="${pct>66?'g':pct>33?'a':'r'}" style="width:${pct}%"></i></div>
-      <div class="nact"><button onclick="gotoGroup('${def.n}')">What can I do</button></div>
+      <div class="nact"><button onclick="setTab('act');openSection('${def.n}')">What can I do</button></div>
     </div>`;
   }
   if(S.inSchool){
@@ -5543,7 +5570,7 @@ function viewLife(){
         <button onclick="doAct('study')">Study</button>
         <button onclick="doAct('club')">Join a club</button>
         ${S.age>=13?'<button onclick="doAct(\'skipschool\')">Skip class</button>':''}
-        <button onclick="gotoGroup('School')">All school options</button></div>
+        <button onclick="setTab('act');openSection('School')">All school options</button></div>
     </div>`;
   }
   if(fam.length)h+=`<div class="card"><div class="ct">Around you</div>
@@ -5570,23 +5597,71 @@ function viewLife(){
     work and build a life. Everything compounds \u2014 habits, skills, relationships and money all carry forward.</div></div>`;
   return h;
 }
+const GROUP_META={
+  'School':      {i:'\u270E', d:'Lessons, clubs, teachers and your grade', o:1},
+  'University':  {i:'\u2605', d:'Lectures, placements and student life', o:2},
+  'Education':   {i:'\u2691', d:'Degrees, certificates and retraining', o:3},
+  'Work':        {i:'\u25B2', d:'Your job, promotions and overtime', o:4},
+  'Paths':       {i:'\u25C6', d:'Special lives with their own ranks', o:5},
+  'Skills':      {i:'\u2726', d:'Twelve things you can get better at', o:6},
+  'Health':      {i:'\u2665', d:'Doctors, treatment, rest and the gym', o:7},
+  'Lifestyle':   {i:'\u25CF', d:'Habits, good and bad', o:8},
+  'Leisure':     {i:'\u263A', d:'Holidays, hobbies and going out', o:9},
+  'Love':        {i:'\u2661', d:'Dating, marriage and everything after', o:10},
+  'Family':      {i:'\u2637', d:'Children, parents, adoption and fostering', o:11},
+  'Social':      {i:'\u263B', d:'Friends, parties and reputation', o:12},
+  'Home':        {i:'\u2302', d:'Your pets and your household', o:13},
+  'Self':        {i:'\u25CB', d:'Identity, giving and starting over', o:14},
+  'Money':       {i:'\u00A4', d:'Borrowing and everyday finance', o:15},
+  'Fame':        {i:'\u2691', d:'Followers, posts and public life', o:16},
+  'Trouble':     {i:'\u26A0', d:'Fights and bad ideas', o:17},
+  'Crime':       {i:'\u2620', d:'Everything from shoplifting to an art heist', o:18},
+  'Prison':      {i:'\u2338', d:'How you spend your sentence', o:0}
+};
+function groupMeta(g){ return GROUP_META[g]||{i:'\u2022',d:'',o:50}; }
+function openSection(g){ rememberScroll(); S.section=g; renderTab('act',false); }
+function closeSection(){ S.section=null; renderTab('act',false); }
 function viewActs(){
-  const L=ACTS(), groups={};
+  const L=ACTS(), max=actionsPerYear();
+  const groups={};
   L.forEach(a=>{ (groups[a.grp]=groups[a.grp]||[]).push(a); });
-  let h=`<div class="card"><div class="ctrow"><div class="ct">Activities · ${stage()}</div>
-    <button class="dicebtn" title="Do something random" onclick="randomAct()">${DICE}</button></div>
-    <div class="hsub dim mb">Tap the die to let chance choose for you.</div></div>`;
-  Object.keys(groups).forEach(g=>{
-    h+=`<div class="card ${S.jumpGroup===g?'flash':''}" id="grp-${g}"><div class="ct">${g}</div>${groups[g].map(a=>
-      `<button class="row" onclick="doAct('${a.id}')"><div><div class="rn">${esc(a.n)}</div>${a.d?`<div class="hsub dim">${esc(a.d)}</div>`:''}</div><i>›</i></button>`).join('')}</div>`;
-  });
-  h+=`<div class="card"><div class="ctrow"><div class="ct">Crime</div>
-    <button class="dicebtn" title="Random crime" onclick="randomCrime()">${DICE}</button></div>
-    ${DATA.crimes.filter(c=>S.age>=c.minAge&&(!c.needJob||S.job)).map(c=>{
-      let p=c.base+(S.skills[c.skill]||0)/250; p=Math.round(Math.max(5,Math.min(92,p*100)));
-      return `<button class="row danger ${S.actionsLeft<=0?'spent':''}" onclick="crimeConfirm('${c.id}')"><div><div class="rn">${esc(c.n)}</div>
-        <div class="hsub dim">${p}% success · up to ${c.sentence[1]}y prison</div></div><i>›</i></button>`;}).join('')}</div>`;
-  return h;
+
+  const budget=`<div class="card"><div class="ctrow"><div class="ct">This year \u00b7 age ${S.age}</div>
+      <button class="dicebtn" title="Do something at random" onclick="randomAct()">${DICE}</button></div>
+    <div class="acthead"><div class="pips">${Array.from({length:max},(_,i)=>
+      `<span class="pip ${i<S.actionsLeft?'on':''}"></span>`).join('')}</div>
+      <div class="hsub">${S.actionsLeft} of ${max} action${max>1?'s':''} left</div></div></div>`;
+
+  /* a section is open: show only that */
+  if(S.section && groups[S.section]){
+    const m=groupMeta(S.section);
+    return `<div class="card secthead">
+        <button class="backbtn" onclick="closeSection()">\u2039 All sections</button>
+        <div class="secttitle">${m.i} ${esc(S.section)}</div>
+        <div class="hsub dim">${esc(m.d)}</div>
+        <div class="acthead" style="margin-top:9px"><div class="pips">${Array.from({length:max},(_,i)=>
+          `<span class="pip ${i<S.actionsLeft?'on':''}"></span>`).join('')}</div>
+          <div class="hsub">${S.actionsLeft} left</div></div>
+      </div>
+      <div class="card">${groups[S.section].map(a=>{
+        const dm=diminish(a.id);
+        return `<button class="row ${S.actionsLeft<=0?'spent':''} ${a.grp==='Crime'?'danger':''}" onclick="doAct('${a.id}')">
+          <div><div class="rn">${esc(a.n)}</div>${a.d?`<div class="hsub dim">${esc(a.d)}</div>`:''}</div>
+          ${dm<1?`<i class="dim2">${Math.round(dm*100)}%</i>`:'<i>\u203a</i>'}</button>`;}).join('')}</div>`;
+  }
+
+  /* otherwise: the hub */
+  const names=Object.keys(groups).sort((a,b)=>groupMeta(a).o-groupMeta(b).o);
+  return budget + `<div class="card"><div class="ct">What do you want to do?</div>
+    <div class="hubgrid">${names.map(g=>{
+      const m=groupMeta(g);
+      return `<button class="hub ${g==='Crime'?'danger':''}" onclick="openSection('${g}')">
+        <div class="hubi">${m.i}</div>
+        <div class="hubn">${esc(g)}</div>
+        <div class="hubc">${groups[g].length} option${groups[g].length>1?'s':''}</div>
+      </button>`;}).join('')}</div>
+    <div class="hsub dim mt">Repeating the same thing gives less each time. A varied life goes further.</div>
+  </div>`;
 }
 function randomCrime(){
   if(S.actionsLeft<=0)return popupOK('No time left this year',
@@ -5634,8 +5709,11 @@ function npcAct(id,what){
     popupOK('Argument',`You argued with ${n.name}. \u2212${d}.`+(P.forgive<1?' They are not the forgiving type.':'')); }
   save(); renderAll();
 }
-function viewMoney(){
-  const cats=[...new Set(DATA.items.map(i=>i.cat))];
+const SHOP_MIN_AGE={Tech:8,Self:6,Health:10,Lifestyle:12,Vehicle:16,'Black market':14,Assets:18};
+function openMoney(sec){ rememberScroll(); S.msection=sec; renderTab('money',false); }
+function closeMoney(){ S.msection=null; renderTab('money',false); }
+
+function moneyOverview(){
   const inc=ledgerTotal('income'), sp=ledgerTotal('spend');
   const L=S.ledger||{income:[],spend:[]};
   return `<div class="card"><div class="ct">Last year</div>
@@ -5647,51 +5725,101 @@ function viewMoney(){
    ${(L.income.length||L.spend.length)?`<div class="ledger">
      ${L.income.map(x=>`<div class="lrow"><span>${esc(x.l)}</span><b class="bgood">+${money(x.a)}</b></div>`).join('')}
      ${L.spend.map(x=>`<div class="lrow"><span>${esc(x.l)}</span><b class="bbad">\u2212${money(x.a)}</b></div>`).join('')}
-   </div>`:'<div class="hsub dim">Nothing recorded yet. Age up a year.</div>'}
-   </div>
-   <div class="card"><div class="ct">Finances</div>
-   ${[['Cash',money(S.money)],['Savings (2.5%/yr)',money(S.savings)],
-      ['Crypto',money(cryptoValue())+' <small class="dim">@ '+money(S.crypto.price)+'</small>'],
-      ['Property',S.property?money(S.property.value)+' <small class="dim">mtg '+money(S.property.mortgage)+'</small>':'—'],
-      ['Business',S.business?money(S.business.value):'—'],
-      ['Other assets',assetValue()?money(assetValue()):'—'],
+   </div>`:'<div class="hsub dim">Nothing recorded yet. Age up a year.</div>'}</div>
+   <div class="card"><div class="ct">Where you stand</div>
+   ${[['Cash',money(S.money)],['Savings',money(S.savings)],
+      ['Crypto',money(cryptoValue())],
+      ['Property',S.property?money(S.property.value):'\u2014'],
+      ['Business',S.business?money(S.business.value):'\u2014'],
+      ['Other assets',assetValue()?money(assetValue()):'\u2014'],
       ['Debt','<span class="bad">'+money(S.debt)+'</span>'],
-      ['Loans',(S.loans&&S.loans.length)?S.loans.length+' active · '+money(S.loans.reduce((n,l)=>n+l.principal,0)):'—'],
-      ['Credit score',S.age>=18?Math.round(S.credit==null?600:S.credit)+' <small class="dim">'+creditBand(S.credit==null?600:S.credit).n+'</small>':'—'],
-      ['Net worth','<b>'+money(netWorth())+'</b>']].map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('')}
-   ${S.age<18?'<div class="hsub dim mt">Banking, investments and property open at 18.</div>':`<div class="grid3 mt">
+      ['Credit score',S.age>=18?Math.round(S.credit==null?600:S.credit)+' <small class="dim">'+creditBand(S.credit==null?600:S.credit).n+'</small>':'\u2014'],
+      ['Net worth','<b>'+money(netWorth())+'</b>']]
+     .map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('')}</div>`;
+}
+function moneyBanking(){
+  if(S.age<18)return '<div class="card"><div class="muted">Banking opens at 18.</div></div>';
+  return `<div class="card"><div class="ct">Banking</div>
+   <div class="kv"><span>Cash</span><b>${money(S.money)}</b></div>
+   <div class="kv"><span>Savings (2.5%/yr)</span><b>${money(S.savings)}</b></div>
+   <div class="kv"><span>Debt</span><b class="bad">${money(S.debt)}</b></div>
+   <div class="kv"><span>Loans</span><b>${(S.loans&&S.loans.length)?S.loans.length+' active':'\u2014'}</b></div>
+   <div class="grid3 mt">
      <button class="mini" onclick="fin('dep')">Save $5k</button>
      <button class="mini" onclick="fin('wd')">Withdraw $5k</button>
      <button class="mini" onclick="fin('debt')">Repay $5k</button>
-     <button class="mini" onclick="fin('buyc')">Buy crypto</button>
-     <button class="mini" onclick="fin('sellc')">Sell crypto</button>
-     ${S.property?`<button class="mini" onclick="fin('rent')">${S.property.rented?'Stop renting':'Rent it out'}</button>`
-       :`<button class="mini" onclick="fin('buyp')">Buy home</button>`}
-   </div>`}</div>
-   ${S.age<14?`<div class="card"><div class="ct">Careers</div><div class="muted">You are ${S.age}. You cannot work yet.
-     Part-time work opens at 14, full careers at 16.</div></div>`:`<div class="card"><div class="ct">Careers</div>
+   </div></div>
+   <div class="card"><div class="ct">Investments</div>
+   <div class="kv"><span>Crypto</span><b>${money(cryptoValue())} <small class="dim">@ ${money(S.crypto.price)}</small></b></div>
+   <div class="grid3 mt">
+     <button class="mini" onclick="fin('buyc')">Buy $2k crypto</button>
+     <button class="mini" onclick="fin('sellc')">Sell all</button>
+   </div></div>`;
+}
+function moneyCareers(){
+  if(S.age<14)return `<div class="card"><div class="muted">You are ${S.age}. Part-time work opens at 14.</div></div>`;
+  return `<div class="card"><div class="ct">Careers</div>
    ${Object.keys(DATA.fieldNames).map(f=>{
       const js=DATA.jobs.filter(j=>j.field===f); if(!js.length)return '';
       return `<div class="fieldhdr">${DATA.fieldNames[f]}</div>`+js.map(j=>{const lk=jobLocked(j);
         return `<button class="row ${lk?'locked':''}" ${lk?'':`onclick="applyJobId('${j.id}')"`}>
-          <div><div class="rn">${esc(j.t)}</div><div class="hsub dim">${money(Math.round(j.pay*country().sal))}/yr${lk?' · '+esc(lk):''}</div></div>
-          <i>${lk?'🔒':'›'}</i></button>`;}).join('');
-    }).join('')}</div>`}
-   ${hasEgg('v8')?`<div class="card"><div class="ct">Shop \u00b7 Unlocked</div>
-     <button class="row ${S.items.indexOf('v8car')>=0?'locked':''}" ${S.items.indexOf('v8car')>=0?'':`onclick="buyV8()"`}>
-       <div><div class="rn">The V8${S.items.indexOf('v8car')>=0?' <span class="owned">owned</span>':''}</div>
-       <div class="hsub dim">The car from the garage. +8 Happiness, +6 Reputation a year.</div></div>
-       <i class="price">${S.items.indexOf('v8car')>=0?'\u2713':money(9000)}</i></button></div>`:''}
-   ${cats.map(cat=>{ const min=SHOP_MIN_AGE[cat]||0;
-     if(S.age<min)return `<div class="card"><div class="ct">Shop · ${cat}</div>
-       <div class="muted">Not available until you are ${min}.</div></div>`;
-     return `<div class="card"><div class="ct">Shop · ${cat}</div>
-     ${DATA.items.filter(i=>i.cat===cat&&!i.secret).map(i=>{const own=S.items.includes(i.id);
-       return `<button class="row ${own?'locked':''}" ${own?'':`onclick="buy('${i.id}')"`}>
-         <div><div class="rn">${esc(i.n)}${own?' <span class="owned">owned</span>':''}</div><div class="hsub dim">${esc(i.d)}</div></div>
-         <i class="price">${own?'✓':money(Math.round(i.c*(1+newsMod('prices'))))}</i></button>`;}).join('')}</div>`;}).join('')}`;
+          <div><div class="rn">${esc(j.t)}</div><div class="hsub dim">${money(Math.round(j.pay*country().sal))}/yr${lk?' \u00b7 '+esc(lk):''}</div></div>
+          <i>${lk?'\u1F512':'\u203a'}</i></button>`;}).join('');
+    }).join('')}</div>`;
 }
-const SHOP_MIN_AGE={Tech:8,Self:6,Health:10,Lifestyle:12,Vehicle:16,'Black market':14,Assets:18};
+function moneyShop(cat){
+  const min=SHOP_MIN_AGE[cat]||0;
+  if(S.age<min)return `<div class="card"><div class="muted">Not available until you are ${min}.</div></div>`;
+  return `<div class="card"><div class="ct">${esc(cat)}</div>
+    <div class="hsub dim mb">${3-(S.buysThisYear||0)} purchase${3-(S.buysThisYear||0)===1?'':'s'} left this year</div>
+    ${DATA.items.filter(i=>i.cat===cat&&!i.secret).map(i=>{const own=S.items.includes(i.id);
+      return `<button class="row ${own?'locked':''}" ${own?'':`onclick="buy('${i.id}')"`}>
+        <div><div class="rn">${esc(i.n)}${own?' <span class="owned">owned</span>':''}</div>
+        <div class="hsub dim">${esc(i.d)}</div></div>
+        <i class="price">${own?'\u2713':money(Math.round(i.c*(1+newsMod('prices'))))}</i></button>`;}).join('')}
+    ${hasEgg('v8')&&cat==='Vehicle'?`<button class="row ${S.items.includes('v8car')?'locked':''}"
+      ${S.items.includes('v8car')?'':'onclick="buyV8()"'}>
+      <div><div class="rn">The V8${S.items.includes('v8car')?' <span class="owned">owned</span>':''}</div>
+      <div class="hsub dim">The car from the garage.</div></div>
+      <i class="price">${S.items.includes('v8car')?'\u2713':money(9000)}</i></button>`:''}</div>`;
+}
+function moneyProperty(){
+  const v=Math.round(220000*country().col);
+  return `<div class="card"><div class="ct">Property</div>
+   ${S.property?`<div class="kv"><span>Your home</span><b>${money(S.property.value)}</b></div>
+     <div class="kv"><span>Mortgage</span><b class="bad">${money(S.property.mortgage)}</b></div>
+     <div class="kv"><span>Let out</span><b>${S.property.rented?'Yes':'No'}</b></div>
+     <div class="grid3 mt"><button class="mini" onclick="fin('rent')">${S.property.rented?'Stop letting':'Let it out'}</button></div>`
+    :`<div class="hsub dim mb">You do not own anything yet.</div>
+      <button class="row" onclick="fin('buyp')"><div><div class="rn">Buy a home</div>
+      <div class="hsub dim">${money(v)}, 15% deposit needed</div></div><i>\u203a</i></button>`}</div>
+   ${(S.assets&&S.assets.length)?`<div class="card"><div class="ct">Other holdings</div>
+     ${S.assets.map(a=>{const it=DATA.items.find(i=>i.id===a.id)||{n:a.id};
+       return `<div class="kv"><span>${esc(it.n)}</span><b>${money(a.value)}</b></div>`;}).join('')}</div>`:''}`;
+}
+function viewMoney(){
+  const cats=[...new Set(DATA.items.filter(i=>!i.secret).map(i=>i.cat))];
+  if(S.msection){
+    const sec=S.msection;
+    const body = sec==='overview'?moneyOverview() : sec==='bank'?moneyBanking()
+      : sec==='careers'?moneyCareers() : sec==='property'?moneyProperty()
+      : sec.indexOf('shop:')===0?moneyShop(sec.slice(5)) : moneyOverview();
+    const title = sec==='overview'?'Budget' : sec==='bank'?'Banking' : sec==='careers'?'Careers'
+      : sec==='property'?'Property' : sec.slice(5);
+    return `<div class="card secthead"><button class="backbtn" onclick="closeMoney()">\u2039 Money</button>
+      <div class="secttitle">${esc(title)}</div></div>` + body;
+  }
+  const tiles=[['overview','\u25A6','Budget','In, out and net worth'],
+               ['bank','\u00A4','Banking','Savings, debt, investments'],
+               ['careers','\u25B2','Careers','Every job and what it needs'],
+               ['property','\u2302','Property','Buy, let, and other holdings']]
+    .concat(cats.map(c=>['shop:'+c,'\u25CF',c,'Shop']));
+  return `<div class="card"><div class="ctrow"><div class="ct">Money</div>
+      <div class="hsub dim">${money(S.money)}</div></div>
+    <div class="hubgrid">${tiles.map(([id,ic,n,d])=>
+      `<button class="hub" onclick="openMoney('${id}')"><div class="hubi">${ic}</div>
+        <div class="hubn">${esc(n)}</div><div class="hubc">${esc(d)}</div></button>`).join('')}</div></div>`;
+}
 function applyJobId(id){ applyJob(DATA.jobs.find(x=>x.id===id)); save(); renderAll(); }
 function buy(id){
   const it=DATA.items.find(i=>i.id===id);

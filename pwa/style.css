@@ -427,3 +427,19 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
 .statsheet.open{display:flex}
 .statpanel{width:calc(100% - 22px);max-height:70vh;overflow-y:auto;background:var(--card);
   border:1px solid var(--line);border-radius:16px;padding:14px;animation:up .2s ease}
+
+/* hubs and sections */
+.hubgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hub{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;
+  padding:12px 11px;border-radius:13px;border:1px solid var(--line);background:var(--bg2);
+  color:var(--tx);cursor:pointer}
+.hub:active{background:var(--card2)}
+.hub.danger{border-color:#4a2330;background:#1d1524}
+.hubi{font-size:17px;color:var(--am);line-height:1}
+.hub.danger .hubi{color:#f08a8e}
+.hubn{font-size:14px;font-weight:700;margin-top:3px}
+.hubc{font-size:11px;color:var(--dim)}
+.secthead{background:linear-gradient(145deg,#1a2540,#131c2e)}
+.backbtn{background:none;border:0;color:var(--am);font-size:12.5px;font-weight:650;cursor:pointer;
+  padding:0 0 8px}
+.secttitle{font-size:19px;font-weight:750}

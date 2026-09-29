@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,openSection,closeSection,openMoney,closeMoney,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -394,7 +394,8 @@ t('no activity grants free money without limit', () => {
     G.S.actionsLeft = 1; const before = G.S.money;
     try { a.f(); } catch(e) {}
     const delta = G.S.money - before;
-    if (delta > 4000 && !/loan|sellstash|overtime/.test(a.id)) earners.push(a.id + '+' + delta);
+    // crime pays, but it is not free: it risks prison, a record and your health
+    if (delta > 4000 && !/loan|sellstash|overtime|^crime_|^tr_/.test(a.id)) earners.push(a.id + '+' + delta);
   });
   return earners.length ? earners.join(', ') : true;
 });
@@ -522,8 +523,8 @@ t('the school card button targets a group that exists', () => {
   G.newGame({}); ageTo(10);
   if (!G.S.alive || !G.S.inSchool) return true;
   const html = G.viewLife();
-  const m = html.match(/gotoGroup\('([^']+)'\)/);
-  if (!m) return 'no gotoGroup button rendered';
+  const m = html.match(/openSection\('([^']+)'\)/);
+  if (!m) return 'no section button rendered on the school card';
   const groups = new Set(G.ACTS().map(a => a.grp));
   return groups.has(m[1]) ? true : `button points at "${m[1]}" which has no activities`;
 });
@@ -836,16 +837,16 @@ t('secret shop items stay hidden until unlocked', () => {
   Object.keys(G.META.eggs).forEach(k => delete G.META.eggs[k]);
   G.newGame({}); ageTo(30);
   if (!G.S.alive) return true;
-  const html = G.viewMoney();
+  const html = G.moneyShop('Vehicle');
   return /buyV8/.test(html) ? 'the V8 is visible without finding it' : true;
 });
 t('finding the V8 reveals it in the shop', () => {
   G.newGame({}); ageTo(30);
   if (!G.S.alive) return true;
   G.META.eggs.v8 = {age:20,life:1,at:Date.now()};
-  const html = G.viewMoney();
+  const html = G.moneyShop('Vehicle');
   Object.keys(G.META.eggs).forEach(k => delete G.META.eggs[k]);
-  return /buyV8/.test(html) ? true : 'unlocked item did not appear';
+  return /buyV8/.test(html) ? true : 'unlocked item did not appear in the vehicle shop';
 });
 t('eggs are recorded permanently across lives', () => {
   Object.keys(G.META.eggs).forEach(k => delete G.META.eggs[k]);
