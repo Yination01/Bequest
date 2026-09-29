@@ -1618,6 +1618,60 @@ t('every market view renders', () => {
     && G.marketView('item','i').length>200) ? true : 'a market view failed';
 });
 
+/* ================= 4o. EVENT WRITING ================= */
+section('4o. Event writing');
+
+t('every token in event text is one the engine substitutes', () => {
+  const known = ['npc','friend','partner','child','parent','sibling','colleague','boss',
+    'employer','school','paper','city','country','job','name','age','amt'];
+  const bad = new Set();
+  G.EVENTS.forEach(e => {
+    const texts = (Array.isArray(e.x) ? e.x : [e.x]).concat(e.c.map(c => c.l));
+    texts.forEach(txt => {
+      const m = String(txt).match(/\{(\w+)\}/g) || [];
+      m.forEach(tok => { const k = tok.slice(1,-1); if (!known.includes(k)) bad.add(e.id+':'+tok); });
+    });
+  });
+  return bad.size ? [...bad].join(', ') : true;
+});
+t('no choice is phrased as an outcome rather than a decision', () => {
+  const bad = [];
+  G.EVENTS.forEach(e => e.c.forEach(c => {
+    if (/^(realise|discover|find out|it turns out|become aware|learn that)/i.test(c.l))
+      bad.push(e.id + ': "' + c.l + '"');
+  }));
+  return bad.length ? bad.join(' | ') : true;
+});
+t('every event establishes a situation, not just a fragment', () => {
+  // a very short line is fine if it names something concrete; a short line
+  // that opens on a bare pronoun is not
+  const bad = [];
+  G.EVENTS.forEach(e => {
+    const txt = String(Array.isArray(e.x) ? e.x[0] : e.x);
+    if (txt.length >= 55) return;
+    const concrete = /\{\w+\}|your |a |an |the |everyone|somebody|someone|nobody|school|work/i.test(txt);
+    if (!concrete) bad.push(e.id + ': "' + txt + '"');
+  });
+  return bad.length ? bad.slice(0,6).join(' | ') : true;
+});
+t('event text never opens on an unexplained pronoun', () => {
+  const bad = [];
+  G.EVENTS.forEach(e => {
+    const txt = String(Array.isArray(e.x) ? e.x[0] : e.x);
+    if (/^(It|They|He|She|Not from|This)\b/.test(txt) && txt.length < 70)
+      bad.push(e.id + ': "' + txt.slice(0,50) + '"');
+  });
+  return bad.length ? bad.slice(0,6).join(' | ') : true;
+});
+t('every choice label is a readable instruction', () => {
+  const bad = [];
+  G.EVENTS.forEach(e => e.c.forEach(c => {
+    if (c.l.length < 4) bad.push(e.id + ':' + c.l);
+    if (/^(yes|no|ok|do it)$/i.test(c.l.trim())) bad.push(e.id + ': bare "' + c.l + '"');
+  }));
+  return bad.length ? bad.join(' | ') : true;
+});
+
 /* ================= 5. SIMULATION STABILITY ================= */
 section('5. Simulation stability');
 function bulk(diff, n) {
