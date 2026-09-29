@@ -414,6 +414,18 @@ t('school exists and is visible while you are in it', () => {
   const acts = G.ACTS().filter(a => a.grp === 'School');
   return acts.length >= 5 ? true : 'only ' + acts.length + ' school activities';
 });
+t('nobody ever holds the same condition twice', () => {
+  const bad = [];
+  for (let i=0;i<60;i++){
+    G.newGame({}); let g=0;
+    while (G.S.alive && g++<140){
+      G.ageUp();
+      const ids = G.S.conditions.map(k=>k.id);
+      if (new Set(ids).size !== ids.length) { bad.push(ids.join(',')); break; }
+    }
+  }
+  return bad.length ? 'duplicates: ' + bad.slice(0,3).join(' | ') : true;
+});
 t('a condition never worsens in the year it is diagnosed', () => {
   let bad = 0;
   for (let i=0;i<60;i++){

@@ -152,7 +152,7 @@ const TRACKS = [
         notes.push('Your unit was deployed.');
         if(R()<0.15){ S.stats.health=clamp(S.stats.health-ri(15,45));
           notes.push('You came back injured.');
-          if(R()<0.3){ S.conditions.push({id:'injury',age:S.age,sev:2,treated:false}); } }
+          if(R()<0.3){ addCondition('injury',2); } }
         else { t.progress+=4; t.commend=(t.commend||0)+1; notes.push('You came back with a commendation.'); }
       }
     },
@@ -168,7 +168,7 @@ const TRACKS = [
         run(){ if(R()<0.72+LUCK()){ S.track.progress+=7; S.track.commend=(S.track.commend||0)+1;
             applyEff({skill:{combat:8},reputation:8}); popupOK('You came home','And you came home decorated.'); }
           else { S.stats.health=clamp(S.stats.health-ri(25,55));
-            S.conditions.push({id:'injury',age:S.age,sev:3,treated:false});
+            addCondition('injury',3);
             popupOK('You came home','Not as you left.'); } } },
       { id:'mentor', n:'Look after your people', d:'',
         run(){ const f=addNPC('friend',null,S.age+ri(-8,8),ri(60,85)); S.track.progress+=2;

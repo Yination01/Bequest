@@ -637,7 +637,7 @@ function tickConditions(){
     if(hasEcho('scarred'))p*=1.35;
     if(hasEcho('steadied'))p*=0.8;
     if(R()<p){
-      S.conditions.push({id:c.id,age:S.age,sev:c.sev,treated:false});
+      addCondition(c.id,c.sev);
       S.stats.health=clamp(S.stats.health-c.sev*5);
       out.push(`You were diagnosed with ${c.n.toLowerCase()}.`);
       logLine(`Diagnosed with ${c.n}.`,'bad');
@@ -668,6 +668,15 @@ function tickConditions(){
     logLine('You became disabled.','bad');
   }
   return out;
+}
+/* The only way a condition should ever be added. Worsens an existing one
+   rather than creating a duplicate. */
+function addCondition(id,sev){
+  const c=COND(id); if(!c)return null;
+  const have=S.conditions.find(k=>k.id===id);
+  if(have){ have.sev=Math.min(3,have.sev+1); have.treated=false; return have; }
+  const k={id:id,age:S.age,sev:sev||c.sev,treated:false};
+  S.conditions.push(k); return k;
 }
 function workPenalty(){
   let w=0; S.conditions.forEach(k=>{const c=COND(k.id); if(c)w+=c.work*(k.treated?0.4:1)*(k.sev/c.sev);});
@@ -1066,7 +1075,7 @@ function resolveChoice(ev,ci){
   if(ch.whistle){ if(R()<0.5){ add('It was investigated. You were quietly let go.'); S.job=null; S.firedCount++; applyEff({reputation:10}); }
     else { add('Nothing happened, and now everyone knows it was you.'); S.perf=clamp(S.perf-25); } }
   if(ch.condition){ if(!S.conditions.some(k=>k.id===ch.condition)){
-      const c=COND(ch.condition); S.conditions.push({id:ch.condition,age:S.age,sev:c.sev,treated:false});
+      const c=COND(ch.condition); addCondition(ch.condition,c.sev);
       add(`You now live with ${c.n.toLowerCase()}.`); } }
   if(ch.treatOne){ if(S.conditions.length){ const k=pick(S.conditions); k.treated=true; add(`Your ${COND(k.id).n.toLowerCase()} is being properly managed.`); } }
   if(ch.quackery){ if(R()<0.15){ const k=pick(S.conditions); if(k){k.treated=true;add('Against the odds, you feel better.');} }
