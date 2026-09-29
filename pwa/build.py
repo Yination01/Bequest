@@ -16,6 +16,7 @@ econ  = (d/'economy.js').read_text()
 asst  = (d/'assets.js').read_text()
 soc   = (d/'social.js').read_text()
 shp   = (d/'shop.js').read_text()
+mkt   = (d/'market.js').read_text()
 avat  = (d/'avatar.js').read_text()
 egg   = (d/'easter.js').read_text()
 game  = (d/'game.js').read_text()
@@ -93,6 +94,9 @@ html = f"""<!doctype html>
 </script>
 <script>
 {shp}
+</script>
+<script>
+{mkt}
 </script>
 <script>
 {avat}

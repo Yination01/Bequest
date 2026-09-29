@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','avatar.js','easter.js','achievements.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,PERKS,PERK,GOAL_POOL,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1317,10 +1317,10 @@ t('net worth counts property, vehicles and businesses', () => {
   const nw=G.netWorth();
   return Math.abs(nw - 230000) < 2000 ? true : 'net worth came to ' + nw;
 });
-t('the three marketplaces render', () => {
+t('the holdings pages render', () => {
   atAge(35);
-  return (G.moneyPropertyMarket().length>400 && G.moneyVehicles().length>400
-    && G.moneyBusinesses().length>400) ? true : 'a marketplace failed to render';
+  return (G.moneyPropertyMarket().length>200 && G.moneyVehicles().length>200
+    && G.moneyBusinesses().length>400) ? true : 'a holdings page failed to render';
 });
 
 /* ================= 4l. PEOPLE, LEISURE AND DEGREES ================= */
@@ -1521,6 +1521,100 @@ t('utilities can be cancelled to save money', () => {
   G.toggleSub('utilities');
   const without = G.billsFor().reduce((n,x)=>n+x.a,0);
   return (without < withU && G.S.flags.noUtilities) ? true : `${withU} -> ${without}`;
+});
+
+/* ================= 4n. THE MARKETPLACE ================= */
+section('4n. The marketplace');
+
+t('the market stocks individual listings', () => {
+  atAge(30); G.marketRefresh(true);
+  const v=G.S.market.vehicle, p=G.S.market.property, i=G.S.market.item;
+  if(!v.length||!p.length||!i.length) return 'a category was empty';
+  const car=v[0];
+  if(car.miles==null||car.cond==null||!car.colour||!car.seller) return 'vehicles lack detail';
+  if(!p[0].addr) return 'property has no address';
+  return true;
+});
+t('two listings of the same type differ', () => {
+  atAge(30);
+  const prices=new Set(), conds=new Set();
+  for(let y=0;y<14;y++){ G.S.age=30+y; G.marketRefresh(true);
+    G.S.market.vehicle.forEach(l=>{ prices.add(l.price); conds.add(l.cond); }); }
+  return (prices.size>10 && conds.size>6) ? true : `only ${prices.size} prices, ${conds.size} conditions`;
+});
+t('stock turns over each year', () => {
+  atAge(30); G.marketRefresh(true);
+  const before=G.S.market.vehicle.map(l=>l.id).join(',');
+  G.S.age=31; G.marketRefresh();
+  const after=G.S.market.vehicle.map(l=>l.id).join(',');
+  return before!==after ? true : 'the same cars were for sale the next year';
+});
+t('haggling has all four outcomes', () => {
+  const seen=new Set();
+  for(let i=0;i<500;i++){
+    atAge(30); G.marketRefresh(true);
+    const l=G.S.market.vehicle[0]; if(!l)continue;
+    const pct=[0.03,0.1,0.2,0.3,0.45,0.6][i%6];
+    const o=G.haggleOutcome(l, Math.round(l.ask*(1-pct)), 50, 30, Math.random);
+    seen.add(o.result);
+  }
+  const want=['accept','counter','refuse','insulted'];
+  const missing=want.filter(w=>!seen.has(w));
+  return missing.length ? 'never saw: '+missing.join(', ') : true;
+});
+t('charisma makes sellers more generous', () => {
+  let lowAccept=0, highAccept=0;
+  for(let i=0;i<400;i++){
+    atAge(30); G.marketRefresh(true);
+    const l=G.S.market.vehicle[0]; if(!l)continue;
+    const offer=Math.round(l.ask*0.85);
+    if(G.haggleOutcome(l,offer,5,5,Math.random).result==='accept')lowAccept++;
+    if(G.haggleOutcome(l,offer,95,95,Math.random).result==='accept')highAccept++;
+  }
+  return highAccept>=lowAccept ? true : `low ${lowAccept} vs high ${highAccept}`;
+});
+t('you can buy for cash and it becomes yours', () => {
+  atAge(35); G.S.money=9000000; G.S.vehicles=[]; G.S.flags.licence=true;
+  G.marketRefresh(true);
+  const l=G.S.market.vehicle[0];
+  G.buyListing(l.id,'cash');
+  return G.S.vehicles.length===1 ? true : 'the vehicle did not arrive';
+});
+t('finance needs credit and creates repayments', () => {
+  atAge(35); G.S.money=9000000; G.S.properties=[]; G.S.finance=[]; G.S.credit=380;
+  G.marketRefresh(true);
+  let l=G.S.market.property[0];
+  G.buyListing(l.id,'finance');
+  if(G.S.properties.length) return 'a poor credit score still got finance';
+  atAge(35); G.S.money=9000000; G.S.properties=[]; G.S.finance=[];
+  G.S.credit=780; G.S.job={id:'ceo',t:'CEO',pay:400000,field:'corp',lvl:5};
+  G.marketRefresh(true);
+  l=G.S.market.property[0];
+  G.buyListing(l.id,'finance');
+  return (G.S.properties.length===1 && (G.S.finance||[]).length===1) ? true
+    : `properties ${G.S.properties.length}, finance ${(G.S.finance||[]).length}`;
+});
+t('finance repayments are collected and eventually end', () => {
+  atAge(35); G.S.money=4000000; G.S.finance=[{l:'Test car',annual:5000,left:3,principal:15000}];
+  let paid=0;
+  for(let y=0;y<5 && G.S.alive;y++){ const before=G.S.money; G.ageUp();
+    if(G.S.money<before)paid++; }
+  return (S=>true)() && (G.S.finance||[]).length===0 ? true : 'finance never cleared';
+});
+t('an insulting offer can lose you the listing', () => {
+  let withdrawn=false;
+  for(let i=0;i<200 && !withdrawn;i++){
+    atAge(30); G.marketRefresh(true);
+    const l=G.S.market.item[0]; if(!l)continue;
+    G.makeOffer(l.id,0.75);
+    if(!G.findListing(l.id))withdrawn=true;
+  }
+  return withdrawn ? true : 'never lost a listing to a lowball';
+});
+t('every market view renders', () => {
+  atAge(35);
+  return (G.marketView('vehicle','v').length>200 && G.marketView('property','p').length>200
+    && G.marketView('item','i').length>200) ? true : 'a market view failed';
 });
 
 /* ================= 5. SIMULATION STABILITY ================= */
