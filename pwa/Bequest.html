@@ -2395,34 +2395,37 @@ const DIFF_KNOBS = [
   { k:'crimeOdds', n:'Crime success',       d:'Your chance of getting away with a crime.',            dir:'up_easier', min:0.3, max:2.0 },
   { k:'prison',    n:'Prison sentences',    d:'How long you serve when you are caught.',              dir:'up_harder', min:0.2, max:2.5 },
   { k:'habitGrip', n:'Habit grip',          d:'How fast addictions take hold and how hard they are to shake.', dir:'up_harder', min:0.3, max:2.5 },
-  { k:'relDecay',  n:'Relationship decay',  d:'How quickly people drift away if you neglect them.',   dir:'up_harder', min:0.3, max:2.5 }
+  { k:'relDecay',  n:'Relationship decay',  d:'How quickly people drift away if you neglect them.',   dir:'up_harder', min:0.3, max:2.5 },
+  { k:'autopay',   n:'Automatic bill payment',
+    d:'On: bills settle themselves. Off: you pay them yourself each year or fall into arrears.',
+    dir:'up_easier', min:0, max:1, toggle:true }
 ];
 
 const DIFFICULTIES = [
   { id:'easy', n:'Easy', rank:0, lp:0.5, colour:'#42c98a',
     blurb:'A forgiving life. Money comes easily, your body holds up, and most gambles go your way. Best for reading the story.',
     m:{ earn:1.30, cost:0.75, start:2.00, decay:0.65, death:0.55, luck:0.12,
-        jobOdds:1.30, promoOdds:1.30, crimeOdds:1.25, prison:0.55, habitGrip:0.65, relDecay:0.65 } },
+        jobOdds:1.30, promoOdds:1.30, crimeOdds:1.25, prison:0.55, habitGrip:0.65, relDecay:0.65, autopay:1 } },
 
   { id:'normal', n:'Normal', rank:1, lp:1.0, colour:'#f0a63c',
     blurb:'The intended experience. Roughly realistic odds: most people get by, some do very well, some never recover from one bad decade.',
     m:{ earn:1.00, cost:1.00, start:1.00, decay:1.00, death:1.00, luck:0.00,
-        jobOdds:1.00, promoOdds:1.00, crimeOdds:1.00, prison:1.00, habitGrip:1.00, relDecay:1.00 } },
+        jobOdds:1.00, promoOdds:1.00, crimeOdds:1.00, prison:1.00, habitGrip:1.00, relDecay:1.00, autopay:1 } },
 
   { id:'hard', n:'Hard', rank:2, lp:1.5, colour:'#ef6a4d',
     blurb:'The world pushes back. Wages stretch less, bills bite, addictions take hold faster and people drift away if you neglect them.',
     m:{ earn:0.85, cost:1.25, start:0.50, decay:1.30, death:1.40, luck:-0.07,
-        jobOdds:0.80, promoOdds:0.78, crimeOdds:0.85, prison:1.35, habitGrip:1.35, relDecay:1.30 } },
+        jobOdds:0.80, promoOdds:0.78, crimeOdds:0.85, prison:1.35, habitGrip:1.35, relDecay:1.30, autopay:0 } },
 
   { id:'brutal', n:'Brutal', rank:3, lp:2.0, colour:'#e0565b',
     blurb:'Most lives here end early, poor and alone. Nothing is given. Reaching old age with anything at all is a genuine achievement.',
     m:{ earn:0.70, cost:1.50, start:0.20, decay:1.65, death:1.95, luck:-0.15,
-        jobOdds:0.62, promoOdds:0.60, crimeOdds:0.72, prison:1.70, habitGrip:1.65, relDecay:1.60 } },
+        jobOdds:0.62, promoOdds:0.60, crimeOdds:0.72, prison:1.70, habitGrip:1.65, relDecay:1.60, autopay:0 } },
 
   { id:'custom', n:'Custom', rank:-1, lp:1.0, colour:'#8fe3ff', premium:true,
     blurb:'Set all twelve values yourself. Legacy Points are scaled to how hard you actually made it, so easy settings earn less.',
     m:{ earn:1.00, cost:1.00, start:1.00, decay:1.00, death:1.00, luck:0.00,
-        jobOdds:1.00, promoOdds:1.00, crimeOdds:1.00, prison:1.00, habitGrip:1.00, relDecay:1.00 } }
+        jobOdds:1.00, promoOdds:1.00, crimeOdds:1.00, prison:1.00, habitGrip:1.00, relDecay:1.00, autopay:1 } }
 ];
 
 function diffDef(id){ return DIFFICULTIES.find(d=>d.id===id)||DIFFICULTIES[1]; }
@@ -2433,8 +2436,9 @@ function customScore(m){
   let s=0;
   DIFF_KNOBS.forEach(k=>{
     const v=m[k.k], base=k.add?0:1;
+    if(k.toggle){ s += (v?0:0.25); return; }   // paying your own bills is harder
     let harder = k.dir==='up_harder' ? (v-base) : (base-v);
-    if(k.add) harder = -v*4;              // luck is additive, scale it up
+    if(k.add) harder = -v*4;
     s += harder;
   });
   return s/DIFF_KNOBS.length;             // ~0 Normal, ~0.3 Hard, ~0.55 Brutal
@@ -3170,6 +3174,87 @@ const DEGREE = id => DEGREES.find(d => d.id === id);
 
 </script>
 <script>
+/* BEQUEST — the Legacy Point store and per-life goals.
+ *
+ * Four layers of progression, deliberately distinct:
+ *   Achievements  permanent, one-off, across every life you ever play
+ *   Challenges    permanent, larger, cross-life targets
+ *   Goals         PER LIFE: three drawn at birth, replaced every new life
+ *   Records       lifetime bests, never reset
+ *
+ * Goals are the only per-life layer, so every new character has something
+ * immediate to chase without diluting the permanent collections.          */
+
+/* ---------------- LEGACY POINT PERKS ---------------- */
+const PERKS = [
+  /* --- spent once, apply to the life you are playing --- */
+  { id:'windfall',   n:'A stroke of luck',    cost:120,  kind:'life',
+    d:'An unexpected $25,000 arrives right now.' },
+  { id:'secondwind', n:'Second wind',         cost:150,  kind:'life',
+    d:'Restore your health to 85 and clear one condition.' },
+  { id:'headstart',  n:'Head start',          cost:180,  kind:'life',
+    d:'Pick a skill and begin at 50.' },
+  { id:'cleanslate', n:'Clean slate',         cost:260,  kind:'life',
+    d:'Every conviction on your record becomes spent.' },
+  { id:'goodyear',   n:'A charmed year',      cost:100,  kind:'life',
+    d:'Luck is strongly in your favour for the next five years.' },
+  { id:'reputation', n:'A word in the right ear', cost:140, kind:'life',
+    d:'Reputation up to at least 75.' },
+  { id:'debtwipe',   n:'Settle up',           cost:220,  kind:'life',
+    d:'Clear all arrears and card balances.' },
+
+  /* --- bought once, apply to every life from now on --- */
+  { id:'extraaction',n:'One more hour a day', cost:900,  kind:'forever',
+    d:'Every character gets one extra action every year, for ever.' },
+  { id:'bornlucky',  n:'Born lucky',          cost:750,  kind:'forever',
+    d:'All future characters start with better family money.' },
+  { id:'quicklearn', n:'Quick study',         cost:820,  kind:'forever',
+    d:'Skills rise 25% faster in every future life.' },
+  { id:'goodstock',  n:'Good stock',          cost:680,  kind:'forever',
+    d:'Future characters are born healthier and live a little longer.' },
+  { id:'inheritance',n:'Something to leave',  cost:1100, kind:'forever',
+    d:'Heirs inherit an extra 20% of what you leave behind.' },
+  { id:'wellmet',    n:'Easy to like',        cost:600,  kind:'forever',
+    d:'Relationships decay more slowly in every future life.' },
+  { id:'openbook',   n:'Open book',           cost:1400, kind:'forever',
+    d:'Reveals what every hidden achievement requires.' }
+];
+const PERK = id => PERKS.find(p => p.id === id);
+
+/* ---------------- PER-LIFE GOALS ----------------
+   Three are drawn at birth. They are meant to be achievable in one life
+   and to pull you in a direction you might not have chosen.              */
+const GOAL_POOL = [
+  { id:'g_earn',     n:'Earn $250,000 in a single year', lp:60,  test:s=>s.peakIncome>=250000 },
+  { id:'g_save',     n:'Hold $100,000 in savings',       lp:45,  test:s=>s.savings>=100000 },
+  { id:'g_home',     n:'Own your own home',              lp:35,  test:s=>(s.properties||[]).some(p=>p.home) },
+  { id:'g_landlord', n:'Let out a property',             lp:50,  test:s=>(s.properties||[]).some(p=>p.rented) },
+  { id:'g_biz',      n:'Run a business with 5 staff',    lp:55,  test:s=>(s.businesses||[]).some(b=>b.staff>=5) },
+  { id:'g_degree',   n:'Graduate with a degree',         lp:40,  test:s=>s.edu>=3 },
+  { id:'g_master',   n:'Take any skill to 80',           lp:50,  test:s=>Object.values(s.skills).some(v=>v>=80) },
+  { id:'g_three',    n:'Take three skills past 40',      lp:45,  test:s=>Object.values(s.skills).filter(v=>v>=40).length>=3 },
+  { id:'g_married',  n:'Get married',                    lp:35,  test:s=>s.npcs.some(n=>n.rel==='spouse') },
+  { id:'g_parent',   n:'Become a parent',                lp:35,  test:s=>s.childrenCount>=1 },
+  { id:'g_friends',  n:'Keep four friends at once',      lp:40,  test:s=>s.npcs.filter(n=>n.alive&&n.rel==='friend').length>=4 },
+  { id:'g_fit',      n:'Reach 80 Fitness',               lp:40,  test:s=>s.skills.fitness>=80 },
+  { id:'g_healthy',  n:'Reach 60 with health above 70',  lp:55,  test:s=>s.age>=60&&s.stats.health>=70 },
+  { id:'g_clean',    n:'Reach 40 with no convictions',   lp:35,  test:s=>s.age>=40&&!s.record.length },
+  { id:'g_crime',    n:'Get away with five crimes',      lp:55,  test:s=>s.crimesCommitted>=5&&s.yearsJailed===0 },
+  { id:'g_fame',     n:'Reach 100,000 followers',        lp:50,  test:s=>s.followers>=100000 },
+  { id:'g_travel',   n:'Live in another country',        lp:45,  test:s=>(s.countriesLived||[]).length>=2 },
+  { id:'g_track',    n:'Reach the third rank of a special path', lp:70,
+    test:s=>s.track&&s.track.rank>=2 },
+  { id:'g_car',      n:'Own a vehicle worth $50,000',    lp:40,  test:s=>(s.vehicles||[]).some(v=>v.value>=50000) },
+  { id:'g_promo',    n:'Be promoted three times',        lp:45,  test:s=>s.counters&&s.counters.promotions>=3 },
+  { id:'g_credit',   n:'Reach a credit score of 780',    lp:45,  test:s=>(s.credit||600)>=780 },
+  { id:'g_pet',      n:'Keep a pet for ten years',       lp:35,  test:s=>(s.pets||[]).some(p=>p.alive&&p.age>=10) },
+  { id:'g_give',     n:'Give $50,000 to charity',        lp:50,  test:s=>s.donated>=50000 },
+  { id:'g_debtfree', n:'Reach 50 with no debt at all',   lp:40,
+    test:s=>s.age>=50&&s.debt===0&&!(s.cards||[]).some(c=>c.bal>0)&&!s.arrears }
+];
+
+</script>
+<script>
 /* BEQUEST — procedural SVG avatar.
    Draws a face that genuinely ages and reflects the character's state:
    region skin tone, gender, looks, health, happiness, wealth, job, conditions.
@@ -3362,7 +3447,8 @@ function avatarMini(n, size) {
      myth    ~1 in 500 lives almost nobody sees these
    Every egg found is recorded permanently in META.eggs.                     */
 
-const EGG_TIERS = { wink:0.12, rare:0.017, myth:0.002 };
+/* tuned so a first life sees roughly one, not three */
+const EGG_TIERS = { wink:0.030, rare:0.0055, myth:0.0008 };
 
 const EGGS = [
   /* ---------- WINKS ---------- */
@@ -3674,7 +3760,7 @@ function loadMeta(){
   m.ach=m.ach||{}; m.rec=m.rec||{}; m.countriesPlayed=m.countriesPlayed||{};
   m.premium=m.premium||{plus:false,lifetime:false,since:null};
   m.adsSeen=m.adsSeen||0;
-  m.eggs=m.eggs||{}; m.deathAges=m.deathAges||[]; m.taps=m.taps||0;
+  m.eggs=m.eggs||{}; m.deathAges=m.deathAges||[]; m.taps=m.taps||0; m.perks=m.perks||{};
   /* the prototype ships with Plus switched on so everything is testable */
   if(m.premium.protoUnlocked===undefined){ m.premium.protoUnlocked=true; m.premium.plus=true; }
   return m;
@@ -3699,7 +3785,7 @@ function migrate(){
   if(!S.slot)S.slot=1;
   if(!S.assets)S.assets=[];
   if(!S.countriesLived)S.countriesLived=[S.country];
-  if(!S.cd)S.cd={}; if(!S.echoes)S.echoes=[]; if(!S.ledger)S.ledger={income:[],spend:[]};
+  if(!S.cd)S.cd={}; if(!S.echoes)S.echoes=[]; if(!S.goals)S.goals=[]; if(!S.perksUsed)S.perksUsed=[]; if(!S.ledger)S.ledger={income:[],spend:[]};
   if(!S.home)S.home='parents'; if(!S.food)S.food='basic'; if(!S.subs)S.subs={};
   if(!S.cards)S.cards=[]; if(S.arrears==null)S.arrears=0;
   if(!S.properties)S.properties=[]; if(!S.vehicles)S.vehicles=[]; if(!S.businesses)S.businesses=[];
@@ -3814,7 +3900,12 @@ function hasEgg(id){ return !!META.eggs[id]; }
 function eggRoll(tier){ const m=(S&&S.traits&&S.traits.indexOf('marked')>=0)?2.5:1; return R() < (EGG_TIERS[tier]||0)*m; }
 function unlockedTraits(){ return Object.keys(EGG_UNLOCKS)
   .filter(k=>hasEgg(k)&&EGG_UNLOCKS[k].kind==='trait').map(k=>EGG_UNLOCKS[k].id); }
-function autopayAllowed(){ return diffRank()<2; }          // Easy and Normal only
+/* On the presets, difficulty decides. On Custom you choose it yourself,
+   and the choice is reflected in the LifePoint multiplier. */
+function autopayAllowed(){
+  if(S.diff==='custom') return S.mods && S.mods.autopay !== 0;
+  return diffRank()<2;
+}
 function autopayOn(){ return autopayAllowed() && S.autopay!==false; }
 function isPlus(){ return !!(META.premium&&(META.premium.plus||META.premium.lifetime)); }
 function requirePlus(what){
@@ -3837,7 +3928,7 @@ function hasItem(tag){ return hasSub(tag)||S.items.some(i=>{const it=DATA.items.
 function newsMod(k){ let m=0; S.news.forEach(n=>{const d=DATA.news.find(x=>x.id===n.id); if(d&&d.m[k]!=null) m+=d.m[k];}); return m; }
 function stage(){ const a=S.age; return a<=5?'Infant':a<=12?'Child':a<=17?'Teen':a<=29?'Young adult':a<=54?'Adult':a<=69?'Older adult':'Elder'; }
 function M(k){ return (S&&S.mods&&S.mods[k]!=null)?S.mods[k]:(k==='luck'?0:1); }
-function LUCK(){ return M('luck')+(S.traits.includes('lucky')?0.08:0)+(hasEcho('steadied')?0.05:0)-(hasEcho('scarred')?0.05:0); }
+function LUCK(){ return ((S&&S.charmedUntil&&S.age<=S.charmedUntil)?0.15:0)+M('luck')+(S.traits.includes('lucky')?0.08:0)+(hasEcho('steadied')?0.05:0)-(hasEcho('scarred')?0.05:0); }
 function hasEcho(id){ return !!(S.echoes&&S.echoes.some(e=>e.id===id)); }
 function diffRank(){ if(!S)return 1; return S.diff==='custom'?customRank(S.mods):diffDef(S.diff).rank; }
 function lpMult(){ if(!S)return 1; const base=S.diff==='custom'?customLP(S.mods):diffDef(S.diff).lp;
@@ -3882,12 +3973,12 @@ function newGame(opts){
     seed, name:givenName||(nameFor(reg,g)+' '+sur), surname:sur, gender:g,
     country:c, city:cityFor(reg), countriesLived:[c], gen:1,
     age:0, alive:true,
-    stats:{health:ri(72,100),happiness:ri(70,95),smarts:ri(20,70),looks:ri(15,85),reputation:50,discipline:ri(20,60)},
+    stats:{health:ri(72,100)+((META.perks&&META.perks.goodstock)?6:0),happiness:ri(70,95),smarts:ri(20,70),looks:ri(15,85),reputation:50,discipline:ri(20,60)},
     skills:sk, habits:hb, traits:tr, birthTier:tier.id,
-    money:0, savings:0, debt:0, familyMoney:Math.round(ri(tier.money[0],tier.money[1])*mods.start),
+    money:0, savings:0, debt:0, familyMoney:Math.round(ri(tier.money[0],tier.money[1])*mods.start*((META.perks&&META.perks.bornlucky)?1.6:1)),
     crypto:{units:0,price:100}, property:null, properties:[], vehicles:[], businesses:[], assets:[], business:null,
     items:[], job:null, jobYears:0, careerLvl:null, edu:0, inSchool:false, followers:0, totalWorked:0,
-    lean, away, echoes:[], track:null, home:'parents', food:'basic', subs:{}, cards:[], autopay:null, arrears:0, pets:[], orientation:null, outTo:false, npcs:[], flags:{}, log:[], news:[], seen:{}, cd:{}, moreView:'stats', employer:null, boss:null, school:null, paper:null, slot:(opts.slot||1),
+    lean, away, echoes:[], goals:[], perksUsed:[], track:null, home:'parents', food:'basic', subs:{}, cards:[], autopay:null, arrears:0, pets:[], orientation:null, outTo:false, npcs:[], flags:{}, log:[], news:[], seen:{}, cd:{}, moreView:'stats', employer:null, boss:null, school:null, paper:null, slot:(opts.slot||1),
     jailLeft:0, yearsJailed:0, crimesCommitted:0, jobsHeld:0, firedCount:0,
     peakNet:0, peakIncome:0, marriedYears:0, childrenCount:0, donated:0, illness:null,
     banned:[], dependents:0, credsLost:false, actionsLeft:2, actLog:{}, logAll:false, conditions:[], record:[], credit:null, parole:0, perf:60, gpa:50, uniTier:null, disabled:false, loans:[],
@@ -3930,6 +4021,8 @@ function newGame(opts){
     if(sibs.length)logLine(`You have ${sibs.length===1?'an older sibling':sibs.length+' older siblings'}: ${sibs.map(n=>n.name.split(' ')[0]).join(', ')}.`); }
   logLine(`Traits: ${tr.map(traitName).join(', ')}.`);
   logLine(`Difficulty: ${dDef.n}${dId==='custom'?'':''} · Legacy Points ×${(dId==='custom'?customLP(mods):dDef.lp).toFixed(2)}`);
+  { const pool=GOAL_POOL.slice().sort(()=>R()-0.5);
+    S.goals=pool.slice(0,3).map(g=>({id:g.id,done:false})); }
   META.lives++; META.countriesPlayed[S.country]=true; saveMeta(); checkAch(true); save();
   if(S.bmonth===2&&S.bday===29&&!hasEgg('leapday'))setTimeout(()=>findEgg('leapday'),0);
   else if(S.midnightBorn&&!hasEgg('midnight'))setTimeout(()=>findEgg('midnight'),0);
@@ -4040,7 +4133,7 @@ function variant(x){ return tok(Array.isArray(x)?pick(x):x); }
 function logLine(t,kind){ S.log.push({a:S.age,t,k:kind||''}); if(S.log.length>500)S.log.shift(); }
 
 /* ---------------- effects ---------------- */
-let EFF_SCALE=1, ACT_BLOCKED=false, PREV_YEAR=null, CHOOSER=null, CONFIRM=null;
+let EFF_SCALE=1, EFF_LOG=null, ACT_BLOCKED=false, PREV_YEAR=null, CHOOSER=null, CONFIRM=null;
 /* Every pound in or out is recorded so the player can budget. */
 function ledger(kind,label,amount){
   if(!S)return;
@@ -4053,7 +4146,13 @@ function sc(v){ return (EFF_SCALE===1||v<=0)?v:Math.round(v*EFF_SCALE*10)/10; }
 function applyEff(e){
   if(!e) return [];
   const out=[];
-  DATA.statKeys.forEach(k=>{ if(e[k]!=null){ const d=sc(e[k]); S.stats[k]=clamp(S.stats[k]+d); out.push(`${DATA.statNames[k]} ${d>0?'+':''}${Math.round(d*10)/10}`);} });
+  DATA.statKeys.forEach(k=>{ if(e[k]!=null){
+    const d=sc(e[k]), before=S.stats[k];
+    S.stats[k]=clamp(before+d);
+    const real=Math.round((S.stats[k]-before)*10)/10;
+    if(real!==0)out.push(`${DATA.statNames[k]} ${real>0?'+':''}${real}`);
+    else if(d>0)out.push(`${DATA.statNames[k]} already at maximum`);
+  }});
   if(e.money){
     if(e.money<0 && S.age<18){
       /* a child's costs come out of the household, never their own pocket */
@@ -4067,7 +4166,14 @@ function applyEff(e){
     }
   }
   if(e.savings){ S.savings+=e.savings; out.push(`Savings +${money(e.savings)}`); }
-  if(e.skill) for(const k in e.skill){ if(S.skills[k]==null)S.skills[k]=0; const d=sc(e.skill[k]); S.skills[k]=clamp(S.skills[k]+d); out.push(`${DATA.skills[k].name} +${Math.round(d*10)/10}`); }
+  if(e.skill) for(const k in e.skill){
+    if(S.skills[k]==null)S.skills[k]=0;
+    let d=sc(e.skill[k]); if(META.perks&&META.perks.quicklearn&&d>0)d=d*1.25;
+    const before=S.skills[k]; S.skills[k]=clamp(before+d);
+    const real=Math.round((S.skills[k]-before)*10)/10;
+    if(real!==0)out.push(`${DATA.skills[k].name} ${real>0?'+':''}${real}`);
+    else if(d>0)out.push(`${DATA.skills[k].name} already at maximum`);
+  }
   if(e.habit) for(const k in e.habit){ let d=e.habit[k]; if(d>0)d=sc(d); if(d>0&&S.traits.includes('addictive'))d=Math.round(d*1.5); if(d>0)d=Math.round(d*M('habitGrip')); else d=Math.round(d/M('habitGrip')); S.habits[k]=clamp(S.habits[k]+d); out.push(`${DATA.habits[k].name} ${d>0?'+':''}${d}`); }
   if(e.rel) for(const who in e.rel){
     const d=e.rel[who];
@@ -4080,6 +4186,7 @@ function applyEff(e){
     if(t.length) out.push(`${who} ${d>0?'+':''}${d}`);
   }
   if(e.followers){ e.followers=Math.round(sc(e.followers)); S.followers+=e.followers; out.push(`+${e.followers.toLocaleString()} followers`); }
+  if(EFF_LOG)out.forEach(x=>EFF_LOG.push(x));
   return out;
 }
 
@@ -4128,7 +4235,7 @@ function ageUp(){
   clampMinorMoney(); settleState();
   eggTick();
   logLine(`— Age ${S.age} —`);
-  checkAch(); drain();
+  checkAch(); checkGoals(); drain();
 }
 function birthdayText(){
   const m={'Infant':['You are still very small. The world happens around you.','Everything is loud and enormous and mostly out of reach.'],
@@ -4349,7 +4456,7 @@ function tickFinance(){
     S.perf=clamp((S.perf==null?60:S.perf)+dp);
     const pb=perfBand(S.perf);
     out.push(`Performance review: ${pb.n} (${Math.round(S.perf)}/100).`);
-    if(pb.raise>0&&R()<0.6){ S.job.pay=Math.round(S.job.pay*(1+pb.raise)); out.push(`You were given a raise to ${money(S.job.pay)}.`); }
+    if(pb.raise>0&&R()<0.18){ S.job.pay=Math.round(S.job.pay*(1+pb.raise)); out.push(`Pay rise: you now earn ${money(S.job.pay)}.`); }
     if(pb.fire>0&&R()<pb.fire){ out.push(`You were dismissed from ${S.employer} for poor performance.`);
       logLine('Dismissed for poor performance.','bad'); S.job=null; S.firedCount++; S.perf=55; }
     S.skills.business=clamp(S.skills.business+1);
@@ -4493,6 +4600,7 @@ function tickAging(){
   if(S.traits.includes('frail'))d*=1.4;
   if(S.traits.includes('athletic'))d*=0.85;
   if(S.traits.includes('oldsoul'))d*=0.85;
+  if(META.perks&&META.perks.goodstock)d*=0.9;
   let cd=0; S.conditions.forEach(k=>{ const c=COND(k.id);
     cd += k.sev*(c&&c.fatal?0.30:0.16)*(k.treated?0.4:1); });
   d += Math.min(2.4, cd);        // several illnesses compound, but not without limit
@@ -4581,7 +4689,7 @@ function tickNPCs(notes){
     if(!n.alive)return;
     n.age++;
     npcLife(n,notes);
-    n.r=clamp(n.r-(S.traits.includes('kind')?0.4:S.traits.includes('hottemper')?1.6:1.0)*M('relDecay')*personality(n.pers).drift*(hasEcho('scarred')?1.4:hasEcho('steadied')?0.7:1));
+    n.r=clamp(n.r-(S.traits.includes('kind')?0.4:S.traits.includes('hottemper')?1.6:1.0)*M('relDecay')*((META.perks&&META.perks.wellmet)?0.7:1)*personality(n.pers).drift*(hasEcho('scarred')?1.4:hasEcho('steadied')?0.7:1));
     let p=0;
     if(n.age>60)p=0.01*(n.age-60);
     if(n.age>85)p+=0.05*(n.age-85);
@@ -5116,7 +5224,7 @@ function tryPromote(ret){
   if(S.traits.includes('ambitious'))ch+=0.12;
   ch*=M('promoOdds');
   if(R()<ch&&next){ setJob(next); S.counters.promotions++; out.push(`Promoted to ${next.t} on ${money(S.job.pay)}.`); S.stats.happiness=clamp(S.stats.happiness+8); }
-  else if(R()<0.4){ S.job.pay=Math.round(S.job.pay*1.05); out.push(`No promotion, but a 5% raise: ${money(S.job.pay)}.`); }
+  else if(R()<0.15){ S.job.pay=Math.round(S.job.pay*1.05); out.push(`No promotion, but a 5% raise: ${money(S.job.pay)}.`); }
   else { out.push('You were passed over.'); S.stats.happiness=clamp(S.stats.happiness-4); }
   if(ret)return out;
   popupOK('Promotion',out.join('\n')); return out;
@@ -5160,7 +5268,7 @@ function doCrime(id,ret){
     logLine(`${cr.n}: caught.`,'bad');
   }
   clampMinorMoney(); settleState();
-  checkAch();
+  checkAch(); checkGoals();
   if(ret)return out;
   popupOK(cr.n,out.join('\n')); return out;
 }
@@ -5192,6 +5300,19 @@ function checkAch(silent){
   });
   saveMeta();
   if(!silent&&PENDING_ACH.length){ const l=PENDING_ACH.slice(); PENDING_ACH=[]; l.forEach(a=>push({type:'ACH',ach:a})); }
+}
+function checkGoals(){
+  if(!S||!S.goals)return;
+  S.goals.forEach(g=>{
+    if(g.done)return;
+    const def=GOAL_POOL.find(x=>x.id===g.id); if(!def)return;
+    let ok=false; try{ ok=!!def.test(S); }catch(e){}
+    if(ok){ g.done=true; const lp=Math.round(def.lp*lpMult());
+      META.lp+=lp; saveMeta();
+      logLine(`Goal met: ${def.n} (+${lp} LP)`,'good');
+      push({type:'GOAL',n:def.n,lp:lp});
+    }
+  });
 }
 function checkChallenges(){ checkAch(); }
 function finalChallenges(){
@@ -5266,7 +5387,7 @@ function secondChance(){
 }
 function continueAs(kind){
   const heir=anyOf(kind)[0];
-  const inh=kind==='child'?Math.max(0,Math.round(netWorth()*0.7)):0;
+  const inh=kind==='child'?Math.max(0,Math.round(netWorth()*((META.perks&&META.perks.inheritance)?0.9:0.7))):0;
   const gen=S.gen+1, sur=S.surname, cty=S.country;
   newGame({gender:heir.gender,country:cty,name:heir.name});
   S.gen=gen; S.surname=sur; S.money=inh; S.flags.heir=true;
@@ -5277,7 +5398,12 @@ function continueAs(kind){
 function toTitle(){ document.getElementById('modal').className='modal'; document.getElementById('app').dataset.screen='title'; renderTitle(); }
 
 /* ---------------- popups ---------------- */
-function popupOK(t,x){ push({type:'C',title:t,text:x,res:[]}); drain(); }
+function popupOK(t,x,res){
+  /* if an action is running, show exactly what it changed */
+  const lines = res || (EFF_LOG&&EFF_LOG.length ? EFF_LOG.slice() : []);
+  if(EFF_LOG)EFF_LOG.length=0;
+  push({type:'C',title:t,text:x,res:lines}); drain();
+}
 function confirmDo(t,x,fn){ push({type:'D',title:t,text:x,yes:fn}); drain(); }
 function showPopup(p){
   const el=document.getElementById('modal'); el.className='modal show';
@@ -5330,17 +5456,19 @@ function showPopup(p){
       <div class="choices"><button class="choice ok" onclick="closePopup()"><span>Put it away</span><i>\u203a</i></button></div></div>`;
   } else if(p.type==='YEAR'){
     /* sort the year's news into things that mean different kinds of thing */
+    const order=['Money','Work','Health','People','World','Other'];
     const buckets={ Money:[], Health:[], People:[], Work:[], World:[], Other:[] };
+    const known=S.npcs.map(x=>x.name).concat(S.npcs.map(x=>x.name.split(' ')[0]));
     (p.notes||[]).forEach(n=>{
-      if(/paper|NEWS|Times|Herald|Daily/i.test(n)) buckets.World.push(n);
-      else if(/\$|cost|paid|earned|debt|pension|allowance|income|sold|bought|rent|mortgage|loan|credit/i.test(n)) buckets.Money.push(n);
-      else if(/health|ill|diagnos|condition|recover|injur|disabled|worse|screening/i.test(n)) buckets.Health.push(n);
-      else if(/died|born|married|baby|friend|partner|separated|moved to|arrested|retired|promoted to .* at|joined your team/i.test(n)) buckets.People.push(n);
-      else if(/job|work|review|promot|dismiss|sacked|employ|rank|risen/i.test(n)) buckets.Work.push(n);
+      if(/Herald|Times|Daily|NEWS/i.test(n)) buckets.World.push(n);
+      else if(/review|promot|dismiss|sacked|pay rise|raise|risen to|retired|job as|standing at work|commendation|deployed/i.test(n)) buckets.Work.push(n);
+      else if(/diagnos|condition|recover|injur|disabled|worsened|screening|health|unwell|died at \d+\.$/i.test(n)&&!known.some(k=>n.indexOf(k)===0)) buckets.Health.push(n);
+      else if(known.some(k=>k&&n.indexOf(k)===0)||/your (mother|father|sibling|child|partner|friend)/i.test(n)) buckets.People.push(n);
+      else if(/\$|cost|paid|earned|debt|pension|allowance|income|sold|bought|rent|mortgage|loan|credit|arrears|bills|profit|losses|upkeep/i.test(n)) buckets.Money.push(n);
       else buckets.Other.push(n);
     });
     const ic={Money:'\u25C6',Health:'\u2665',People:'\u263A',Work:'\u25B2',World:'\u2691',Other:'\u2022'};
-    const sections=Object.keys(buckets).filter(k=>buckets[k].length).map(k=>
+    const sections=order.filter(k=>buckets[k].length).map(k=>
       `<div class="ysec"><div class="ylabel">${ic[k]} ${k}</div>
         ${buckets[k].map(n=>`<div class="yline">${esc(n)}</div>`).join('')}</div>`).join('');
     const inc=ledgerTotal('income'), sp=ledgerTotal('spend');
@@ -5358,6 +5486,11 @@ function showPopup(p){
       <div class="choices">${p.options.map((o,i)=>
         `<button class="choice" onclick="pickFrom(${i})"><span>${esc(o[0])}</span><i>\u203a</i></button>`).join('')}
         <button class="choice" onclick="closePopup()"><span>Not now</span><i>\u203a</i></button></div></div>`;
+  } else if(p.type==='GOAL'){
+    el.innerHTML=`<div class="sheet eggsheet"><div class="phead"><span class="ptag">Goal met</span></div>
+      <div class="ph">${esc(p.n)}</div>
+      <div class="achmeta">+${p.lp} Legacy Points</div>
+      <div class="choices"><button class="choice ok" onclick="closePopup()"><span>Good</span><i>\u203a</i></button></div></div>`;
   } else if(p.type==='PLUS'){
     el.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">Bequest Plus</span></div>
       <div class="ph">${esc(p.what||'A Plus feature')}</div>
@@ -5930,7 +6063,10 @@ function doAct(id){
   }
   ACT_BLOCKED=false;
   EFF_SCALE=diminish(id);
+  EFF_LOG=[];
+  const qBefore=QUEUE.length;
   try{ a.f(); } finally { EFF_SCALE=1; }
+  EFF_LOG=null;
   /* only spend an action if something actually happened */
   const blocked=ACT_BLOCKED; ACT_BLOCKED=false;
   clampMinorMoney(); settleState();
@@ -5956,6 +6092,7 @@ function bar(n,v,ic){ v=Math.round(v);
 function actionsPerYear(){
   let n = S.age<6?3 : S.age<13?4 : S.age<18?5 : S.age<65?6 : 4;
   if(S.stats.discipline>=75)n++;                 // disciplined people fit more in
+  if(META.perks&&META.perks.extraaction)n++;
   if(S.stats.health<30)n=Math.max(1,n-2);        // illness eats your year
   if(S.jailLeft>0)n=2;
   if(S.disabled)n=Math.max(1,n-1);
@@ -6412,8 +6549,16 @@ function setFood(id){ S.food=id; popupOK('Shopping',`You now ${FOODTIER(id).n.to
 function toggleSub(id){
   S.subs=S.subs||{};
   const sub=SUB(id);
-  if(S.subs[id]){ S.subs[id]=false; popupOK('Cancelled',`${sub.n} cancelled.`); }
-  else { S.subs[id]=true; popupOK('Started',`${sub.n} \u2014 about ${money(Math.round(sub.cost*country().col))} a year.`); }
+  if(S.subs[id]){
+    S.subs[id]=false;
+    let extra='';
+    if(id==='utilities'){ S.flags.noUtilities=true; extra=' The heating goes off and the house gets cold.'; }
+    if(id==='healthins')extra=' Medical bills will now cost you full price.';
+    if(id==='homemaint')extra=' Your property will fall apart faster.';
+    popupOK('Cancelled',`${sub.n} cancelled, saving ${money(Math.round(sub.cost*country().col))} a year.${extra}`);
+  }
+  else { S.subs[id]=true; if(id==='utilities')S.flags.noUtilities=false;
+    popupOK('Started',`${sub.n} \u2014 about ${money(Math.round(sub.cost*country().col))} a year.`); }
   save(); renderAll();
 }
 function toggleAutopay(){
@@ -6458,8 +6603,17 @@ function moneyLiving(){
   if(S.age<18)return '<div class="card"><div class="muted">You live with your family. This opens at 18.</div></div>';
   const c=country(), h=HOME(S.home), f=FOODTIER(S.food), people=householdSize(S);
   const items=billsFor(), total=items.reduce((n,x)=>n+x.a,0);
+  const income=(S.job?Math.round(S.job.pay*0.77):Math.round(6500*c.col))
+    + (S.businesses||[]).length*0 ;
+  const gap=income-total;
   return `<div class="card"><div class="ctrow"><div class="ct">Your commitments</div>
       <div class="hsub dim">${money(total)}/yr</div></div>
+    <div class="budgetbar">
+      <div><div class="hlbl">Coming in</div><div class="bgood">${money(income)}</div></div>
+      <div><div class="hlbl">Committed</div><div class="bbad">${money(total)}</div></div>
+      <div><div class="hlbl">Left over</div><div class="${gap>=0?'bgood':'bbad'}">${money(gap)}</div></div>
+    </div>
+    ${gap<0?`<div class="hardnote" style="color:var(--r)">You are committed to ${money(-gap)} more than you earn. Cut something, or find better work.</div>`:''}
     ${items.map(x=>`<div class="lrow"><span>${esc(x.l)}</span><b>${money(x.a)}</b></div>`).join('')}
     <div class="kv mt"><span>Household</span><b>${people} ${people===1?'person':'people'} \u00b7 ${h.space} space${h.space===1?'':'s'}</b></div>
     ${S.billsDue>0?`<div class="hardnote">${money(S.billsDue)} due now</div>
@@ -6760,9 +6914,9 @@ function gotoGroup(g){
 function setMore(v){ S.moreView=v; renderTab('more'); }
 function viewMore(){
   const v=S.moreView||'stats';
-  const seg=`<div class="seg">${[['stats','Stats'],['ach','Awards'],['chal','Goals'],['rec','Records'],['save','Saves'],['plus','Plus']]
+  const seg=`<div class="seg">${[['stats','Stats'],['ach','Awards'],['goals','Goals'],['rec','Records'],['save','Saves'],['shop','Shop']]
     .map(([k,l])=>`<button class="${v===k?'on':''}" onclick="setMore('${k}')">${l}</button>`).join('')}</div>`;
-  return seg+({ach:viewAch,chal:viewChal,rec:viewRec,save:viewSaves,plus:viewPlus}[v]||viewStats)();
+  return seg+({ach:viewAch,chal:viewChal,goals:viewGoals,rec:viewRec,save:viewSaves,shop:viewShop,plus:viewShop}[v]||viewStats)();
 }
 function viewAch(){
   const un=Object.keys(META.ach).length, tot=ACHIEVEMENTS.length;
@@ -6799,6 +6953,67 @@ function viewRec(){
      ['Challenges',Object.keys(META.done).length+' / '+CHALLENGES.length],
      ['Countries lived in',Object.keys(META.countriesPlayed).length+' / '+DATA.countries.length]]
     .map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('')}</div>`;
+}
+function buyPerk(id){
+  const p=PERK(id); if(!p)return;
+  if(p.kind==='forever'&&META.perks[id])return popupOK('Already yours','You own that permanently.');
+  if(p.kind==='life'&&(S.perksUsed||[]).includes(id))return popupOK('Already used','You have used that this life.');
+  if(META.lp<p.cost)return popupOK('Not enough Legacy Points',
+    `${p.n} costs ${p.cost} LP. You have ${META.lp}.`);
+  confirmDo(p.n,`${p.d}\n\nThis costs ${p.cost} Legacy Points. You have ${META.lp}.`,()=>{
+    META.lp-=p.cost;
+    if(p.kind==='forever'){ META.perks[id]=true; saveMeta();
+      popupOK(p.n,'Bought. It applies to this life and every life after it.'); renderAll(); return; }
+    saveMeta();
+    S.perksUsed=S.perksUsed||[]; S.perksUsed.push(id);
+    if(id==='windfall'){ S.money+=25000; ledger('earn','A stroke of luck',25000); popupOK(p.n,'$25,000 arrived.'); }
+    if(id==='secondwind'){ S.stats.health=Math.max(85,S.stats.health);
+      if(S.conditions.length)S.conditions.shift();
+      popupOK(p.n,'You feel like yourself again.'); }
+    if(id==='headstart'){ chooseFrom('Which skill?',Object.keys(DATA.skills).map(k=>[DATA.skills[k].name,'',k]),
+      (name,k)=>{ S.skills[k]=Math.max(50,S.skills[k]||0); popupOK(name,`You already know your way around. ${name} 50.`); }); }
+    if(id==='cleanslate'){ S.record.forEach(r=>r.spent=true); popupOK(p.n,'Your record is spent.'); }
+    if(id==='goodyear'){ S.charmedUntil=S.age+5; popupOK(p.n,'Things will go your way for a while.'); }
+    if(id==='reputation'){ S.stats.reputation=Math.max(75,S.stats.reputation); popupOK(p.n,'People speak well of you.'); }
+    if(id==='debtwipe'){ S.arrears=0; (S.cards||[]).forEach(c=>c.bal=0); popupOK(p.n,'Settled.'); }
+    save(); renderAll();
+  });
+}
+function viewShop(){
+  const lifePerks=PERKS.filter(p=>p.kind==='life'), forever=PERKS.filter(p=>p.kind==='forever');
+  return `<div class="card plushero ${isPlus()?'on':''}">
+      <div class="ct">Legacy Points</div>
+      <div class="ph">${META.lp.toLocaleString()} LP</div>
+      <div class="pb">Earned by achievements, challenges and goals. Spend them on advantages
+        for this life, or on permanent ones that apply to every life you play from now on.</div>
+    </div>
+    <div class="card"><div class="ct">This life only</div>
+      <div class="hsub dim mb">Used once, on the character you are playing now.</div>
+      ${lifePerks.map(p=>{const used=(S.perksUsed||[]).includes(p.id), can=META.lp>=p.cost;
+        return `<button class="row ${used?'locked':''}" ${used?'':`onclick="buyPerk('${p.id}')"`}>
+          <div><div class="rn">${esc(p.n)}${used?' <span class="owned">used</span>':''}</div>
+          <div class="hsub dim">${esc(p.d)}</div></div>
+          <i class="price ${can?'':'dim2'}">${p.cost} LP</i></button>`;}).join('')}
+    </div>
+    <div class="card"><div class="ct">Every life from now on</div>
+      <div class="hsub dim mb">Bought once, kept for ever.</div>
+      ${forever.map(p=>{const own=!!META.perks[p.id], can=META.lp>=p.cost;
+        return `<button class="row ${own?'locked':''}" ${own?'':`onclick="buyPerk('${p.id}')"`}>
+          <div><div class="rn">${esc(p.n)}${own?' <span class="owned">owned</span>':''}</div>
+          <div class="hsub dim">${esc(p.d)}</div></div>
+          <i class="price ${can||own?'':'dim2'}">${own?'\u2713':p.cost+' LP'}</i></button>`;}).join('')}
+    </div>
+    ${viewPlus()}`;
+}
+function viewGoals(){
+  const gs=(S.goals||[]).map(g=>({g,def:GOAL_POOL.find(x=>x.id===g.id)})).filter(x=>x.def);
+  return `<div class="card"><div class="ct">This life\u2019s goals</div>
+    <div class="hsub dim mb">Three drawn when you were born. New ones every life.</div>
+    ${gs.map(({g,def})=>`<div class="chal ${g.done?'done':''}">
+      <div class="npcline"><div><div class="rn">${g.done?'\u2713 ':''}${esc(def.n)}</div></div>
+        <span class="pts">${def.lp} LP</span></div></div>`).join('')}
+    <div class="hsub dim mt">Goals are per life. Achievements and challenges are permanent.</div>
+  </div>` + viewChal();
 }
 function viewPlus(){
   const on=isPlus();
@@ -6967,12 +7182,14 @@ let CREATE={name:'',gender:'',country:'',typed:false,diff:'normal',mods:null,sho
 function showCreate(){ app().dataset.screen='create'; renderCreate(); }
 function pctLabel(k,v){
   const kn=DIFF_KNOBS.find(x=>x.k===k);
+  if(kn.toggle) return v?'On':'Off';
   if(kn.add) return (v>=0?'+':'')+Math.round(v*100)+' pts';
   const d=Math.round((v-1)*100);
   return d===0?'baseline':(d>0?'+':'')+d+'%';
 }
 function knobTone(k,v){
   const kn=DIFF_KNOBS.find(x=>x.k===k);
+  if(kn.toggle) return v?'kind':'tough';
   let harder = kn.add ? v<0 : (kn.dir==='up_harder' ? v>1 : v<1);
   let easier = kn.add ? v>0 : (kn.dir==='up_harder' ? v<1 : v>1);
   return harder?'tough':easier?'kind':'';
@@ -7038,7 +7255,12 @@ function renderCustomSliders(m){
   return `<div class="sliders">
     <div class="srow-head">Presets as a starting point:
       ${['easy','normal','hard','brutal'].map(x=>`<button class="tiny" onclick="resetKnobs('${x}')">${diffDef(x).n}</button>`).join('')}</div>
-    ${DIFF_KNOBS.map(kn=>`<div class="srow">
+    ${DIFF_KNOBS.map(kn=>kn.toggle
+      ? `<div class="srow"><div class="slabel"><span>${kn.n}</span>
+           <b class="${m[kn.k]?'kind':'tough'}">${m[kn.k]?'On':'Off'}</b></div>
+         <button class="btn wide" onclick="setKnob('${kn.k}',${m[kn.k]?0:1})">${m[kn.k]?'Turn off':'Turn on'}</button>
+         <div class="sdesc">${esc(kn.d)}</div></div>`
+      : `<div class="srow">
       <div class="slabel"><span>${kn.n}</span><b class="${knobTone(kn.k,m[kn.k])}">${pctLabel(kn.k,m[kn.k])}</b></div>
       <input type="range" min="${kn.min}" max="${kn.max}" step="${kn.add?0.01:0.05}" value="${m[kn.k]}"
         oninput="setKnob('${kn.k}',this.value)">

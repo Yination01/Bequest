@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','avatar.js','easter.js','achievements.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','avatar.js','easter.js','achievements.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,PERKS,PERK,GOAL_POOL,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1410,6 +1410,117 @@ t('a relevant degree helps you get hired', () => {
   }
   const a=rel.filter(Boolean).length, b=irr.filter(Boolean).length;
   return a>=b ? true : `relevant ${a} vs irrelevant ${b}`;
+});
+
+/* ================= 4m. SHOP, GOALS AND THE TUNING FIXES ================= */
+section('4m. Shop, goals and reported balance');
+
+t('every perk is well formed', () => {
+  const bad = G.PERKS.filter(p => !p.n || !p.d || !p.cost || !['life','forever'].includes(p.kind));
+  return bad.length ? bad.map(p=>p.id).join(', ') : true;
+});
+t('perks cost Legacy Points and cannot be bought twice', () => {
+  atAge(30); G.META.lp = 5000; G.META.perks = {}; G.S.perksUsed = [];
+  G.AUTOCONFIRM = true;
+  G.buyPerk('windfall');
+  const spent = G.META.lp < 5000;
+  G.buyPerk('windfall');
+  const twice = (G.S.perksUsed||[]).filter(x=>x==='windfall').length;
+  G.buyPerk('extraaction');
+  const forever = !!G.META.perks.extraaction;
+  G.AUTOCONFIRM = null;
+  G.META.perks = {};
+  return (spent && twice === 1 && forever) ? true : `spent:${spent} used:${twice} forever:${forever}`;
+});
+t('a permanent perk changes future lives', () => {
+  G.META.perks = {};
+  atAge(30); const before = G.actionsPerYear();
+  G.META.perks = { extraaction:true };
+  atAge(30); const after = G.actionsPerYear();
+  G.META.perks = {};
+  return after > before ? true : `${before} -> ${after}`;
+});
+t('every life gets three goals, and they vary', () => {
+  const seen = new Set(); let counts = new Set();
+  for (let i=0;i<30;i++){ G.newGame({});
+    counts.add((G.S.goals||[]).length);
+    (G.S.goals||[]).forEach(g => seen.add(g.id)); }
+  if (![...counts].every(c => c === 3)) return 'goal count varies: ' + [...counts].join(',');
+  return seen.size >= 10 ? true : 'only ' + seen.size + ' distinct goals ever drawn';
+});
+t('every goal can be evaluated without error', () => {
+  atAge(40);
+  const bad = [];
+  G.GOAL_POOL.forEach(g => { try { g.test(G.S); } catch(e) { bad.push(g.id+': '+e.message); } });
+  return bad.length ? bad.join(' | ') : true;
+});
+t('meeting a goal awards Legacy Points', () => {
+  atAge(40); G.META.lp = 0;
+  G.S.goals = [{id:'g_parent',done:false}];
+  G.S.childrenCount = 2;
+  G.checkGoals();
+  return (G.S.goals[0].done && G.META.lp > 0) ? true : 'goal did not pay out';
+});
+t('raises are no longer annual', () => {
+  let raises = 0, years = 0;
+  for (let i=0;i<25;i++){
+    atAge(25);
+    G.S.job = {id:'analyst',t:'Junior Analyst',pay:60000,field:'corp',lvl:1}; G.S.perf = 80;
+    let last = G.S.job.pay;
+    for (let y=0;y<20 && G.S.alive && G.S.job;y++){
+      G.ageUp(); years++;
+      if (G.S.job && G.S.job.pay > last) { raises++; last = G.S.job.pay; }
+    }
+  }
+  const every = years / Math.max(1,raises);
+  return every >= 3 ? true : `a raise every ${every.toFixed(1)} years`;
+});
+t('an action reports the numbers it actually applied', () => {
+  atAge(30);
+  G.S.actionsLeft = 9;
+  for (let i=0;i<4;i++) G.doAct('meditate');
+  G.S.actionsLeft = 9;
+  G.S.stats.happiness = 50;       // leave room, or the honest answer is 'already at maximum'
+  const before = G.S.stats.happiness;
+  G.doAct('meditate');
+  const realGain = G.S.stats.happiness - before;
+  const pop = G.LASTPOP;
+  if (!pop || !pop.res || !pop.res.length) return 'no effect list was attached to the popup';
+  const shown = pop.res.join(' ');
+  const m = shown.match(/Happiness \+([\d.]+)/);
+  if (!m) return 'happiness not reported: ' + shown;
+  // the point of the test: the number shown must be the number applied,
+  // after diminishing returns and after clamping
+  return Math.abs(parseFloat(m[1]) - realGain) < 0.6 ? true
+    : `reported +${m[1]} but applied +${realGain.toFixed(1)}`;
+});
+t('rare events are rare in a first life', () => {
+  let total = 0;
+  for (let i=0;i<25;i++){
+    Object.keys(G.META.eggs).forEach(k => delete G.META.eggs[k]);
+    G.newGame({}); let g=0;
+    while (G.S.alive && g++<130) G.ageUp();
+    total += (G.S.eggsThisLife||[]).length;
+  }
+  const per = total/25;
+  return per <= 1.0 ? true : per.toFixed(2) + ' rare events per first life';
+});
+t('auto-pay is explicit on custom difficulty', () => {
+  const knob = G.DIFF_KNOBS.find(k => k.k === 'autopay');
+  if (!knob) return 'no autopay knob';
+  atAge(30);
+  G.S.diff = 'custom'; G.S.mods = Object.assign({}, G.DIFFICULTIES.find(d=>d.id==='normal').m, {autopay:1});
+  const on = G.autopayAllowed();
+  G.S.mods.autopay = 0;
+  const off = G.autopayAllowed();
+  return (on && !off) ? true : `on:${on} off:${off}`;
+});
+t('utilities can be cancelled to save money', () => {
+  atAge(30); G.S.subs = {utilities:true};
+  const withU = G.billsFor().reduce((n,x)=>n+x.a,0);
+  G.toggleSub('utilities');
+  const without = G.billsFor().reduce((n,x)=>n+x.a,0);
+  return (without < withU && G.S.flags.noUtilities) ? true : `${withU} -> ${without}`;
 });
 
 /* ================= 5. SIMULATION STABILITY ================= */

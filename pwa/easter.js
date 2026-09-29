@@ -5,7 +5,8 @@
      myth    ~1 in 500 lives almost nobody sees these
    Every egg found is recorded permanently in META.eggs.                     */
 
-const EGG_TIERS = { wink:0.12, rare:0.017, myth:0.002 };
+/* tuned so a first life sees roughly one, not three */
+const EGG_TIERS = { wink:0.030, rare:0.0055, myth:0.0008 };
 
 const EGGS = [
   /* ---------- WINKS ---------- */
