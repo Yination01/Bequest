@@ -924,8 +924,14 @@ t('prison replaces your year with prison activities', () => {
   return outside.length === 0 ? true : 'outside activities still offered: ' + outside.map(a=>a.id).join(',');
 });
 t('a criminal record makes adoption much harder', () => {
-  G.newGame({}); ageTo(34);
+  // the subject must be alive, of age, and NOT in prison - prison replaces the
+  // entire activity list, so adoption would be absent for reasons unrelated to
+  // the criminal record we are actually measuring
+  let tries = 0;
+  do { G.newGame({}); ageTo(34); tries++; } while ((!G.S.alive || G.S.jailLeft > 0) && tries < 40);
   if (!G.S.alive) return true;
+  G.S.jailLeft = 0;
+  if (!G.ACTS().some(x => x.id === 'adopt')) return 'adoption was not offered to an eligible adult';
   const clean = [], dirty = [];
   for (let i=0;i<120;i++){
     G.S.record = []; G.S.money = 500000; G.S.actionsLeft = 5;
@@ -943,6 +949,7 @@ t('a criminal record makes adoption much harder', () => {
     G.S.npcs.forEach(n => { if (n.rel === 'child') n.rel = 'friend'; });
   }
   const rc = clean.filter(Boolean).length, rd = dirty.filter(Boolean).length;
+  if (rc === 0 && rd === 0) return 'adoption never succeeded in either arm';
   return rc > rd ? true : `clean ${rc} vs record ${rd}`;
 });
 
