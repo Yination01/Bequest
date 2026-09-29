@@ -53,6 +53,12 @@ jobs:
       - name: Create the Android project
         run: npx cap add android || npx cap sync android
 
+      - name: Target Android 8.0 and up
+        run: |
+          # adaptive icons and modern notifications need API 26
+          sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 26/' android/variables.gradle || true
+          grep -n "minSdkVersion" android/variables.gradle || true
+
       - name: Generate launcher icons and splash from resources/
         run: npm run icons || echo "asset generation skipped"
 

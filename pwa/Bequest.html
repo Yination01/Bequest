@@ -3883,8 +3883,9 @@ function loadMeta(){
   m.premium=m.premium||{plus:false,lifetime:false,since:null};
   m.adsSeen=m.adsSeen||0;
   m.eggs=m.eggs||{}; m.deathAges=m.deathAges||[]; m.taps=m.taps||0; m.perks=m.perks||{};
-  /* the prototype ships with Plus switched on so everything is testable */
-  if(m.premium.protoUnlocked===undefined){ m.premium.protoUnlocked=true; m.premium.plus=true; }
+  /* Ships locked, so the free tier is what you actually experience.
+     The prototype toggle on the Shop page turns it on for testing. */
+  if(m.premium.protoUnlocked===undefined){ m.premium.protoUnlocked=true; m.premium.plus=false; }
   return m;
 }
 function saveMeta(){ try{localStorage.setItem(META_KEY,JSON.stringify(META));}catch(e){} }

@@ -75,6 +75,8 @@ APK will not install over an earlier one — you would have to uninstall first.
 | Launcher icon | generated from `resources/icon.png` (the amber dot) |
 | Adaptive icon | `resources/icon-foreground.png` on `#080c16` |
 | Splash | `resources/splash.png` |
+| Minimum Android | 8.0 (API 26) |
+| Bequest Plus | ships locked; the Shop page has a prototype toggle |
 
 ### Release builds
 
