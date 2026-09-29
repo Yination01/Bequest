@@ -405,3 +405,4 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
   border-left:2px solid var(--am);padding:8px 0 8px 12px;margin:10px 0}
 .eggsheet.t-myth .eggtext{border-left-color:#c896ff}
 .award.egg{border-color:rgba(200,150,255,.5);color:#d7b3ff;background:rgba(200,150,255,.12)}
+.trackcard{background:linear-gradient(145deg,#1e2338,#141a2b)}

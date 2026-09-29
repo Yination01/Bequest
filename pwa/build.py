@@ -11,6 +11,7 @@ events= (d/'events.js').read_text()
 ach   = (d/'achievements.js').read_text()
 diff  = (d/'difficulty.js').read_text()
 sysm  = (d/'systems.js').read_text()
+care  = (d/'careers.js').read_text()
 avat  = (d/'avatar.js').read_text()
 egg   = (d/'easter.js').read_text()
 game  = (d/'game.js').read_text()
@@ -73,6 +74,9 @@ html = f"""<!doctype html>
 </script>
 <script>
 {sysm}
+</script>
+<script>
+{care}
 </script>
 <script>
 {avat}

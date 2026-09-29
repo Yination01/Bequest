@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','avatar.js','easter.js','achievements.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','avatar.js','easter.js','achievements.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -36,7 +36,7 @@ module.exports={
   api:{ get S(){return S}, set S(v){S=v}, get META(){return META},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
@@ -68,6 +68,13 @@ const fresh = o => { G.newGame(o || {}); return G.S; };
 function ageTo(n){ let g=0; while(G.S.alive && G.S.age<n && g++<140) G.ageUp(); }
 /* Many tests are about ordinary life. Prison replaces the activity list and
    short-circuits jobLocked(), so those tests need a subject who is free. */
+/* Cheap subject for tests that only care about state, not history. */
+function atAge(age){
+  G.newGame({});
+  G.S.age = age; G.S.jailLeft = 0; G.S.alive = true;
+  G.S.stats.health = 80;
+  return true;
+}
 function freeAt(age){
   let tries = 0;
   do { G.newGame({}); ageTo(age); tries++; } while ((!G.S.alive || G.S.jailLeft > 0) && tries < 40);
@@ -305,19 +312,24 @@ t('a year has a limited number of actions', () => {
   const max = G.S.actionsLeft;
   let done = 0;
   for (let i=0;i<12;i++){ const L=G.ACTS(); const a=L.find(x=>x.id==='rest'); if(!a)break;
-    G.LASTPOP=null; G.doAct('rest'); if(G.S.actionsLeft>=0) done++; }
+    G.LASTPOP=null; G.doAct('rest'); done++; }
   return G.S.actionsLeft === 0 ? true : 'actions left ' + G.S.actionsLeft + ' of ' + max;
 });
 t('the action budget refills each year', () => {
   if(!freeAt(25)) return true;
-  while (G.S.actionsLeft>0) G.doAct('rest');
+  let guard=0;
+  while (G.S.actionsLeft>0 && guard++<12) { if(!G.ACTS().some(a=>a.id==='rest')) break; G.doAct('rest'); }
   G.ageUp();
   return G.S.actionsLeft > 0 ? true : 'still empty after ageing';
 });
 t('resting every year cannot max out happiness (the grind exploit)', () => {
   if(!freeAt(20)) return true;
   for (let y=0; y<35 && G.S.alive; y++){
-    while (G.S.actionsLeft>0) G.doAct('rest');
+    let guard=0;
+    while (G.S.actionsLeft>0 && guard++<12) {
+      if (!G.ACTS().some(a=>a.id==='rest')) break;   // e.g. in prison
+      G.doAct('rest');
+    }
     G.ageUp();
   }
   if (!G.S.alive) return true;
@@ -326,7 +338,10 @@ t('resting every year cannot max out happiness (the grind exploit)', () => {
 t('repeating one action visibly loses value', () => {
   if(!freeAt(25)) return true;
   const d1 = G.diminish('rest');
-  for (let i=0;i<4 && G.S.alive;i++){ if(G.S.actionsLeft<=0) G.ageUp(); if(G.S.alive) G.doAct('rest'); }
+  for (let i=0;i<4 && G.S.alive;i++){
+    if(G.S.actionsLeft<=0) G.ageUp();
+    if(G.S.alive && G.ACTS().some(a=>a.id==='rest')) G.doAct('rest');
+  }
   const d5 = G.diminish('rest');
   return (d1 === 1 && d5 < 0.6) ? true : `first ${d1}, fifth ${d5}`;
 });
@@ -502,7 +517,8 @@ t('the school card button targets a group that exists', () => {
 });
 t('the activities dice cannot beat the action limit', () => {
   if(!freeAt(25)) return true;
-  while (G.S.actionsLeft > 0) G.doAct('rest');
+  let g1=0; while (G.S.actionsLeft > 0 && g1++<12) { if(!G.ACTS().some(a=>a.id==='rest')) break; G.doAct('rest'); }
+  G.S.actionsLeft = 0;
   const h0 = G.S.stats.happiness, hp0 = G.S.stats.health;
   for (let i=0;i<8;i++) G.randomAct();
   return (G.S.stats.happiness === h0 && G.S.stats.health === hp0)
@@ -510,7 +526,8 @@ t('the activities dice cannot beat the action limit', () => {
 });
 t('the crime dice cannot beat the action limit', () => {
   if(!freeAt(25)) return true;
-  while (G.S.actionsLeft > 0) G.doAct('rest');
+  let g2=0; while (G.S.actionsLeft > 0 && g2++<12) { if(!G.ACTS().some(a=>a.id==='rest')) break; G.doAct('rest'); }
+  G.S.actionsLeft = 0;
   const c0 = G.S.crimesCommitted;
   for (let i=0;i<8;i++) G.randomCrime();
   return G.S.crimesCommitted === c0 ? true : 'committed crimes with no actions left';
@@ -953,6 +970,91 @@ t('a criminal record makes adoption much harder', () => {
   const rc = clean.filter(Boolean).length, rd = dirty.filter(Boolean).length;
   if (rc === 0 && rd === 0) return 'adoption never succeeded in either arm';
   return rc > rd ? true : `clean ${rc} vs record ${rd}`;
+});
+
+/* ================= 4h. SPECIAL CAREER PATHS ================= */
+section('4h. Special paths');
+
+t('every track is well formed', () => {
+  const bad = [];
+  G.TRACKS.forEach(d => {
+    if (!d.n || !d.ranks || d.ranks.length < 3) bad.push(d.id + ' ranks');
+    if (typeof d.yearly !== 'function') bad.push(d.id + ' yearly');
+    if (!d.actions || !d.actions.length) bad.push(d.id + ' actions');
+    d.actions.forEach(a => { if (typeof a.run !== 'function' || !a.n) bad.push(d.id + '.' + a.id); });
+    let need = -1;
+    d.ranks.forEach(r => { if (r.need <= need) bad.push(d.id + ' rank order'); need = r.need; });
+  });
+  return bad.length ? [...new Set(bad)].join(', ') : true;
+});
+t('each joinable track can actually be joined', () => {
+  const unreachable = [];
+  G.TRACKS.filter(d => d.id !== 'royal').forEach(d => {
+    atAge(Math.min(Math.max(d.joinAge + 2, 24), 30));
+    G.S.track = null;
+    G.S.skills.combat = 60; G.S.skills.charisma = 70; G.S.stats.smarts = 70;
+    G.S.skills.gaming = 60; G.S.record = []; G.S.crimesCommitted = 3; G.S.flags.devout = true;
+    const act = G.ACTS().find(a => a.id === 'join_' + d.id);
+    if (!act) { unreachable.push(d.id + ' (never offered)'); return; }
+    G.AUTOCONFIRM = true; act.f(); G.AUTOCONFIRM = null;
+    if (!(G.S.track && G.S.track.id === d.id)) unreachable.push(d.id);
+  });
+  return unreachable.length ? 'cannot join: ' + unreachable.join(', ') : true;
+});
+t('every track action runs without error', () => {
+  const broken = [];
+  G.TRACKS.forEach(d => {
+    d.actions.forEach(a => {
+      atAge(30);
+      G.S.track = {id:d.id,rank:0,progress:0,heat:30,followers:500,standing:50,commend:0,rating:1400,years:3};
+      G.TRACK_RANK(G.S.track);
+      G.S.money = 2000000; G.S.actionsLeft = 5;
+      G.AUTOCONFIRM = true;
+      try { a.run(); } catch(e) { broken.push(d.id + '.' + a.id + ': ' + e.message); }
+      G.AUTOCONFIRM = null;
+    });
+  });
+  return broken.length ? broken.slice(0,4).join(' | ') : true;
+});
+t('ranks rise with progress and pay more', () => {
+  const bad = [];
+  G.TRACKS.forEach(d => {
+    const t2 = {id:d.id, rank:0, progress:0};
+    const low = G.TRACK_RANK(t2);
+    t2.progress = d.ranks[d.ranks.length-1].need;
+    const high = G.TRACK_RANK(t2);
+    if (t2.rank !== d.ranks.length-1) bad.push(d.id + ' did not reach the top rank');
+    if (high.pay <= low.pay && d.id !== 'circuit') bad.push(d.id + ' top rank pays no more');
+  });
+  return bad.length ? bad.join(', ') : true;
+});
+t('a track pays out over a year without crashing', () => {
+  const broken = [];
+  G.TRACKS.forEach(d => {
+    atAge(30);
+    G.S.track = {id:d.id,rank:0,progress:d.ranks[1].need,heat:40,followers:2000,
+                 standing:50,commend:1,rating:1500,years:5};
+    G.TRACK_RANK(G.S.track);
+    for (let y=0; y<6 && G.S.alive; y++){
+      try { G.ageUp(); } catch(e) { broken.push(d.id + ': ' + e.message); break; }
+    }
+  });
+  return broken.length ? broken.join(' | ') : true;
+});
+t('royalty cannot simply be joined', () => {
+  atAge(30);
+  G.S.track = null;
+  G.S.skills.charisma = 100; G.S.stats.reputation = 100;
+  const act = G.ACTS().find(a => a.id === 'join_royal');
+  return act ? 'royalty was offered as a choice' : true;
+});
+t('leaving a path really leaves it', () => {
+  atAge(30);
+  G.S.track = {id:'mob',rank:1,progress:8,heat:20,followers:0,standing:0,commend:0,rating:0,years:4};
+  const act = G.ACTS().find(a => a.id === 'tr_leave_mob');
+  if (!act) return 'no way to leave';
+  G.AUTOCONFIRM = true; act.f(); G.AUTOCONFIRM = null;
+  return G.S.track === null ? true : 'still in the organisation';
 });
 
 /* ================= 5. SIMULATION STABILITY ================= */

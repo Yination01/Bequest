@@ -97,7 +97,7 @@ function migrate(){
   if(!S.slot)S.slot=1;
   if(!S.assets)S.assets=[];
   if(!S.countriesLived)S.countriesLived=[S.country];
-  if(!S.cd)S.cd={}; if(!S.echoes)S.echoes=[]; if(!S.pets)S.pets=[]; if(!S.orientation)S.orientation='straight'; if(!S.banned)S.banned=[]; if(S.dependents==null)S.dependents=0;
+  if(!S.cd)S.cd={}; if(!S.echoes)S.echoes=[]; if(!S.pets)S.pets=[]; if(S.track===undefined)S.track=null; if(!S.orientation)S.orientation='straight'; if(!S.banned)S.banned=[]; if(S.dependents==null)S.dependents=0;
   if(!S.lean){const T=['i','c','t','y','a','o','s','w','m','r','h','x','f','b'].sort(()=>R()-0.5);S.lean=T.slice(0,4);S.away=T.slice(4,7);}
   if(!S.conditions)S.conditions=[]; if(!S.record)S.record=[]; if(!S.loans)S.loans=[];
   if(S.actionsLeft==null)S.actionsLeft=3; if(!S.actLog)S.actLog={}; if(S.perf==null)S.perf=60; if(S.gpa==null)S.gpa=50; if(S.parole==null)S.parole=0;
@@ -266,7 +266,7 @@ function newGame(opts){
     money:0, savings:0, debt:0, familyMoney:Math.round(ri(tier.money[0],tier.money[1])*mods.start),
     crypto:{units:0,price:100}, property:null, assets:[], business:null,
     items:[], job:null, jobYears:0, careerLvl:null, edu:0, inSchool:false, followers:0, totalWorked:0,
-    lean, away, echoes:[], pets:[], orientation:null, outTo:false, npcs:[], flags:{}, log:[], news:[], seen:{}, cd:{}, moreView:'stats', employer:null, boss:null, school:null, paper:null, slot:(opts.slot||1),
+    lean, away, echoes:[], track:null, pets:[], orientation:null, outTo:false, npcs:[], flags:{}, log:[], news:[], seen:{}, cd:{}, moreView:'stats', employer:null, boss:null, school:null, paper:null, slot:(opts.slot||1),
     jailLeft:0, yearsJailed:0, crimesCommitted:0, jobsHeld:0, firedCount:0,
     peakNet:0, peakIncome:0, marriedYears:0, childrenCount:0, donated:0, illness:null,
     banned:[], dependents:0, credsLost:false, actionsLeft:2, actLog:{}, logAll:false, conditions:[], record:[], credit:null, parole:0, perf:60, gpa:50, uniTier:null, disabled:false, loans:[],
@@ -286,6 +286,10 @@ function newGame(opts){
   S.bmonth=ri(1,12); S.bday=ri(1,28);
   if(R()<0.0007){ S.bmonth=2; S.bday=29; }
   if(R()<0.004){ S.bmonth=1; S.bday=1; S.midnightBorn=true; }
+  if(tier.id===4&&R()<0.10){
+    S.track={id:'royal',rank:0,progress:ri(0,6),heat:0,followers:0,standing:50,commend:0,rating:0,years:0};
+    logLine('You were born into the royal house.','good');
+  }
   S.school=schoolFor(reg); S.paper=paperFor(reg);
   /* a trait unlocked by an earlier discovery can be born into */
   unlockedTraits().forEach(t=>{ if(R()<0.25&&S.traits.indexOf(t)<0)S.traits.push(t); });
@@ -475,7 +479,7 @@ function ageUp(){
   notes.push(...tickFinance());
   notes.push(...tickConditions());
   notes.push(...tickAging());
-  tickNPCs(notes); tickPets(notes); tickSchool(notes); tickNews(notes);
+  tickNPCs(notes); tickPets(notes); tickTrack(notes); tickSchool(notes); tickNews(notes);
   if(notes.length) push({type:'B',title:'This Year',text:notes.join('\n')});
   const n = S.jailLeft>0?0:(R()<0.3?2:1)+(R()<0.15?1:0);
   pickEvents(n).forEach(ev=>push({type:'A',ev,text:variant(ev.x)}));
@@ -745,6 +749,21 @@ function npcLife(n,notes){
   if(arc==='rising'&&a>30&&R()<0.03){ tell(`${n.name} has done very well for themselves.`); }
   if(a>45&&R()<0.03){ tell(`${n.name} has not been well lately.`); }
   if(a>=60&&a<70&&!o.retired&&R()<0.2){ o.retired=true; tell(`${n.name} retired.`); }
+}
+function tickTrack(notes){
+  if(!S.track||S.jailLeft>0)return;
+  const def=TRACK(S.track.id); if(!def)return;
+  S.track.years=(S.track.years||0)+1;
+  const before=S.track.rank;
+  TRACK_RANK(S.track);
+  try{ def.yearly(notes); }catch(e){}
+  TRACK_RANK(S.track);
+  if(S.track.rank>before){
+    const r=def.ranks[S.track.rank];
+    notes.push(`You have risen to ${r.n}.`);
+    logLine(`Became ${r.n} in ${def.n}.`,'good');
+    S.stats.reputation=clamp(S.stats.reputation+4);
+  }
 }
 function tickNPCs(notes){
   S.npcs.forEach(n=>{
@@ -1372,6 +1391,7 @@ function showDeath(){
          ['Final net worth',money(netWorth())],['Jobs held',S.jobsHeld],['Children',S.childrenCount],
          ['Crimes',S.crimesCommitted],['Years jailed',S.yearsJailed],['Countries lived in',(S.countriesLived||[]).length],
          ['Education',DATA.eduNames[S.edu]],
+         ['Special path',S.track?(TRACK(S.track.id).n+': '+TRACK_RANK(S.track).n):'\u2014'],
          ['Difficulty',diffDef(S.diff).n+(S.assisted?' (assisted)':'')],
          ['Legacy Point rate','\u00d7'+lpMult().toFixed(2)]].map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('')}
     </div>
@@ -1563,6 +1583,35 @@ function ACTS(){
       if(!n)return popupOK('Nobody to write to','There is no one left outside.');
       n.r=clamp(n.r+ri(6,14)); popupOK('A letter',`${n.name} wrote back.`);});
     return L;
+  }
+
+  /* ---------- SPECIAL PATHS ---------- */
+  if(S.track){
+    const def=TRACK(S.track.id), r=TRACK_RANK(S.track);
+    const resVal = S.track[def.res];
+    def.actions.forEach(act=>{
+      A('tr_'+def.id+'_'+act.id, act.n, def.n, act.d||'', ()=>{ act.run(); save(); });
+    });
+    if(def.id!=='royal')A('tr_leave_'+def.id,'Leave '+def.n.toLowerCase(),def.n,'Walk away for good',()=>{
+      confirmDo('Leave?',`Give up your position as ${r.n}?`,()=>{
+        const msg=def.leave?def.leave():'You walked away.';
+        S.track=null; logLine(`Left ${def.n}.`); popupOK('Out',msg); });
+    });
+  } else {
+    TRACKS.forEach(def=>{
+      if(def.id==='royal')return;
+      let ok=false; try{ ok=def.canJoin(); }catch(e){}
+      if(!ok)return;
+      A('join_'+def.id, def.n==='The Forces'?'Enlist':'Get involved with '+def.short.toLowerCase(),
+        'Paths', def.blurb, ()=>{
+        confirmDo(def.n, def.joinText+'\n\nThis becomes a parallel life with its own ranks and its own risks.',()=>{
+          S.track={id:def.id,rank:0,progress:0,heat:0,followers:ri(3,25),standing:50,commend:0,rating:1200,years:0};
+          TRACK_RANK(S.track);
+          logLine(`You joined ${def.n}.`,'good');
+          popupOK(def.n,`You are an ${def.ranks[0].n}.`);
+        });
+      });
+    });
   }
 
   /* ---------- PETS ---------- */
@@ -2056,6 +2105,20 @@ function viewLife(){
       <div><b>${esc(ms.label)}</b><div class="hsub dim">in ${ms.inYears} year${ms.inYears>1?'s':''} · age ${ms.age}</div></div></div>`:''}
   </div>`;
 
+  if(S.track){
+    const def=TRACK(S.track.id), r=TRACK_RANK(S.track);
+    const next=def.ranks[S.track.rank+1];
+    const pct=next?Math.min(100,Math.round((S.track.progress-r.need)/(next.need-r.need)*100)):100;
+    const resVal=S.track[def.res]||0;
+    h+=`<div class="card trackcard" style="border-color:${def.colour}55">
+      <div class="ctrow"><div class="ct" style="color:${def.colour}">${esc(def.n)}</div>
+        <div class="hsub dim">${esc(def.resN)} ${Math.round(resVal).toLocaleString()}</div></div>
+      <div class="rn">${esc(r.n)}</div>
+      <div class="hsub dim">${next?`${next.need-S.track.progress} more to ${esc(next.n)}`:'You are at the top.'}</div>
+      <div class="bt" style="margin-top:8px"><i class="${pct>66?'g':pct>33?'a':'r'}" style="width:${pct}%"></i></div>
+      <div class="nact"><button onclick="gotoGroup('${def.n}')">What can I do</button></div>
+    </div>`;
+  }
   if(S.inSchool){
     const g=gradeBand(S.gpa==null?50:S.gpa);
     const t=anyOf('teacher')[0];
@@ -2379,6 +2442,7 @@ function viewStats(){
       ['Disabled',S.disabled?'Yes':'No'],['Followers',S.followers.toLocaleString()],
       ['Traits',S.traits.map(traitName).join(', ')],
       ['Conditions',S.conditions.length?S.conditions.map(k=>COND(k.id).n+(k.treated?' (managed)':'')).join(', '):'None'],['Crimes',S.crimesCommitted],
+      ['Special path',S.track?(TRACK(S.track.id).n+' \u00b7 '+TRACK_RANK(S.track).n):'None'],
       ['Orientation',DATA.orientations.find(o=>o.id===S.orientation).n+(S.outTo?' (out)':'')],
       ['Pets',petsAlive().length?petsAlive().map(p=>p.name+' the '+(DATA.petSpecies.find(x=>x.id===p.sp)||{}).n.toLowerCase()).join(', '):'None'],
       ['Countries lived in',(S.countriesLived||[]).length],
