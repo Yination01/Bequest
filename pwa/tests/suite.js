@@ -1503,7 +1503,8 @@ t('rare events are rare in a first life', () => {
     total += (G.S.eggsThisLife||[]).length;
   }
   const per = total/25;
-  return per <= 1.0 ? true : per.toFixed(2) + ' rare events per first life';
+  // aim for roughly one every other life, so finding one still feels like something
+  return per <= 0.85 ? true : per.toFixed(2) + ' rare events per first life';
 });
 t('auto-pay is explicit on custom difficulty', () => {
   const knob = G.DIFF_KNOBS.find(k => k.k === 'autopay');
