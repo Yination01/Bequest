@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','avatar.js','easter.js','achievements.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','avatar.js','easter.js','achievements.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -645,8 +645,8 @@ t('every gated event becomes reachable once its gate is met', () => {
       if (q.friend && !G.anyOf('friend').length) assign('friend');
       if (q.sibling && !G.anyOf('sibling').length) assign('sibling');
       if (q.teacher && !G.anyOf('teacher').length) assign('teacher');
-      if (q.property) G.S.property = {value:200000, mortgage:0, rented:false};
-      if (q.noproperty) G.S.property = null;
+      if (q.property && !(G.S.properties||[]).length) G.S.properties = [{t:'flat',value:200000,mortgage:0,rented:false,cond:70,home:true}];
+      if (q.noproperty) G.S.properties = [];
       if (q.record) G.S.record = [{crime:'Shoplift',age:G.S.age-2,sev:1,spent:false}];
       if (q.parole) G.S.parole = 2;
       if (q.condition) G.S.conditions = [{id:'asthma',age:G.S.age-1,sev:1,treated:false}];
@@ -1239,6 +1239,88 @@ t('the living and credit screens render', () => {
   atAge(30);
   const a = G.moneyLiving(), b = G.moneyCards();
   return (a.length > 400 && b.length > 200) ? true : 'screens did not render';
+});
+
+/* ================= 4k. PROPERTY, VEHICLES AND BUSINESSES ================= */
+section('4k. Things you own');
+
+t('every catalogue entry is well formed', () => {
+  const bad=[];
+  G.PROPERTY_TYPES.forEach(p=>{ if(!p.n||!p.base||p.yield==null||p.maint==null) bad.push('prop '+p.id); });
+  G.VEHICLES.forEach(v=>{ if(!v.n||!v.base||v.dep==null||v.fail==null) bad.push('veh '+v.id); });
+  G.BUSINESSES.forEach(b=>{ if(!b.n||!b.cost||!b.rev||!b.maxStaff||!G.DATA.skills[b.skill]) bad.push('biz '+b.id); });
+  return bad.length ? bad.join(', ') : true;
+});
+t('you can buy, let, renovate and sell property', () => {
+  atAge(35); G.S.properties=[]; G.S.money=5000000; G.S.credit=800;
+  G.buyProperty('flat', false);
+  if (!G.S.properties.length) return 'outright purchase failed';
+  G.toggleLet(0);
+  if (!G.S.properties[0].rented) return 'letting failed';
+  G.S.properties[0].cond = 30;
+  G.repairProperty(0);
+  if (G.S.properties[0].cond <= 30) return 'renovation did nothing';
+  G.AUTOCONFIRM = true; G.sellProperty(0); G.AUTOCONFIRM = null;
+  return G.S.properties.length === 0 ? true : 'sale failed';
+});
+t('a mortgage is refused without income', () => {
+  atAge(30); G.S.properties=[]; G.S.job=null; G.S.money=5000000; G.S.credit=800;
+  G.buyProperty('estate', true);
+  return G.S.properties.length === 0 ? true : 'got a country house with no income';
+});
+t('let property earns rent and needs upkeep', () => {
+  atAge(35); G.S.properties=[{t:'flat',value:200000,mortgage:0,rented:true,cond:80,home:false}];
+  G.S.money=100000; G.S.job=null;
+  let earned=false;
+  for (let y=0;y<6 && G.S.alive;y++){ G.ageUp();
+    if ((G.S.ledger.income||[]).some(x=>/rent/i.test(x.l))) earned=true; }
+  return earned ? true : 'no rent was ever collected';
+});
+t('vehicles need a licence, depreciate and break down', () => {
+  atAge(30); G.S.vehicles=[]; G.S.money=900000; G.S.flags.licence=false;
+  G.buyVehicle('saloon');
+  if (G.S.vehicles.length) return 'bought a car with no licence';
+  G.S.flags.licence=true; G.buyVehicle('saloon');
+  if (!G.S.vehicles.length) return 'could not buy with a licence';
+  const start=G.S.vehicles[0].value;
+  for (let y=0;y<5 && G.S.alive;y++) G.ageUp();
+  if (!G.S.vehicles.length) return true;
+  return G.S.vehicles[0].value < start ? true : 'no depreciation';
+});
+t('a business hires, upgrades, earns and can be sold', () => {
+  atAge(35); G.S.businesses=[]; G.S.money=9000000; G.S.skills.cooking=80;
+  G.AUTOCONFIRM=true; G.startBusiness('cafe'); G.AUTOCONFIRM=null;
+  if (!G.S.businesses.length) return 'could not start';
+  G.hireStaff(0,3);
+  if (G.S.businesses[0].staff < 4) return 'hiring failed';
+  G.upgradeBusiness(0,'marketing');
+  if (!(G.S.businesses[0].ups||[]).includes('marketing')) return 'upgrade failed';
+  let profited=false;
+  for (let y=0;y<6 && G.S.alive;y++){ G.ageUp();
+    if ((G.S.ledger.income||[]).some(x=>/profit/i.test(x.l))) profited=true; }
+  if (!profited) return 'never made a profit with 4 staff and high skill';
+  if (!G.S.businesses.length) return true;
+  G.AUTOCONFIRM=true; G.sellBusiness(0); G.AUTOCONFIRM=null;
+  return G.S.businesses.length === 0 ? true : 'sale failed';
+});
+t('staffing is capped', () => {
+  atAge(35); G.S.businesses=[{t:'stall',value:4000,staff:1,ups:[],rep:50}]; G.S.money=900000;
+  G.hireStaff(0,50);
+  return G.S.businesses[0].staff <= G.BIZ('stall').maxStaff ? true : 'hired beyond the cap';
+});
+t('net worth counts property, vehicles and businesses', () => {
+  atAge(40); G.S.money=0; G.S.savings=0; G.S.debt=0; G.S.cards=[]; G.S.arrears=0;
+  G.S.crypto={units:0,price:100}; G.S.assets=[];
+  G.S.properties=[{t:'flat',value:200000,mortgage:50000,rented:false,cond:70,home:true}];
+  G.S.vehicles=[{t:'saloon',value:20000,cond:80}];
+  G.S.businesses=[{t:'cafe',value:60000,staff:2,ups:[],rep:50}];
+  const nw=G.netWorth();
+  return Math.abs(nw - 230000) < 2000 ? true : 'net worth came to ' + nw;
+});
+t('the three marketplaces render', () => {
+  atAge(35);
+  return (G.moneyPropertyMarket().length>400 && G.moneyVehicles().length>400
+    && G.moneyBusinesses().length>400) ? true : 'a marketplace failed to render';
 });
 
 /* ================= 5. SIMULATION STABILITY ================= */
