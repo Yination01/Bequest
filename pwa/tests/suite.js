@@ -36,7 +36,7 @@ module.exports={
   api:{ get S(){return S}, set S(v){S=v}, get META(){return META},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
@@ -668,7 +668,7 @@ t('every gated event becomes reachable once its gate is met', () => {
 t('every event requirement key is understood by the engine', () => {
   const known = new Set(['flags','noflags','job','nojob','partner','nopartner','child','nochild',
     'friend','property','noproperty','item','poor','smart','rep','parentAlive','parentDead',
-    'anyBadHabit','habit','sibling','teacher','condition','record','parole','followers','artskill']);
+    'anyBadHabit','habit','sibling','maxSiblings','teacher','condition','record','parole','followers','artskill']);
   const bad = new Set();
   G.EVENTS.forEach(e => Object.keys(e.req||{}).forEach(k => { if (!known.has(k)) bad.add(e.id+'.'+k); }));
   return bad.size ? [...bad].join(', ') : true;
@@ -1067,6 +1067,84 @@ t('leaving a path really leaves it', () => {
   if (!act) return 'no way to leave';
   G.AUTOCONFIRM = true; act.f(); G.AUTOCONFIRM = null;
   return G.S.track === null ? true : 'still in the organisation';
+});
+
+/* ================= 4i. PHASE 1 REGRESSIONS ================= */
+section('4i. Things the player reported');
+
+t('the shop actually sells things', () => {
+  const failed = [];
+  atAge(30); G.S.money = 5000000; G.S.items = []; G.S.assets = [];
+  G.DATA.items.filter(i => !i.secret).forEach(i => {
+    G.S.buysThisYear = 0; G.S.money = 5000000;
+    const before = G.S.items.length + (G.S.assets||[]).length;
+    try { G.buy(i.id); } catch(e) { failed.push(i.id + ': ' + e.message); return; }
+    if (G.S.items.length + (G.S.assets||[]).length <= before) failed.push(i.id + ': nothing happened');
+  });
+  return failed.length ? failed.slice(0,4).join(' | ') : true;
+});
+t('buying is limited to three things a year', () => {
+  atAge(30); G.S.money = 5000000; G.S.items = []; G.S.buysThisYear = 0;
+  ['books','phone','laptop','bike','skincare'].forEach(id => G.buy(id));
+  return G.S.items.length === 3 ? true : 'bought ' + G.S.items.length;
+});
+t('a habit charge always names the habit', () => {
+  atAge(30);
+  Object.keys(G.DATA.habits).forEach(k => G.S.habits[k] = 0);
+  G.S.habits.smoking = 60; G.S.habits.gym = 40;
+  const notes = G.tickHabits();
+  const line = notes.find(n => /cost/.test(n));
+  if (!line) return 'no habit charge was produced at all';
+  return /smoking/i.test(line) ? true : 'charge did not name the habit: ' + line;
+});
+t('the new-baby event is rare, and family size varies', () => {
+  let fired = 0; const sizes = {};
+  for (let i=0;i<120;i++){
+    G.newGame({});
+    const born = G.S.npcs.filter(n=>n.rel==='sibling').length;
+    sizes[born] = (sizes[born]||0) + 1;
+    let g=0;
+    while (G.S.alive && G.S.age<18 && g++<25) G.ageUp();
+    if (G.S.seen['c_sibling']) fired++;
+  }
+  if (Object.keys(sizes).length < 3) return 'family size barely varies: ' + JSON.stringify(sizes);
+  return fired/120 < 0.2 ? true : Math.round(fired/120*100) + '% still got the new-baby event';
+});
+t('studying moves your grade, not just your smarts', () => {
+  let ok = false;
+  for (let i=0;i<25 && !ok;i++){
+    G.newGame({}); let g=0;
+    while (G.S.alive && G.S.age<12 && g++<20) G.ageUp();
+    if (!G.S.alive || !G.S.inSchool) continue;
+    G.S.gpa = 50; G.S.actionsLeft = 5;
+    if (!G.ACTS().some(a=>a.id==='study')) continue;
+    G.doAct('study');
+    if (G.S.gpa > 50) ok = true;
+  }
+  return ok ? true : 'study never changed the grade';
+});
+t('clubs and sports offer a real choice', () => {
+  let ok = false;
+  for (let i=0;i<25 && !ok;i++){
+    G.newGame({}); let g=0;
+    while (G.S.alive && G.S.age<12 && g++<20) G.ageUp();
+    if (!G.S.alive || !G.S.inSchool) continue;
+    const club = G.ACTS().find(a=>a.id==='club');
+    if (!club) continue;
+    G.S.actionsLeft = 5;
+    G.LASTPOP = null; club.f();
+    if (G.LASTPOP && G.LASTPOP.type === 'CHOOSE' && G.LASTPOP.options.length >= 5) ok = true;
+  }
+  return ok ? true : 'no chooser was offered';
+});
+t('income and outgoings are recorded every year', () => {
+  atAge(20);
+  let seen = false;
+  for (let y=0; y<12 && G.S.alive; y++){
+    G.ageUp();
+    if (G.ledgerTotal('income') > 0 || G.ledgerTotal('spend') > 0) { seen = true; break; }
+  }
+  return seen ? true : 'the ledger stayed empty';
 });
 
 /* ================= 5. SIMULATION STABILITY ================= */

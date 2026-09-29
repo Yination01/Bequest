@@ -97,7 +97,7 @@ function migrate(){
   if(!S.slot)S.slot=1;
   if(!S.assets)S.assets=[];
   if(!S.countriesLived)S.countriesLived=[S.country];
-  if(!S.cd)S.cd={}; if(!S.echoes)S.echoes=[]; if(!S.pets)S.pets=[]; if(S.track===undefined)S.track=null; if(!S.orientation)S.orientation='straight'; if(!S.banned)S.banned=[]; if(S.dependents==null)S.dependents=0;
+  if(!S.cd)S.cd={}; if(!S.echoes)S.echoes=[]; if(!S.ledger)S.ledger={income:[],spend:[]}; if(!S.pets)S.pets=[]; if(S.track===undefined)S.track=null; if(!S.orientation)S.orientation='straight'; if(!S.banned)S.banned=[]; if(S.dependents==null)S.dependents=0;
   if(!S.lean){const T=['i','c','t','y','a','o','s','w','m','r','h','x','f','b'].sort(()=>R()-0.5);S.lean=T.slice(0,4);S.away=T.slice(4,7);}
   if(!S.conditions)S.conditions=[]; if(!S.record)S.record=[]; if(!S.loans)S.loans=[];
   if(S.actionsLeft==null)S.actionsLeft=3; if(!S.actLog)S.actLog={}; if(S.perf==null)S.perf=60; if(S.gpa==null)S.gpa=50; if(S.parole==null)S.parole=0;
@@ -274,9 +274,18 @@ function newGame(opts){
               maxDebt:0,heistWins:0,illnessesBeaten:0,gifts:0,partners:0},
     achThisLife:[]
   };
+  /* most people are born into a family that already exists */
+  { const roll=R();
+    const count = roll<0.34?0 : roll<0.70?1 : roll<0.90?2 : 3;
+    for(let i=0;i<count;i++){
+      const sib=mkNPC('sibling',pick(['m','f']),ri(1,14),reg);
+      sib.surname=sur; sib.name=nameFor(reg,sib.gender)+' '+sur;
+      sib.r=ri(45,85); S.npcs.push(sib);
+    }
+  }
   S.npcs.push(mkNPC('mother','f',ri(20,40),reg));
   S.npcs.push(mkNPC('father','m',ri(21,45),reg));
-  S.npcs.forEach(n=>{n.r=ri(60,90); n.surname=sur; n.name=nameFor(reg,n.gender)+' '+sur;});
+  S.npcs.filter(n=>n.rel==='mother'||n.rel==='father').forEach(n=>{n.r=ri(60,90); n.surname=sur; n.name=nameFor(reg,n.gender)+' '+sur;});
   S.surname=S.name.split(' ').slice(1).join(' ')||sur;
   /* orientation is set at birth and discovered later, as in life */
   { let roll=ri(1,100), acc=0, o=DATA.orientations[0];
@@ -296,6 +305,8 @@ function newGame(opts){
   applyTraitStart();
   logLine(`You were born ${g==='m'?'a boy':'a girl'} in ${S.city}, ${country().name}.`,'good');
   logLine(`Your family is ${tier.name.toLowerCase()}.`);
+  { const sibs=S.npcs.filter(n=>n.rel==='sibling');
+    if(sibs.length)logLine(`You have ${sibs.length===1?'an older sibling':sibs.length+' older siblings'}: ${sibs.map(n=>n.name.split(' ')[0]).join(', ')}.`); }
   logLine(`Traits: ${tr.map(traitName).join(', ')}.`);
   logLine(`Difficulty: ${dDef.n}${dId==='custom'?'':''} · Legacy Points ×${(dId==='custom'?customLP(mods):dDef.lp).toFixed(2)}`);
   META.lives++; META.countriesPlayed[S.country]=true; saveMeta(); checkAch(true); save();
@@ -408,7 +419,15 @@ function variant(x){ return tok(Array.isArray(x)?pick(x):x); }
 function logLine(t,kind){ S.log.push({a:S.age,t,k:kind||''}); if(S.log.length>500)S.log.shift(); }
 
 /* ---------------- effects ---------------- */
-let EFF_SCALE=1, ACT_BLOCKED=false, PREV_YEAR=null;
+let EFF_SCALE=1, ACT_BLOCKED=false, PREV_YEAR=null, CHOOSER=null, CONFIRM=null;
+/* Every pound in or out is recorded so the player can budget. */
+function ledger(kind,label,amount){
+  if(!S)return;
+  S.ledger=S.ledger||{income:[],spend:[]};
+  if(!amount)return;
+  S.ledger[kind==='earn'?'income':'spend'].push({l:label,a:Math.round(Math.abs(amount))});
+}
+function ledgerTotal(kind){ return ((S.ledger&&S.ledger[kind])||[]).reduce((n,x)=>n+x.a,0); }
 function sc(v){ return (EFF_SCALE===1||v<=0)?v:Math.round(v*EFF_SCALE*10)/10; }
 function applyEff(e){
   if(!e) return [];
@@ -453,6 +472,7 @@ function ageUp(){
   if(!S||!S.alive) return;
   try{ PREV_YEAR = JSON.stringify(S); }catch(e){ PREV_YEAR = null; }
   S.age++; QUEUE=[];
+  S.ledger={income:[],spend:[]};
   S.actionsLeft=actionsPerYear(); S.buysThisYear=0; S.lifestyleThisYear=0; S.jumpGroup=null;
   const notes=[];
   if(S.parole>0)S.parole--;
@@ -480,7 +500,7 @@ function ageUp(){
   notes.push(...tickConditions());
   notes.push(...tickAging());
   tickNPCs(notes); tickPets(notes); tickTrack(notes); tickSchool(notes); tickNews(notes);
-  if(notes.length) push({type:'B',title:'This Year',text:notes.join('\n')});
+  if(notes.length) push({type:'YEAR',title:`Age ${S.age}`,notes:notes.slice()});
   const n = S.jailLeft>0?0:(R()<0.3?2:1)+(R()<0.15?1:0);
   pickEvents(n).forEach(ev=>push({type:'A',ev,text:variant(ev.x)}));
   deathCheck();
@@ -513,6 +533,9 @@ function tickHabits(){
     if(!h.good)S.habits[k]=clamp(lvl-1);
   }
   if(cost>0){
+    const named=Object.keys(S.habits).filter(k=>S.habits[k]>5&&DATA.habits[k].cost>0)
+      .map(k=>DATA.habits[k].name.toLowerCase());
+    const what=named.length?named.join(', '):'day-to-day habits';
     if(S.age<13){
       /* nobody bills a child for the food in their house */
       S.familyMoney=Math.max(0,S.familyMoney-cost);
@@ -521,9 +544,9 @@ function tickHabits(){
       S.familyMoney-=paid;
       const rest=cost-paid;
       if(rest>0){ S.money=Math.max(0,S.money-rest); }
-      if(paid>0)out.push(`Your habits cost your family ${money(paid)} this year.`);
+      if(paid>0)out.push(`Your family spent ${money(paid)} on your ${what}.`);
     } else {
-      S.money-=cost; out.push(`Habits cost you ${money(cost)} this year.`);
+      S.money-=cost; ledger('spend','Habits: '+what,cost); out.push(`Your ${what} cost ${money(cost)} this year.`);
     }
   }
   return out;
@@ -536,7 +559,7 @@ function tickFinance(){
     if(gross>120000)tax+=0.08;
     if(gross>250000)tax+=0.07;        // progressive bands stop the top end running away
     const net=Math.round(gross*(1-tax));
-    S.money+=net; S.jobYears++; S.totalWorked++;
+    S.money+=net; S.jobYears++; S.totalWorked++; ledger('earn','Salary ('+S.job.t+')',net);
     if(gross>S.peakIncome)S.peakIncome=gross;
     out.push(`You earned ${money(net)} after tax as ${S.job.t}.`);
     /* annual performance review */
@@ -555,14 +578,14 @@ function tickFinance(){
     /* lifestyle inflation: the more you earn, the more life costs */
     const infl=1+Math.min(1.2,Math.max(0,(S.peakIncome-40000))/220000);
     const col=Math.round(10500*c.col*(1+newsMod('prices'))*(S.property?1.15:1)*M('cost')*infl);
-    S.money-=col; out.push(`Living costs: ${money(-col)}.`);
-    if(!S.job&&!S.flags.retired&&S.age<65){ const b=Math.round(6500*c.col); S.money+=b; out.push(`Unemployment support: ${money(b)}.`); }
+    S.money-=col; ledger('spend','Living costs',col); out.push(`Living costs: ${money(-col)}.`);
+    if(!S.job&&!S.flags.retired&&S.age<65){ const b=Math.round(6500*c.col); S.money+=b; ledger('earn','Unemployment support',b); out.push(`Unemployment support: ${money(b)}.`); }
     if(S.fostering){
       const allow=Math.round(5200*c.col), spend=Math.round(4400*c.col);
       S.money+=allow-spend;
       out.push(`Fostering allowance ${money(allow)}, and ${money(spend)} spent on them.`);
     }
-    if(S.flags.retired||S.age>=67){ const p=Math.round((9000+S.peakIncome*0.12)*c.col*0.5*(S.flags.pension?1.8:1)); S.money+=p; out.push(`Pension: ${money(p)}.`); }
+    if(S.flags.retired||S.age>=67){ const p=Math.round((9000+S.peakIncome*0.12)*c.col*0.5*(S.flags.pension?1.8:1)); S.money+=p; ledger('earn','Pension',p); out.push(`Pension: ${money(p)}.`); }
   }
   if(S.business){
     const perf=(R()-0.35+S.skills.business/200+newsMod('invest'));
@@ -929,6 +952,7 @@ function reqOk(ev){
   if(q.child&&!anyOf('child').length)return false;
   if(q.nochild&&S.npcs.some(n=>n.rel==='child'))return false;
   if(q.sibling&&!anyOf('sibling').length)return false;
+  if(q.maxSiblings!=null&&anyOf('sibling').length>q.maxSiblings)return false;
   if(q.teacher&&!anyOf('teacher').length)return false;
   if(q.condition&&!S.conditions.length)return false;
   if(q.record&&!S.record.length)return false;
@@ -936,6 +960,7 @@ function reqOk(ev){
   if(q.followers&&S.followers<q.followers)return false;
   if(q.artskill&&(S.skills.art||0)<q.artskill)return false;
   if(q.sibling&&!anyOf('sibling').length)return false;
+  if(q.maxSiblings!=null&&anyOf('sibling').length>q.maxSiblings)return false;
   if(q.friend&&!anyOf('friend').length&&!anyOf('colleague').length)return false;
   if(q.property&&!S.property)return false;
   if(q.noproperty&&S.property)return false;
@@ -973,6 +998,18 @@ function resolveChoice(ev,ci){
   const extra=[], add=t=>extra.push(tok(t));
 
   if(ch.flag)S.flags[ch.flag]=true;
+  if(ch.onlineMeet){
+    if(R()<0.72){ const f=addNPC('friend',null,S.age+ri(-3,4),ri(60,85));
+      applyEff({happiness:14,skill:{charisma:5}});
+      add(`They are exactly who they said. ${f.name} is a real friend now.`); }
+    else { applyEff({happiness:-16,smarts:6,discipline:4});
+      add('They were not who they said they were. You got out of there.'); }
+  }
+  if(ch.onlineVerify){
+    if(R()<0.7){ const f=addNPC('friend',null,S.age+ri(-3,4),ri(55,75));
+      applyEff({happiness:9}); add(`It was them. You and ${f.name} speak most days.`); }
+    else { applyEff({happiness:-7,smarts:8}); add('They refused, then stopped replying. You understood.'); }
+  }
   if(ch.strikeRoll){ if(R()<0.45+S.skills.charisma/300){ add('You kept your licence. Barely.'); applyEff({reputation:-6}); }
     else { S.banned.push({field:S.job?S.job.field:'medical',until:null,why:'You were struck off'});
       if(S.job)S.job=null; applyEff({happiness:-20,reputation:-16}); add('You were struck off.'); } }
@@ -1459,7 +1496,7 @@ function showPopup(p){
       <div class="choices">${ev.c.map((c,i)=>`<button class="choice" onclick="pickChoice('${ev.id}',${i})"><span>${esc(tok(c.l))}</span><i>›</i></button>`).join('')}</div>
     </div>`;
   } else if(p.type==='D'){
-    window.__cd=p;
+    CONFIRM=p;
     el.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">Decision</span></div>
       <div class="ph">${esc(p.title)}</div><div class="pb">${esc(p.text)}</div>
       <div class="choices"><button class="choice ok" onclick="cdo(1)"><span>Confirm</span><i>›</i></button>
@@ -1497,6 +1534,36 @@ function showPopup(p){
          known:'"I hope they know your name."',ok:'"I hope you are alright."'}[c])}</div>
       <div class="pb">${esc(verdict)}</div>
       <div class="choices"><button class="choice ok" onclick="closePopup()"><span>Put it away</span><i>\u203a</i></button></div></div>`;
+  } else if(p.type==='YEAR'){
+    /* sort the year's news into things that mean different kinds of thing */
+    const buckets={ Money:[], Health:[], People:[], Work:[], World:[], Other:[] };
+    (p.notes||[]).forEach(n=>{
+      if(/paper|NEWS|Times|Herald|Daily/i.test(n)) buckets.World.push(n);
+      else if(/\$|cost|paid|earned|debt|pension|allowance|income|sold|bought|rent|mortgage|loan|credit/i.test(n)) buckets.Money.push(n);
+      else if(/health|ill|diagnos|condition|recover|injur|disabled|worse|screening/i.test(n)) buckets.Health.push(n);
+      else if(/died|born|married|baby|friend|partner|separated|moved to|arrested|retired|promoted to .* at|joined your team/i.test(n)) buckets.People.push(n);
+      else if(/job|work|review|promot|dismiss|sacked|employ|rank|risen/i.test(n)) buckets.Work.push(n);
+      else buckets.Other.push(n);
+    });
+    const ic={Money:'\u25C6',Health:'\u2665',People:'\u263A',Work:'\u25B2',World:'\u2691',Other:'\u2022'};
+    const sections=Object.keys(buckets).filter(k=>buckets[k].length).map(k=>
+      `<div class="ysec"><div class="ylabel">${ic[k]} ${k}</div>
+        ${buckets[k].map(n=>`<div class="yline">${esc(n)}</div>`).join('')}</div>`).join('');
+    const inc=ledgerTotal('income'), sp=ledgerTotal('spend');
+    el.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">${esc(p.title)}</span></div>
+      ${(inc||sp)?`<div class="budgetbar">
+        <div><div class="hlbl">In</div><div class="bgood">${money(inc)}</div></div>
+        <div><div class="hlbl">Out</div><div class="bbad">${money(sp)}</div></div>
+        <div><div class="hlbl">Net</div><div class="${inc-sp>=0?'bgood':'bbad'}">${money(inc-sp)}</div></div>
+      </div>`:''}
+      <div class="ybody">${sections}</div>
+      <div class="choices"><button class="choice ok" onclick="closePopup()"><span>Continue</span><i>\u203a</i></button></div></div>`;
+  } else if(p.type==='CHOOSE'){
+    el.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">Choose</span></div>
+      <div class="ph">${esc(p.title)}</div>
+      <div class="choices">${p.options.map((o,i)=>
+        `<button class="choice" onclick="pickFrom(${i})"><span>${esc(o[0])}</span><i>\u203a</i></button>`).join('')}
+        <button class="choice" onclick="closePopup()"><span>Not now</span><i>\u203a</i></button></div></div>`;
   } else if(p.type==='PLUS'){
     el.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">Bequest Plus</span></div>
       <div class="ph">${esc(p.what||'A Plus feature')}</div>
@@ -1526,7 +1593,12 @@ function showPopup(p){
   }
 }
 function setCapsule(k){ S.capsule=k; document.getElementById('modal').className='modal'; save(); drain(); }
-function cdo(y){ const p=window.__cd; document.getElementById('modal').className='modal'; if(y&&p.yes)p.yes(); if(!y&&p.no)p.no(); drain(); }
+function pickFrom(i){
+  const c=CHOOSER; document.getElementById('modal').className='modal';
+  if(c&&c.options[i]){ const o=c.options[i]; c.cb(o[0],o[2]); }
+  CHOOSER=null; save(); renderAll();
+}
+function cdo(y){ const p=CONFIRM; document.getElementById('modal').className='modal'; if(y&&p.yes)p.yes(); if(!y&&p.no)p.no(); drain(); }
 function pickChoice(id,i){ document.getElementById('modal').className='modal'; resolveChoice(EVENTS.find(e=>e.id===id),i); }
 function fateChoice(id){ const ev=EVENTS.find(e=>e.id===id); pickChoice(id,Math.floor(R()*ev.c.length)); }
 function closePopup(){ document.getElementById('modal').className='modal'; drain(); }
@@ -1737,11 +1809,42 @@ function ACTS(){
     A('story','Ask for a story','Childhood','',()=>{applyEff({smarts:4,rel:{parents:3}});popupOK('Story time','Smarts +4.');});
   }
   if(S.inSchool&&a>=6&&a<=21){
-    A('study','Study harder','School','',()=>{applyEff({smarts:5,happiness:-3,discipline:3});popupOK('Study','Smarts +5, Discipline +3.');});
-    A('slack','Slack off','School','',()=>{applyEff({smarts:-3,happiness:6,discipline:-3});popupOK('Slacking','Happiness +6, Smarts −3.');});
-    A('club','Join a school club','School','',()=>{applyEff({happiness:5,skill:{charisma:5}});
-      if(R()<0.5){const f=addNPC('friend',null,S.age);popupOK('Club',`You joined and met ${f.name}.`);}else popupOK('Club','Happiness +5, Charisma +5.');});
-    A('sports','Play sports','School','',()=>{applyEff({health:4,skill:{fitness:7},happiness:3});popupOK('Sports','Fitness +7, Health +4.');});
+    A('study','Study harder','School',`Grade ${Math.round(S.gpa==null?50:S.gpa)}/100`,()=>{
+      applyEff({smarts:5,happiness:-3,discipline:3});
+      const before=S.gpa==null?50:S.gpa;
+      S.gpa=clamp(before+ri(3,8));
+      popupOK('Study',`Smarts +5, Discipline +3.\nYour grade moved from ${Math.round(before)} to ${Math.round(S.gpa)} (${gradeBand(S.gpa).n}).`);});
+    A('slack','Slack off','School','Costs you grades',()=>{
+      applyEff({smarts:-3,happiness:6,discipline:-3});
+      const before=S.gpa==null?50:S.gpa; S.gpa=clamp(before-ri(3,8));
+      popupOK('Slacking',`Happiness +6.\nYour grade slipped from ${Math.round(before)} to ${Math.round(S.gpa)}.`);});
+    A('club','Join a school club','School','Pick which one',()=>{ chooseFrom('Which club?',[
+        ['Debating','skill:charisma',{skill:{charisma:12},smarts:4}],
+        ['Chess club','smarts',{smarts:9,skill:{gaming:5}}],
+        ['Drama','confidence',{skill:{charisma:9},looks:3,happiness:6}],
+        ['School band','music',{skill:{music:12},discipline:4}],
+        ['Art club','art',{skill:{art:12},happiness:5}],
+        ['Science club','smarts',{smarts:11,skill:{tech:6}}],
+        ['Student council','standing',{reputation:9,skill:{charisma:7},discipline:4}]
+      ],(name,eff)=>{
+        applyEff(eff); S.gpa=clamp((S.gpa==null?50:S.gpa)+2);
+        let t=`You joined ${name}.`;
+        if(R()<0.55){const f=addNPC('friend',null,S.age);t+=` You met ${f.name} there.`;}
+        popupOK(name,t);
+      }); });
+    A('sports','Play a sport','School','Pick which one',()=>{ chooseFrom('Which sport?',[
+        ['Football','team',{skill:{fitness:10},happiness:6,reputation:4}],
+        ['Athletics','solo',{skill:{fitness:13},discipline:5}],
+        ['Swimming','endurance',{skill:{fitness:11},health:6}],
+        ['Basketball','team',{skill:{fitness:9},happiness:5,skill2:true}],
+        ['Boxing','contact',{skill:{fitness:8,combat:11},health:-3}],
+        ['Tennis','solo',{skill:{fitness:9},discipline:4,reputation:3}]
+      ],(name,eff)=>{
+        applyEff(eff); applyEff({health:3});
+        let t=`You took up ${name.toLowerCase()}.`;
+        if(R()<0.35){ t+=' The coach thinks you have something.'; S.flags.sport_talent=true; applyEff({skill:{fitness:5}}); }
+        popupOK(name,t);
+      }); });
     A('homework','Do your homework properly','School','Raises your grade',()=>{
       applyEff({smarts:3,discipline:3}); S.gpa=clamp(S.gpa+ri(4,9));
       popupOK('Homework',`Your grade is now ${Math.round(S.gpa)}/100 (${gradeBand(S.gpa).n}).`);});
@@ -1956,6 +2059,12 @@ function clampMinorMoney(){
      created by unpayable costs is absorbed by the household */
   if(S.debt>0&&!S.flags.student_loan){ S.debt=0; }
 }
+/* A small chooser so activities offer real options instead of a silent roll. */
+function chooseFrom(title,options,cb){
+  CHOOSER={options,cb};
+  push({type:'CHOOSE',title,options});
+  drain();
+}
 function afford(c){
   if(c<=0)return true;
   if(S.age<18){
@@ -1971,6 +2080,7 @@ function afford(c){
 /* charge() pairs with afford(): adults pay from their own pocket, children do not */
 function charge(c){ if(S.age<18){ S.paidByFamily=null; return; } S.money-=c; }
 function doAct(id){
+  rememberScroll();
   const a=ACTS().find(x=>x.id===id); if(!a)return;
   if(S.actionsLeft<=0){
     return popupOK('No time left this year',
@@ -2000,8 +2110,9 @@ function randomAct(){
 
 /* ---------------- RENDER ---------------- */
 const app=()=>document.getElementById('app');
-function renderAll(){ if(!S)return; renderHeader(); renderTab(app().dataset.tab||'life'); }
+function renderAll(){ if(!S)return; renderHeader(); renderTab(app().dataset.tab||'life',true); }
 function initials(n){ return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+function toggleStats(){ S.statsOpen=!S.statsOpen; renderHeader(); }
 function bar(n,v,ic){ v=Math.round(v);
   const c=v>=70?'g':v>=40?'a':'r';
   return `<div class="b"><div class="bl"><span>${ic?ic+' ':''}${n}</span><span>${Math.round(v)}</span></div>
@@ -2067,6 +2178,17 @@ function renderHeader(){
         <div class="hsub dim">${S.age<16?'household '+money(S.familyMoney):'net '+money(netWorth())}</div>
       </div>
     </div>
+    <button class="statToggle" onclick="toggleStats()">${S.statsOpen?'\u25B4 Hide details':'\u25BE Show details'}</button>
+    <div class="statsheet ${S.statsOpen?'open':''}" onclick="toggleStats()"><div class="statpanel" onclick="event.stopPropagation()">
+      <div class="ct">Condition</div>
+      ${DATA.statKeys.map(k=>bar(DATA.statNames[k],S.stats[k],DATA.statIcons[k])).join('')}
+      <div class="ct mt">This year</div>
+      <div class="kv"><span>Income</span><b class="bgood">${money(ledgerTotal('income'))}</b></div>
+      <div class="kv"><span>Outgoings</span><b class="bbad">${money(ledgerTotal('spend'))}</b></div>
+      <div class="kv"><span>Actions left</span><b>${S.actionsLeft}/${actionsPerYear()}</b></div>
+      ${S.track?`<div class="kv"><span>${esc(TRACK(S.track.id).n)}</span><b>${esc(TRACK_RANK(S.track).n)}</b></div>`:''}
+      <button class="btn wide mt" onclick="toggleStats();setTab('more');setMore('stats')">Full details page</button>
+    </div></div>
     <div class="statrow">${DATA.statKeys.map(k=>{
       const v=Math.round(S.stats[k]), c=v>=70?'g':v>=40?'a':'r';
       return `<div class="stat ${c}" title="${DATA.statNames[k]}">
@@ -2074,15 +2196,23 @@ function renderHeader(){
         <div class="sv">${Math.round(v)}</div>
         <div class="sbar"><i style="width:${v}%"></i></div></div>`;}).join('')}</div>`;
 }
-function setTab(t){ app().dataset.tab=t;
+function setTab(t){ rememberScroll(); SCROLL[t]=0; app().dataset.tab=t;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const m=document.getElementById('main'); if(m)m.classList.remove('in');
   renderTab(t);
   if(m){ void m.offsetWidth; m.classList.add('in'); } }
-function renderTab(t){
+let SCROLL={};
+function renderTab(t,keepScroll){
   const m=document.getElementById('main');
+  const prev=m?m.scrollTop:0;
   m.innerHTML=({life:viewLife,act:viewActs,ppl:viewPeople,money:viewMoney,more:viewMore}[t]||viewLife)();
-  m.scrollTop = 0;
+  /* staying where you were is the whole point of a list of things to do */
+  if(keepScroll!==false && SCROLL[t]!=null) m.scrollTop = SCROLL[t];
+  else m.scrollTop = 0;
+}
+function rememberScroll(){
+  const m=document.getElementById('main'), t=app().dataset.tab||'life';
+  if(m)SCROLL[t]=m.scrollTop;
 }
 function nextMilestone(){
   const a=S.age;
@@ -2236,7 +2366,20 @@ function npcAct(id,what){
 }
 function viewMoney(){
   const cats=[...new Set(DATA.items.map(i=>i.cat))];
-  return `<div class="card"><div class="ct">Finances</div>
+  const inc=ledgerTotal('income'), sp=ledgerTotal('spend');
+  const L=S.ledger||{income:[],spend:[]};
+  return `<div class="card"><div class="ct">Last year</div>
+   <div class="budgetbar">
+     <div><div class="hlbl">Income</div><div class="bgood">${money(inc)}</div></div>
+     <div><div class="hlbl">Outgoings</div><div class="bbad">${money(sp)}</div></div>
+     <div><div class="hlbl">Net</div><div class="${inc-sp>=0?'bgood':'bbad'}">${money(inc-sp)}</div></div>
+   </div>
+   ${(L.income.length||L.spend.length)?`<div class="ledger">
+     ${L.income.map(x=>`<div class="lrow"><span>${esc(x.l)}</span><b class="bgood">+${money(x.a)}</b></div>`).join('')}
+     ${L.spend.map(x=>`<div class="lrow"><span>${esc(x.l)}</span><b class="bbad">\u2212${money(x.a)}</b></div>`).join('')}
+   </div>`:'<div class="hsub dim">Nothing recorded yet. Age up a year.</div>'}
+   </div>
+   <div class="card"><div class="ct">Finances</div>
    ${[['Cash',money(S.money)],['Savings (2.5%/yr)',money(S.savings)],
       ['Crypto',money(cryptoValue())+' <small class="dim">@ '+money(S.crypto.price)+'</small>'],
       ['Property',S.property?money(S.property.value)+' <small class="dim">mtg '+money(S.property.mortgage)+'</small>':'—'],
@@ -2281,19 +2424,27 @@ function viewMoney(){
 const SHOP_MIN_AGE={Tech:8,Self:6,Health:10,Lifestyle:12,Vehicle:16,'Black market':14,Assets:18};
 function applyJobId(id){ applyJob(DATA.jobs.find(x=>x.id===id)); save(); renderAll(); }
 function buy(id){
+  const it=DATA.items.find(i=>i.id===id);
+  if(!it)return;
+  const minAge=SHOP_MIN_AGE[it.cat]||0;
+  if(S.age<minAge)return popupOK('Too young',`You cannot buy that until you are ${minAge}.`);
   if(S.buysThisYear==null)S.buysThisYear=0;
   if(S.buysThisYear>=3)return popupOK('Enough for one year','You have already done your shopping this year.');
-  const it=DATA.items.find(i=>i.id===id);
-  if(S.age<(SHOP_MIN_AGE[it.cat]||0))return popupOK('Too young',`You cannot buy that until you are ${SHOP_MIN_AGE[it.cat]}.`), c=Math.round(it.c*(1+newsMod('prices')));
-  if(!afford(c))return; charge(c);
+  const price=Math.round(it.c*(1+newsMod('prices')));
+  if(!afford(price))return;
+  charge(price);
+  ledger('spend','Bought '+it.n,price);
   if(it.cat==='Assets'){ S.assets=S.assets||[]; S.assets.push({id:it.id,value:it.c}); }
-  else S.items.push(id);
+  else if(!S.items.includes(id)) S.items.push(id);
   if(it.once)applyEff(it.once);
-  S.buysThisYear++; popupOK('Purchased',`You bought a ${it.n}.`); checkAch(); save(); renderAll();
+  S.buysThisYear++;
+  popupOK('Purchased',`You bought a ${it.n} for ${money(price)}.`);
+  checkAch(); save(); renderAll();
 }
 function buyV8(){
-  if(!afford(9000))return; charge(9000);
-  S.items.push('v8car'); popupOK('The V8','It still smells of somebody else\u2019s life.');
+  if(!afford(9000))return; charge(9000); ledger('spend','The V8',9000);
+  if(!S.items.includes('v8car'))S.items.push('v8car');
+  popupOK('The V8','It still smells of somebody else\u2019s life.');
   save(); renderAll();
 }
 function fin(w){

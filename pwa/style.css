@@ -406,3 +406,24 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
 .eggsheet.t-myth .eggtext{border-left-color:#c896ff}
 .award.egg{border-color:rgba(200,150,255,.5);color:#d7b3ff;background:rgba(200,150,255,.12)}
 .trackcard{background:linear-gradient(145deg,#1e2338,#141a2b)}
+
+/* year summary, budget, header sheet */
+.ysec{margin-bottom:11px}
+.ylabel{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--am);margin-bottom:4px}
+.yline{font-size:13.5px;color:#cbd6ee;padding:3px 0 3px 12px;border-left:2px solid rgba(34,48,77,.9)}
+.ybody{max-height:46vh;overflow-y:auto;margin-top:10px}
+.budgetbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;
+  background:rgba(255,255,255,.04);border-radius:12px;padding:10px;margin:10px 0}
+.budgetbar>div>div:last-child{font-size:15px;font-weight:750}
+.bgood{color:var(--g)} .bbad{color:var(--r)}
+.ledger{margin-top:10px;max-height:190px;overflow-y:auto}
+.lrow{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:4px 0;
+  border-bottom:1px solid rgba(34,48,77,.5)}
+.lrow span{color:var(--mut)}
+.statToggle{width:100%;margin-top:8px;padding:6px;border:0;background:none;color:var(--mut);
+  font-size:11px;font-weight:650;letter-spacing:.06em;cursor:pointer}
+.statsheet{position:absolute;inset:0;background:rgba(4,7,14,.72);backdrop-filter:blur(3px);
+  display:none;align-items:flex-start;justify-content:center;z-index:40;padding-top:64px}
+.statsheet.open{display:flex}
+.statpanel{width:calc(100% - 22px);max-height:70vh;overflow-y:auto;background:var(--card);
+  border:1px solid var(--line);border-radius:16px;padding:14px;animation:up .2s ease}
