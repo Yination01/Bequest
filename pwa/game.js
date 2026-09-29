@@ -492,7 +492,7 @@ function ageUp(){
   try{ PREV_YEAR = JSON.stringify(S); }catch(e){ PREV_YEAR = null; }
   S.age++; QUEUE=[];
   S.ledger={income:[],spend:[]};
-  S.actionsLeft=actionsPerYear(); S.buysThisYear=0; S.lifestyleThisYear=0; S.jumpGroup=null; S.section=null; S.msection=null;
+  S.actionsLeft=actionsPerYear(); S.buysThisYear=0; S.lifestyleThisYear=0; S.jumpGroup=null; S.section=null; S.msection=null; S.person=null;
   const notes=[];
   if(S.parole>0)S.parole--;
   /* people who depend on you do not do so forever */
@@ -1025,7 +1025,16 @@ function tickSchool(notes){
   }
   if(S.flags.inCollege){
     S.collegeYears=(S.collegeYears||0)+1; S.stats.smarts=clamp(S.stats.smarts+3);
-    if(S.collegeYears>=4){ S.flags.inCollege=false; S.edu=Math.max(S.edu,3); S.inSchool=false; notes.push('You graduated with a bachelor\u2019s degree.'); }
+    const deg=DEGREE(S.degree), need=S.degreeYears||4;
+    if(deg){ for(const k in deg.skills){ const per=Math.round(deg.skills[k]/need);
+      if(S.skills[k]!=null)S.skills[k]=clamp(S.skills[k]+per); else S.stats[k]=clamp(S.stats[k]+per); } }
+    if(S.collegeYears>=need){
+      S.flags.inCollege=false; S.edu=Math.max(S.edu,3); S.inSchool=false;
+      S.degreeDone=S.degree;
+      notes.push(deg?`You graduated in ${deg.n}.`:'You graduated.');
+      logLine(deg?`Graduated in ${deg.n}.`:'Graduated.','good');
+      S.stats.reputation=clamp(S.stats.reputation+5);
+    }
   }
   if(S.flags.inGrad){
     S.gradYears=(S.gradYears||0)+1; S.stats.smarts=clamp(S.stats.smarts+4);
@@ -1447,9 +1456,10 @@ function resolveChoice(ev,ci){
 function setJob(j){
   S.perf=60;
   const ut=UNI_TIERS.find(t=>t.id===S.uniTier);
+  const degMatch=(()=>{ const d=DEGREE(S.degreeDone); return d&&d.fields.indexOf(j.field)>=0?1.12:1; })();
   S.employer=companyFor(j.field,country().reg);
   S.boss=nameFor(country().reg,pick(['m','f']))+' '+surFor(country().reg);
-  S.job={id:j.id,t:j.t,pay:Math.round(j.pay*country().sal*(ut&&j.edu>=3?ut.sal:1)*(S.credsLost?0.6:1)),field:j.field,lvl:jobLvl(j),emp:S.employer}; S.jobYears=0; S.jobsHeld++; S.careerLvl=Math.max(S.careerLvl==null?-1:S.careerLvl,jobLvl(j)); }
+  S.job={id:j.id,t:j.t,pay:Math.round(j.pay*country().sal*(ut&&j.edu>=3?ut.sal:1)*(S.credsLost?0.6:1)*degMatch),field:j.field,lvl:jobLvl(j),emp:S.employer}; S.jobYears=0; S.jobsHeld++; S.careerLvl=Math.max(S.careerLvl==null?-1:S.careerLvl,jobLvl(j)); }
 function jobEligible(j){
   if(S.jailLeft>0)return false;
   if(S.age<14)return false;
@@ -1482,6 +1492,8 @@ function applyJob(j){
   if(S.yearsJailed>0)ch-=0.2;
   if(S.traits.includes('ambitious'))ch+=0.1;
   if(S.flags.placement)ch+=0.12;
+  { const deg=DEGREE(S.degreeDone);
+    if(deg&&deg.fields.indexOf(j.field)>=0)ch+=0.18; }
   if(hasEcho('driven'))ch+=0.12;
   if(hasEcho('scarred'))ch-=0.10;
   ch*=M('jobOdds');
@@ -2150,6 +2162,31 @@ function ACTS(){
         S.flags.placement=true; popupOK('Placement','You got a paid placement. It will help you get hired.');}
       else popupOK('Rejected','No placement this year.');});
   }
+  if(a>=10){
+    LEISURE.forEach(l=>{
+      if(l.id==='casino'&&a<18)return;
+      if((l.id==='festival'||l.id==='cruise')&&a<16)return;
+      A('lei_'+l.id, l.n, 'Leisure', l.cost?money(Math.round(l.cost*country().col)):'free', ()=>{
+        const c=Math.round(l.cost*country().col);
+        if(c&&!afford(c))return; if(c){charge(c); ledger('spend',l.n,c);}
+        if(l.gamble){
+          const stake=Math.min(Math.max(200,Math.round(S.money*0.1)),25000);
+          if(stake>S.money)return popupOK('Not enough','You cannot cover a stake.');
+          charge(stake);
+          if(R()<0.38){ const win=Math.round(stake*(1.15+R()*1.15)); S.money+=win;
+            ledger('earn','A win at the casino',win); applyEff({happiness:12,habit:{gambling:12}});
+            popupOK('You won',`${money(win)} up. Walking away now would be the clever thing.`); }
+          else { ledger('spend','Lost at the casino',stake); applyEff({happiness:-8,habit:{gambling:14}});
+            popupOK('You lost',`${money(stake)} gone.`); }
+          return;
+        }
+        if(l.eff)applyEff(l.eff);
+        if(l.skill)applyEff({skill:l.skill});
+        if(l.habit)applyEff({habit:l.habit});
+        popupOK(l.n,'A good use of the time.');
+      });
+    });
+  }
   if(a>=18){
     A('gym','Go to the gym','Health','',()=>{applyEff({habit:{gym:18},health:3,skill:{fitness:6}});popupOK('Gym','Gym habit +18, Fitness +6.');});
     A('meditate','Meditate','Health','',()=>{applyEff({happiness:6,discipline:5});popupOK('Meditation','Happiness +6, Discipline +5.');});
@@ -2588,23 +2625,83 @@ function crimeConfirm(id){
   confirmDo(c.n,`If you are caught you could serve up to ${c.sentence[1]} years in prison.`,()=>{
     S.actionsLeft--; noteAction('crime_'+id); doCrime(id); checkAch(); save(); renderAll(); });
 }
+function openPerson(id){ rememberScroll(); S.person=id; renderTab('ppl',false); }
+function closePerson(){ S.person=null; renderTab('ppl',false); }
+function personActions(n){
+  return PERSON_ACTIONS.filter(a=>{
+    if(a.rel!=='*'&&a.rel.split(',').indexOf(n.rel)<0)return false;
+    if(a.min!=null&&n.age<a.min)return false;
+    if(a.max!=null&&n.age>a.max)return false;
+    if(a.id==='cheat'&&!S.npcs.some(x=>x.alive&&(x.rel==='partner'||x.rel==='spouse')))return false;
+    return true;
+  });
+}
+function doPersonAction(id,actId){
+  const n=S.npcs.find(x=>x.id===id); if(!n||!n.alive)return;
+  const a=PERSON_ACTIONS.find(x=>x.id===actId); if(!a)return;
+  if(n.lastSeen===S.age&&a.id!=='cutoff')
+    return popupOK('Already this year',`You have already spent time with ${n.name.split(' ')[0]} this year.`);
+  if(a.cost&&!afford(a.cost))return;
+  if(a.cost){ charge(a.cost); ledger('spend',a.n+' \u2014 '+n.name.split(' ')[0],a.cost); }
+  n.lastSeen=S.age;
+  n.mem=n.mem||[]; n.mem.push({a:S.age,t:a.id});
+  let line='';
+  try{ line=a.run(n)||''; }catch(e){ line='Nothing came of it.'; }
+  if(n.cut){ n.rel='ex'; }
+  popupOK(a.n,line);
+  save(); renderAll();
+}
+function personPage(n){
+  const P=personality(n.pers), o=n.own||{};
+  const story=[o.job?('works as a '+o.job.toLowerCase()):null,
+    o.married?('married'+(o.partner?' to '+esc(o.partner):'')):(o.partner?('seeing '+esc(o.partner)):null),
+    o.kids?(o.kids+' child'+(o.kids>1?'ren':'')):null,
+    o.edu>=3?'went to university':null,
+    o.city?('living in '+esc(o.city)):null,
+    o.retired?'retired':null].filter(Boolean);
+  const acts=personActions(n);
+  const spent=n.lastSeen===S.age;
+  return `<div class="card secthead"><button class="backbtn" onclick="closePerson()">\u2039 Everyone</button>
+      <div class="personhead"><div class="npcav">${avatarMini(n,54)}</div>
+        <div><div class="secttitle">${esc(n.name)}</div>
+        <div class="hsub dim">Your ${esc(n.rel)} \u00b7 ${n.age} \u00b7 ${P.n}</div></div></div>
+      <div class="bt" style="margin-top:10px"><i class="${n.r>=70?'g':n.r>=40?'a':'r'}" style="width:${clamp(n.r)}%"></i></div>
+      <div class="hsub dim" style="margin-top:4px">Relationship ${Math.round(n.r)}/100</div>
+    </div>
+    <div class="card"><div class="ct">Their life</div>
+      <div class="hsub">${story.length?story.join(' \u00b7 '):'You do not know much about what they do.'}</div>
+      ${(n.mem&&n.mem.length)?`<div class="hsub dim mt">You have shared ${n.mem.length} moment${n.mem.length>1?'s':''}.</div>`:''}
+    </div>
+    <div class="card"><div class="ct">What would you like to do?</div>
+      ${spent?'<div class="hsub dim mb">You have already seen them this year.</div>':''}
+      ${acts.map(a=>`<button class="row ${spent&&a.id!=='cutoff'?'spent':''}"
+        onclick="doPersonAction('${n.id}','${a.id}')">
+        <div><div class="rn">${esc(a.n)}</div>${a.d?`<div class="hsub dim">${esc(a.d)}</div>`:''}</div>
+        <i class="price">${a.cost?money(a.cost):'\u203a'}</i></button>`).join('')}
+    </div>`;
+}
 function viewPeople(){
   const live=S.npcs.filter(n=>n.alive);
+  if(S.person){
+    const n=live.find(x=>x.id===S.person);
+    if(n)return personPage(n);
+    S.person=null;
+  }
+  if(!live.length)return '<div class="card"><div class="ct">People</div><div class="muted">There is nobody left.</div></div>';
+  const order=['spouse','partner','child','mother','father','sibling','friend','colleague','teacher','ex'];
   const groups={};
   live.forEach(n=>{ (groups[n.rel]=groups[n.rel]||[]).push(n); });
-  if(!live.length)return '<div class="card"><div class="ct">People</div><div class="muted">Nobody left.</div></div>';
-  return Object.keys(groups).map(g=>`<div class="card"><div class="ct">${g}${groups[g].length>1?'s':''}</div>
-    ${groups[g].map(n=>`<div class="npc">
-      <div class="npcline"><div class="npcwho"><div class="npcav">${avatarMini(n,40)}</div>
-        <div><div class="rn">${esc(n.name)}</div><div class="hsub dim">${n.age} \u00b7 ${personality(n.pers).n}${n.mem&&n.mem.length?' \u00b7 '+n.mem.length+' shared moments':''}</div>
-        ${n.own?`<div class="hsub dim npclife">${[n.own.job?esc(n.own.job):null,
-          n.own.married?('married'+(n.own.kids?', '+n.own.kids+' child'+(n.own.kids>1?'ren':''):'')):null,
-          n.own.city?('living in '+esc(n.own.city)):null].filter(Boolean).join(' \u00b7 ')||'\u2014'}</div>`:''}</div></div>
-      <div class="rel">${Math.round(n.r)}</div></div>
-      <div class="bt"><i class="${n.r>=70?'g':n.r>=40?'a':'r'}" style="width:${clamp(n.r)}%"></i></div>
-      <div class="nact"><button onclick="npcAct('${n.id}','talk')">Talk</button>
-        <button onclick="npcAct('${n.id}','gift')">Gift $300</button>
-        <button onclick="npcAct('${n.id}','argue')">Argue</button></div></div>`).join('')}</div>`).join('');
+  const keys=Object.keys(groups).sort((a,b)=>{
+    const ia=order.indexOf(a), ib=order.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib);
+  });
+  return keys.map(g=>`<div class="card"><div class="ct">${g}${groups[g].length>1?'s':''} \u00b7 ${groups[g].length}</div>
+    ${groups[g].map(n=>`<button class="row" onclick="openPerson('${n.id}')">
+      <div class="npcwho"><div class="npcav">${avatarMini(n,38)}</div>
+        <div><div class="rn">${esc(n.name)}${n.lastSeen===S.age?' <span class="owned">seen</span>':''}</div>
+        <div class="hsub dim">${n.age} \u00b7 ${personality(n.pers).n} \u00b7 ${Math.round(n.r)}/100${
+          n.own&&n.own.job?' \u00b7 '+esc(n.own.job.toLowerCase()):''}</div></div></div>
+      <i>\u203a</i></button>`).join('')}</div>`).join('');
 }
 function npcAct(id,what){
   const n=S.npcs.find(x=>x.id===id); if(!n)return;

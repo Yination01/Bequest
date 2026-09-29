@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','avatar.js','easter.js','achievements.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','avatar.js','easter.js','achievements.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -395,7 +395,7 @@ t('no activity grants free money without limit', () => {
     try { a.f(); } catch(e) {}
     const delta = G.S.money - before;
     // crime pays, but it is not free: it risks prison, a record and your health
-    if (delta > 4000 && !/loan|sellstash|overtime|^crime_|^tr_/.test(a.id)) earners.push(a.id + '+' + delta);
+    if (delta > 4000 && !/loan|sellstash|overtime|^crime_|^tr_|lei_casino/.test(a.id)) earners.push(a.id + '+' + delta);
   });
   return earners.length ? earners.join(', ') : true;
 });
@@ -1321,6 +1321,95 @@ t('the three marketplaces render', () => {
   atAge(35);
   return (G.moneyPropertyMarket().length>400 && G.moneyVehicles().length>400
     && G.moneyBusinesses().length>400) ? true : 'a marketplace failed to render';
+});
+
+/* ================= 4l. PEOPLE, LEISURE AND DEGREES ================= */
+section('4l. People, leisure and degrees');
+
+t('every person action is well formed and runs', () => {
+  const broken=[];
+  G.PERSON_ACTIONS.forEach(a=>{
+    if(!a.n||!a.rel||typeof a.run!=='function'){ broken.push(a.id+' malformed'); return; }
+    atAge(35);
+    const n=G.S.npcs.find(x=>x.alive);
+    if(!n) return;
+    n.rel = a.rel==='*' ? 'friend' : a.rel.split(',')[0];
+    n.alive=true; n.age=Math.max(a.min||20, Math.min(a.max||60, 35)); n.r=60;
+    G.S.money=500000;
+    try{ a.run(n); }catch(e){ broken.push(a.id+': '+e.message); }
+  });
+  return broken.length ? broken.slice(0,4).join(' | ') : true;
+});
+t('each relationship gets its own set of options', () => {
+  atAge(35);
+  const counts={};
+  ['mother','child','spouse','friend','colleague','teacher'].forEach(rel=>{
+    const n=G.S.npcs.find(x=>x.alive); if(!n)return;
+    n.rel=rel; n.age = rel==='child'?9:45; n.alive=true;
+    counts[rel]=G.personActions(n).length;
+  });
+  const vals=Object.values(counts);
+  if(vals.some(v=>v<8)) return 'too few options: '+JSON.stringify(counts);
+  return new Set(vals).size>1 ? true : 'every relationship offers exactly the same thing';
+});
+t('you can only spend time with someone once a year', () => {
+  atAge(35);
+  const n=G.S.npcs.find(x=>x.alive); if(!n) return true;
+  n.rel='friend'; n.r=50; n.lastSeen=null; G.S.money=100000;
+  G.doPersonAction(n.id,'talk');
+  const after=n.r;
+  G.doPersonAction(n.id,'talk');
+  return n.r===after ? true : 'the relationship moved twice in one year';
+});
+t('leisure is offered and every option works', () => {
+  atAge(30); G.S.money=900000;
+  const acts=G.ACTS().filter(a=>a.grp==='Leisure');
+  if(acts.length<10) return 'only '+acts.length+' leisure options';
+  const broken=[];
+  acts.forEach(a=>{ G.S.actionsLeft=5; G.S.money=900000;
+    try{ a.f(); }catch(e){ broken.push(a.id+': '+e.message); } });
+  return broken.length ? broken.join(' | ') : true;
+});
+t('the casino loses money over time, as a casino should', () => {
+  atAge(30);
+  let net = 0;
+  for (let i=0;i<400;i++){
+    G.S.money = 100000; G.S.actionsLeft = 5; G.S.habits.gambling = 0;
+    const before = G.S.money;
+    const act = G.ACTS().find(a => a.id === 'lei_casino');
+    if (!act) return 'no casino';
+    act.f();
+    net += G.S.money - before;
+  }
+  return net < 0 ? true : 'the house lost ' + Math.round(net) + ' over 400 nights';
+});
+t('every degree is well formed and teaches something', () => {
+  const bad=G.DEGREES.filter(d=>!d.n||!d.years||!d.fields||!d.fields.length||!Object.keys(d.skills||{}).length);
+  return bad.length ? bad.map(d=>d.id).join(', ') : true;
+});
+t('a degree actually teaches you its subject', () => {
+  atAge(18);
+  G.S.flags.inCollege=true; G.S.inSchool=true; G.S.degree='compsci';
+  G.S.degreeYears=3; G.S.collegeYears=0;
+  const before=G.S.skills.tech;
+  for(let y=0;y<4 && G.S.alive;y++) G.ageUp();
+  if(!G.S.alive) return true;
+  return (G.S.skills.tech > before + 15 && G.S.degreeDone==='compsci') ? true
+    : `tech ${before} -> ${G.S.skills.tech}, degree ${G.S.degreeDone}`;
+});
+t('a relevant degree helps you get hired', () => {
+  const rel=[], irr=[];
+  for(let i=0;i<60;i++){
+    atAge(25); G.S.edu=3; G.S.skills.tech=70; G.S.stats.smarts=70; G.S.credit=700;
+    G.S.degreeDone='compsci'; G.S.job=null;
+    const j=G.DATA.jobs.find(x=>x.id==='swe');
+    if(G.jobEligible(j)){ G.applyJob(j); rel.push(!!G.S.job); }
+    atAge(25); G.S.edu=3; G.S.skills.tech=70; G.S.stats.smarts=70; G.S.credit=700;
+    G.S.degreeDone='arts'; G.S.job=null;
+    if(G.jobEligible(j)){ G.applyJob(j); irr.push(!!G.S.job); }
+  }
+  const a=rel.filter(Boolean).length, b=irr.filter(Boolean).length;
+  return a>=b ? true : `relevant ${a} vs irrelevant ${b}`;
 });
 
 /* ================= 5. SIMULATION STABILITY ================= */
