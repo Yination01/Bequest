@@ -4166,6 +4166,16 @@ function workPenalty(){
   if(S.disabled)w+=0.2;
   return Math.min(0.9,w);
 }
+/* What your standard of living does to you in a year, on its own. */
+function livingEffect(){
+  const h=HOME(S.home), f=FOODTIER(S.food);
+  const crowd=Math.max(0,householdSize(S)-h.space);
+  return {
+    happy: h.happy*0.35 + f.happy*0.4 - crowd*2,
+    health: h.health*0.3 + f.health*0.4 - crowd*0.5,
+    rep: h.rep*0.15
+  };
+}
 function tickAging(){
   const out=[], a=S.age;
   let d=0;

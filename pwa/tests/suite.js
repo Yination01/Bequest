@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1187,14 +1187,20 @@ t('you cannot rent what you cannot afford', () => {
   return G.S.home === 'parents' ? true : 'moved into ' + G.S.home;
 });
 t('housing and food change how you feel', () => {
-  atAge(30); G.S.home='parents'; G.S.food='skip'; G.S.subs={};
-  G.S.stats.happiness = 50; G.S.stats.health = 50;
-  for (let i=0;i<5 && G.S.alive;i++) G.ageUp();
-  const poor = G.S.stats.happiness;
-  atAge(30); G.S.home='family'; G.S.food='good'; G.S.subs={}; G.S.job={id:'manager',t:'Manager',pay:120000,field:'corp',lvl:3};
-  G.S.stats.happiness = 50; G.S.stats.health = 50; G.S.money = 900000;
-  for (let i=0;i<5 && G.S.alive;i++) G.ageUp();
-  return G.S.stats.happiness > poor ? true : `poor ${Math.round(poor)} vs comfortable ${Math.round(G.S.stats.happiness)}`;
+  atAge(30);
+  G.S.npcs.forEach(n => { if (n.rel==='child'||n.rel==='partner'||n.rel==='spouse') n.rel='friend'; });
+  G.S.dependents = 0;
+  G.S.home='parents'; G.S.food='skip';
+  const poor = G.livingEffect();
+  G.S.home='family'; G.S.food='good';
+  const comfy = G.livingEffect();
+  if (!(comfy.happy > poor.happy && comfy.health > poor.health))
+    return `poor ${JSON.stringify(poor)} vs comfortable ${JSON.stringify(comfy)}`;
+  // and overcrowding must hurt
+  G.S.home='room';
+  for (let i=0;i<4;i++){ const k=G.S.npcs[i]; if(k){ k.rel='child'; k.alive=true; k.age=6; } }
+  const crowded = G.livingEffect();
+  return crowded.happy < comfy.happy ? true : 'overcrowding did not hurt';
 });
 t('auto-pay is off on Hard and Brutal', () => {
   atAge(30); G.S.diff='normal'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='normal').m);
