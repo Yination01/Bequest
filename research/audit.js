@@ -1,5 +1,5 @@
 const fs=require('fs'), path=require('path');
-const PWA='/home/user/life-sim/pwa';
+const PWA=path.join(__dirname,'..','pwa');
 const stub=()=>({innerHTML:'',className:'',dataset:{},scrollTop:0,scrollHeight:0,addEventListener(){},classList:{toggle(){},add(){},remove(){}},value:'',click(){},files:[]});
 global.document={getElementById:()=>stub(),querySelectorAll:()=>[],addEventListener(){},createElement:()=>stub(),body:{appendChild(){},removeChild(){}}};
 global.window=undefined; global.fetch=()=>Promise.reject(); global.alert=()=>{};
@@ -82,4 +82,9 @@ if(G.S.alive){
   if(/\$-/.test(html)) flag('DISPLAY','malformed negative currency like $-100');
   if(/\.\d{3,}/.test(html)) flag('DISPLAY','unrounded long decimals shown');
 }
-console.log(found.length? found.join('\n') : 'no issues found');
+const blocking = found.filter(f => f.startsWith('IMPOSSIBLE STATE') || f.startsWith('DISPLAY') || f.startsWith('ACHIEVEMENT ERROR'));
+const advisory = found.filter(f => !blocking.includes(f));
+if (advisory.length) { console.log('Advisory:'); advisory.forEach(f => console.log('  ' + f)); }
+if (blocking.length) { console.log('\nBLOCKING:'); blocking.forEach(f => console.log('  ' + f)); }
+else console.log('\nNo impossible states found.');
+process.exit(blocking.length ? 1 : 0);
