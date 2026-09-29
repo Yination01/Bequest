@@ -2387,7 +2387,19 @@ const EVENTS = [
 {id:'d_plant', min:18,max:85,w:5, t:'You Were Given a Plant',
  x:['A colleague gives you a houseplant for your desk. It is a test and you both know it.'],
  c:[{l:'Keep it alive', e:{happiness:6,discipline:5}},
-    {l:'Preside over its slow decline', e:{happiness:-3}}]}
+    {l:'Preside over its slow decline', e:{happiness:-3}}]},
+{id:'t_firstphone', min:11,max:16,w:9, once:true, req:{noflags:['has_phone']}, t:'Everyone Else Has One',
+ x:['Every other person in your year has a phone and you are the subject of a running joke about it.',
+    'You have asked three times. This time your parents actually seem to be considering it.'],
+ c:[{l:'Ask your parents for one', e:{rel:{parents:-3}}, phoneRoll:true},
+    {l:'Save up and buy it yourself', e:{discipline:8,happiness:-4}, phoneSave:true},
+    {l:'Say you do not want one', e:{discipline:6,reputation:-4,smarts:3}}]},
+{id:'y_firstinvest', min:19,max:45,w:7, once:true, t:'Everyone Is Talking About It',
+ x:['Two people at work have made money on crypto this year and will not stop mentioning it.',
+    '{friend} has put money into crypto and keeps sending you charts.'],
+ c:[{l:'Put a little in', e:{money:-2000}, cryptoStart:2000},
+    {l:'Put in more than you should', e:{money:-9000}, cryptoStart:9000},
+    {l:'Keep your money in the bank', e:{discipline:5,savings:500}}]}
 ];
 </script>
 <script>
@@ -4047,7 +4059,12 @@ function netWorth(){ return S.money+S.savings+cryptoValue()+assetValue()+propert
 function cryptoValue(){ return S.crypto.units*S.crypto.price; }
 function assetValue(){ return (S.assets||[]).reduce((n,a)=>n+a.value,0); }
 function hasSub(tag){ return Object.keys(S.subs||{}).some(id=>S.subs[id]&&SUB(id)&&SUB(id).tag===tag); }
-function hasItem(tag){ return hasSub(tag)||S.items.some(i=>{const it=DATA.items.find(d=>d.id===i);return it&&(it.tag===tag||it.id===tag);}); }
+function hasItem(tag){
+  /* ownership moved into dedicated systems, so this must see all of them */
+  if(tag==='car'&&(S.vehicles||[]).some(v=>{const d=VEH(v.t);return d&&d.licence;}))return true;
+  if(tag==='vehicle'&&(S.vehicles||[]).length)return true;
+  return hasSub(tag)||S.items.some(i=>{const it=DATA.items.find(d=>d.id===i);return it&&(it.tag===tag||it.id===tag);});
+}
 function newsMod(k){ let m=0; S.news.forEach(n=>{const d=DATA.news.find(x=>x.id===n.id); if(d&&d.m[k]!=null) m+=d.m[k];}); return m; }
 function stage(){ const a=S.age; return a<=5?'Infant':a<=12?'Child':a<=17?'Teen':a<=29?'Young adult':a<=54?'Adult':a<=69?'Older adult':'Elder'; }
 function M(k){ return (S&&S.mods&&S.mods[k]!=null)?S.mods[k]:(k==='luck'?0:1); }
@@ -5017,6 +5034,25 @@ function resolveChoice(ev,ci){
   const extra=[], add=t=>extra.push(tok(t));
 
   if(ch.flag)S.flags[ch.flag]=true;
+  if(ch.phoneRoll){
+    const par=findNPC('mother')||findNPC('father');
+    if(par&&R()<0.45+par.r/220){ S.items.push('phone'); S.flags.has_phone=true;
+      add('They gave in. You have a phone.'); }
+    else add('They said next year. They said that last year.');
+  }
+  if(ch.phoneSave){
+    const c=Math.round(500*country().col);
+    if(S.familyMoney>=c||S.money>=c){ if(S.money>=c)S.money-=c; else S.familyMoney-=c;
+      S.items.push('phone'); S.flags.has_phone=true;
+      add('Months of saved birthday money, and it is yours.'); }
+    else add('You could not get near the price.');
+  }
+  if(ch.cryptoStart){
+    const amt=Math.min(ch.cryptoStart,S.money+ch.cryptoStart);
+    S.crypto.units+=amt/S.crypto.price; S.flags.holds_crypto=true;
+    S.counters.cryptoProfit-=amt;
+    add(`You now hold ${money(amt)} of crypto. It will do whatever it likes.`);
+  }
   if(ch.onlineMeet){
     if(R()<0.72){ const f=addNPC('friend',null,S.age+ri(-3,4),ri(60,85));
       applyEff({happiness:14,skill:{charisma:5}});
@@ -5148,6 +5184,7 @@ function resolveChoice(ev,ci){
   if(ch.expand){ if(!S.businesses.length)add('You have no business.');
     else { const b=S.businesses[0]; S.debt+=40000; b.value+=40000; b.staff=Math.min(BIZ(b.t).maxStaff,b.staff+2); add('You borrowed to expand.'); } }
   if(ch.bizHit&&S.businesses.length){ const b=S.businesses[0]; b.value=Math.max(0,Math.round(b.value*(1+ch.bizHit))); add('Margins are thinner now.'); }
+  if(ch.item==='phone')S.flags.has_phone=true;
   if(ch.item){ if(ch.item==='pet'){ const np=addPet('dog',true); add(`${np.name} is yours now.`); } else if(!S.items.includes(ch.item)){S.items.push(ch.item); add('Added to your things.');} }
   if(ch.sibling){ const s=addNPC('sibling',null,0,70); add(`${s.name} joined the family.`); }
   if(ch.friend){ const f=addNPC('friend',null,S.age,ri(55,80)); add(`${f.name} is now your friend.`); }
@@ -5293,6 +5330,25 @@ function setJob(j){
   S.employer=companyFor(j.field,country().reg);
   S.boss=nameFor(country().reg,pick(['m','f']))+' '+surFor(country().reg);
   S.job={id:j.id,t:j.t,pay:Math.round(j.pay*country().sal*(ut&&j.edu>=3?ut.sal:1)*(S.credsLost?0.6:1)*degMatch),field:j.field,lvl:jobLvl(j),emp:S.employer}; S.jobYears=0; S.jobsHeld++; S.careerLvl=Math.max(S.careerLvl==null?-1:S.careerLvl,jobLvl(j)); }
+/* How far above your proven level you may reach. Time served is one route in;
+   being demonstrably good at the thing is another. */
+function reachAllowance(j){
+  let allow = maxLvl() + 1 + (S.edu>=3?1:0) + (S.edu>=4?1:0);
+  const reqs = Object.keys(j.req||{});
+  if(reqs.length){
+    const margins = reqs.map(k=>{
+      const v = DATA.statKeys.includes(k)?S.stats[k]:(S.skills[k]||0);
+      return v - j.req[k];
+    });
+    const worst = Math.min.apply(null, margins);
+    if(worst >= 25) allow += 2;
+    else if(worst >= 10) allow += 1;
+  }
+  const deg = DEGREE(S.degreeDone);
+  if(deg && deg.fields.indexOf(j.field)>=0) allow += 1;
+  if(S.job && S.job.field===j.field) allow += 1;
+  return allow;
+}
 function jobEligible(j){
   if(S.jailLeft>0)return false;
   if(S.age<14)return false;
@@ -5301,7 +5357,7 @@ function jobEligible(j){
   if(S.disabled&&['trade','security','sport'].includes(j.field))return false;
   if(S.edu<j.edu)return false;
   for(const k in j.req){ const v=DATA.statKeys.includes(k)?S.stats[k]:S.skills[k]; if(v<j.req[k])return false; }
-  return jobLvl(j)<=maxLvl()+1+(S.edu>=3?1:0)+(S.edu>=4?1:0);
+  return jobLvl(j)<=reachAllowance(j);
 }
 function jobLocked(j){
   if(S.jailLeft>0)return 'You are in prison';
@@ -5315,7 +5371,15 @@ function jobLocked(j){
   if(S.edu<j.edu)return 'Needs '+DATA.eduNames[j.edu];
   for(const k in j.req){ const v=DATA.statKeys.includes(k)?S.stats[k]:S.skills[k];
     if(v<j.req[k])return 'Needs '+(DATA.statNames[k]||DATA.skills[k].name)+' '+j.req[k]; }
-  if(jobLvl(j)>maxLvl()+1+(S.edu>=3?1:0)+(S.edu>=4?1:0))return 'Needs more experience';
+  if(jobLvl(j)>reachAllowance(j)){
+    const reqs=Object.keys(j.req||{});
+    if(reqs.length){
+      const k=reqs[0];
+      const nm=DATA.statNames[k]||(DATA.skills[k]&&DATA.skills[k].name)||k;
+      return `Needs more experience, or ${nm} well above ${j.req[k]}`;
+    }
+    return 'Needs more experience';
+  }
   return null;
 }
 function applyJob(j){
@@ -6124,6 +6188,15 @@ function ACTS(){
       confirmDo('Enrol in postgraduate study?',`Two years. Cost ${money(fee)}.`,()=>{
         if(S.money>=fee)S.money-=fee; else {S.debt+=fee;S.flags.student_loan=true;}
         S.flags.inGrad=true;popupOK('Enrolled','Postgraduate study begins.');});});
+  if(a>=16&&!S.flags.licence)A('lessons','Learn to drive','Self',
+    `${money(Math.round(900*country().col))} for lessons and the test`,()=>{
+    const c=Math.round(900*country().col);
+    if(!afford(c))return; charge(c); ledger('spend','Driving lessons',c);
+    if(R()<0.55+S.stats.discipline/300+LUCK()){
+      S.flags.licence=true;
+      popupOK('You passed','You can drive. Cars are now worth looking at.');
+    } else popupOK('You failed','Three points of feedback and another fee next time.');
+  });
   if(a>=16)A('cert','Take a certification','Education','$2,500',()=>{ if(!afford(2500))return; charge(2500); S.edu=Math.max(S.edu,2); popupOK('Certified','You hold a trade certificate.');});
   if(a>=18)A('startbiz',(S.businesses||[]).length?'Manage your businesses':'Start a business','Work',
     (S.businesses||[]).length?`${S.businesses.length} trading`:'Thirteen kinds, from a market stall to a nightclub',
@@ -6334,96 +6407,6 @@ function nextMilestone(){
   const n=M.find(m=>m[0]>a);
   return n?{age:n[0],label:n[1],inYears:n[0]-a}:null;
 }
-function viewLife(){
-  const news=S.news.map(n=>DATA.news.find(d=>d.id===n.id)).filter(Boolean);
-  const fam=S.npcs.filter(n=>n.alive&&['mother','father','sibling','spouse','partner','child'].includes(n.rel)).slice(0,4);
-  const ms=nextMilestone();
-  const showAll=S.logAll;
-  const recent=S.log.slice().reverse().slice(0, showAll?600:26);
-  let h='';
-
-  h+=`<div class="card hi">
-    <div class="histat"><span>${occupation()}</span><b>${stage()}</b></div>
-    <div class="hisplit">
-      <div><div class="hlbl">Age</div><div class="hbig">${S.age}</div></div>
-      <div><div class="hlbl">${S.age<16?'Household':'Net worth'}</div>
-        <div class="hbig sm">${money(S.age<16?S.familyMoney:netWorth())}</div></div>
-      <div><div class="hlbl">Wellbeing</div>
-        <div class="hbig sm ${S.stats.health>=60?'g':'a'}">${Math.round((S.stats.health+S.stats.happiness)/2)}</div></div>
-    </div>
-    ${ms?`<div class="milestone"><span>${IC.cake}</span>
-      <div><b>${esc(ms.label)}</b><div class="hsub dim">in ${ms.inYears} year${ms.inYears>1?'s':''} · age ${ms.age}</div></div></div>`:''}
-  </div>`;
-
-  if(S.age>=20&&S.home==='parents'&&S.job&&!S.flags.hideMoveNudge){
-    h+=`<div class="card"><div class="ct">Still at home</div>
-      <div class="hsub">You are ${S.age} and living with your parents. You are earning \u2014 you could get a place.</div>
-      <div class="nact"><button onclick="setTab('money');openMoney('living')">Look at places</button>
-        <button onclick="S.flags.hideMoveNudge=true;renderTab('life')">Not yet</button></div></div>`;
-  }
-  if(S.billsDue>0||S.arrears>0){
-    h+=`<div class="card" style="border-color:rgba(224,86,91,.5)">
-      <div class="ct" style="color:var(--r)">Outstanding</div>
-      ${S.billsDue>0?`<div class="kv"><span>Bills due</span><b class="bad">${money(S.billsDue)}</b></div>`:''}
-      ${S.arrears>0?`<div class="kv"><span>Arrears</span><b class="bad">${money(S.arrears)}</b></div>`:''}
-      <div class="nact"><button onclick="setTab('money');openMoney('living')">Deal with it</button></div></div>`;
-  }
-  if(S.track){
-    const def=TRACK(S.track.id), r=TRACK_RANK(S.track);
-    const next=def.ranks[S.track.rank+1];
-    const pct=next?Math.min(100,Math.round((S.track.progress-r.need)/(next.need-r.need)*100)):100;
-    const resVal=S.track[def.res]||0;
-    h+=`<div class="card trackcard" style="border-color:${def.colour}55">
-      <div class="ctrow"><div class="ct" style="color:${def.colour}">${esc(def.n)}</div>
-        <div class="hsub dim">${esc(def.resN)} ${Math.round(resVal).toLocaleString()}</div></div>
-      <div class="rn">${esc(r.n)}</div>
-      <div class="hsub dim">${next?`${next.need-S.track.progress} more to ${esc(next.n)}`:'You are at the top.'}</div>
-      <div class="bt" style="margin-top:8px"><i class="${pct>66?'g':pct>33?'a':'r'}" style="width:${pct}%"></i></div>
-      <div class="nact"><button onclick="setTab('act');openSection('${def.n}')">What can I do</button></div>
-    </div>`;
-  }
-  if(S.inSchool){
-    const g=gradeBand(S.gpa==null?50:S.gpa);
-    const t=anyOf('teacher')[0];
-    h+=`<div class="card school"><div class="ctrow"><div class="ct">School</div>
-        <div class="gradechip ${g.n==='A'||g.n==='B'?'g':g.n==='C'?'a':'r'}">${g.n}</div></div>
-      <div class="rn">${esc(S.school||'School')}</div>
-      <div class="hsub dim">${esc(g.label)}${t?` \u00b7 taught by ${esc(t.name)}`:''}</div>
-      <div class="bt" style="margin-top:8px"><i class="${g.n==='A'||g.n==='B'?'g':g.n==='C'?'a':'r'}"
-        style="width:${clamp(S.gpa==null?50:S.gpa)}%"></i></div>
-      <div class="hsub dim" style="margin-top:6px">Grade ${Math.round(S.gpa==null?50:S.gpa)}/100 \u2014
-        ${S.age<17?'this decides which universities will take you':'your final record'}</div>
-      <div class="nact">
-        <button onclick="doAct('study')">Study</button>
-        <button onclick="doAct('club')">Join a club</button>
-        ${S.age>=13?'<button onclick="doAct(\'skipschool\')">Skip class</button>':''}
-        <button onclick="setTab('act');openSection('School')">All school options</button></div>
-    </div>`;
-  }
-  if(fam.length)h+=`<div class="card"><div class="ct">Around you</div>
-    <div class="famrow">${fam.map(n=>`<button class="fam" onclick="setTab('ppl')">
-      <div class="famav">${avatarMini(n,42)}</div>
-      <div class="famn">${esc(n.name.split(' ')[0])}</div>
-      <div class="fambar"><i class="${n.r>=70?'g':n.r>=40?'a':'r'}" style="width:${clamp(n.r)}%"></i></div>
-    </button>`).join('')}</div></div>`;
-
-  if(news.length)h+=`<div class="card news"><div class="ct">${esc(S.paper||'World')}</div>
-    ${news.map(n=>`<div class="ni">${esc(n.t)}</div>`).join('')}</div>`;
-
-  h+=`<div class="card"><div class="ctrow"><div class="ct">Your story</div>
-      <div class="hsub dim">most recent first</div></div>
-    <div class="timeline">${recent.map(l=>l.t.startsWith('\u2014')
-      ?`<div class="tyear">${esc(l.t.replace(/\u2014/g,'').trim())}</div>`
-      :`<div class="tline ${l.k}"><span class="tdot"></span><div><div class="tt">${esc(l.t)}</div></div></div>`).join('')}
-    </div>
-    ${S.log.length>26?`<button class="showmore" onclick="S.logAll=!S.logAll;renderTab('life')">
-      ${showAll?'Show less':'Show all '+S.log.length+' entries'}</button>`:''}</div>`;
-
-  if(S.age===0)h+=`<div class="card tip"><div class="ct">How to play</div>
-    <div class="hsub">Press <b>AGE UP</b> to live a year. Between years, use <b>Activities</b> to study, train,
-    work and build a life. Everything compounds \u2014 habits, skills, relationships and money all carry forward.</div></div>`;
-  return h;
-}
 const GROUP_META={
   'School':      {i:'\u270E', d:'Lessons, clubs, teachers and your grade', o:1},
   'University':  {i:'\u2605', d:'Lectures, placements and student life', o:2},
@@ -6448,6 +6431,107 @@ const GROUP_META={
 function groupMeta(g){ return GROUP_META[g]||{i:'\u2022',d:'',o:50}; }
 function openSection(g){ rememberScroll(); S.section=g; renderTab('act',false); }
 function closeSection(){ S.section=null; renderTab('act',false); }
+function nextMilestone(){
+  const a=S.age;
+  const M=[[5,'You start school'],[13,'Your teenage years begin'],[14,'You can take a part-time job'],
+    [16,'Full-time work and driving open up'],[18,'Adulthood: banking, university, moving out'],
+    [21,'Society treats you as fully grown'],[30,'Your thirties'],[40,'Middle age'],
+    [50,'Your fifties'],[65,'Retirement age'],[80,'Old age'],[100,'A century']];
+  const n=M.find(m=>m[0]>a);
+  return n?{age:n[0],label:n[1],inYears:n[0]-a}:null;
+}
+function viewLife(){
+  const news=S.news.map(n=>DATA.news.find(d=>d.id===n.id)).filter(Boolean);
+  const fam=S.npcs.filter(n=>n.alive&&['mother','father','sibling','spouse','partner','child'].includes(n.rel)).slice(0,4);
+  const ms=nextMilestone();
+  const showAll=S.logAll;
+  const recent=S.log.slice().reverse().slice(0, showAll?600:26);
+
+  /* The hero card and the story are always here. Everything else competes for
+     three slots, most urgent first, so this page cannot silt up again. */
+  const slots=[];
+  const add=(pri,html)=>slots.push({pri,html});
+
+  if(S.billsDue>0||S.arrears>0)add(1,`<div class="card" style="border-color:rgba(224,86,91,.5)">
+      <div class="ct" style="color:var(--r)">Needs dealing with</div>
+      ${S.billsDue>0?`<div class="kv"><span>Bills due</span><b class="bad">${money(S.billsDue)}</b></div>`:''}
+      ${S.arrears>0?`<div class="kv"><span>Arrears</span><b class="bad">${money(S.arrears)}</b></div>`:''}
+      <div class="nact"><button onclick="setTab('money');openMoney('living')">Deal with it</button></div></div>`);
+
+  if(S.inSchool){
+    const g=gradeBand(S.gpa==null?50:S.gpa), t=anyOf('teacher')[0];
+    add(2,`<div class="card school"><div class="ctrow"><div class="ct">School</div>
+        <div class="gradechip ${g.n==='A'||g.n==='B'?'g':g.n==='C'?'a':'r'}">${g.n}</div></div>
+      <div class="rn">${esc(S.school||'School')}</div>
+      <div class="hsub dim">${esc(g.label)}${t?` \u00b7 taught by ${esc(t.name)}`:''}</div>
+      <div class="bt" style="margin-top:8px"><i class="${g.n==='A'||g.n==='B'?'g':g.n==='C'?'a':'r'}"
+        style="width:${clamp(S.gpa==null?50:S.gpa)}%"></i></div>
+      <div class="nact"><button onclick="doAct('study')">Study</button>
+        <button onclick="setTab('act');openSection('School')">All school options</button></div></div>`);
+  }
+
+  if(S.track){
+    const def=TRACK(S.track.id), r=TRACK_RANK(S.track), next=def.ranks[S.track.rank+1];
+    const pct=next?Math.min(100,Math.round((S.track.progress-r.need)/(next.need-r.need)*100)):100;
+    add(3,`<div class="card trackcard" style="border-color:${def.colour}55">
+      <div class="ctrow"><div class="ct" style="color:${def.colour}">${esc(def.n)}</div>
+        <div class="hsub dim">${esc(def.resN)} ${Math.round(S.track[def.res]||0).toLocaleString()}</div></div>
+      <div class="rn">${esc(r.n)}</div>
+      <div class="hsub dim">${next?`${next.need-S.track.progress} more to ${esc(next.n)}`:'You are at the top.'}</div>
+      <div class="bt" style="margin-top:8px"><i class="${pct>66?'g':pct>33?'a':'r'}" style="width:${pct}%"></i></div>
+      <div class="nact"><button onclick="setTab('act');openSection('${def.n}')">What can I do</button></div></div>`);
+  }
+
+  if(S.age>=20&&S.home==='parents'&&S.job&&!S.flags.hideMoveNudge)
+    add(4,`<div class="card"><div class="ct">Still at home</div>
+      <div class="hsub">You are ${S.age}, earning, and living with your parents.</div>
+      <div class="nact"><button onclick="setTab('money');openMoney('living')">Look at places</button>
+        <button onclick="S.flags.hideMoveNudge=true;renderTab('life')">Not yet</button></div></div>`);
+
+  if(news.length)add(5,`<div class="card news"><div class="ct">${esc(S.paper||'World')}</div>
+    ${news.slice(0,3).map(n=>`<div class="ni">${esc(n.t)}</div>`).join('')}</div>`);
+
+  if(fam.length)add(6,`<div class="card"><div class="ct">Around you</div>
+    <div class="famrow">${fam.map(n=>`<button class="fam" onclick="setTab('ppl');openPerson('${n.id}')">
+      <div class="famav">${avatarMini(n,42)}</div>
+      <div class="famn">${esc(n.name.split(' ')[0])}</div>
+      <div class="fambar"><i class="${n.r>=70?'g':n.r>=40?'a':'r'}" style="width:${clamp(n.r)}%"></i></div>
+    </button>`).join('')}</div></div>`);
+
+  const shown=slots.sort((a,b)=>a.pri-b.pri).slice(0,3);
+  const hidden=slots.length-shown.length;
+
+  let h=`<div class="card hi">
+    <div class="histat"><span>${occupation()}</span><b>${stage()}</b></div>
+    <div class="hisplit">
+      <div><div class="hlbl">Age</div><div class="hbig">${S.age}</div></div>
+      <div><div class="hlbl">${S.age<16?'Household':'Net worth'}</div>
+        <div class="hbig sm">${money(S.age<16?S.familyMoney:netWorth())}</div></div>
+      <div><div class="hlbl">Wellbeing</div>
+        <div class="hbig sm ${S.stats.health>=60?'g':'a'}">${Math.round((S.stats.health+S.stats.happiness)/2)}</div></div>
+    </div>
+    ${ms?`<div class="milestone"><span>${IC.cake}</span>
+      <div><b>${esc(ms.label)}</b><div class="hsub dim">in ${ms.inYears} year${ms.inYears>1?'s':''} \u00b7 age ${ms.age}</div></div></div>`:''}
+  </div>`;
+
+  h+=shown.map(x=>x.html).join('');
+  if(hidden>0)h+=`<div class="hsub dim" style="text-align:center;padding:2px 0 6px">
+    ${hidden} more card${hidden>1?'s':''} hidden to keep this readable</div>`;
+
+  h+=`<div class="card"><div class="ctrow"><div class="ct">Your story</div>
+      <div class="hsub dim">most recent first</div></div>
+    <div class="timeline">${recent.map(l=>l.t.startsWith('\u2014')
+      ?`<div class="tyear">${esc(l.t.replace(/\u2014/g,'').trim())}</div>`
+      :`<div class="tline ${l.k}"><span class="tdot"></span><div><div class="tt">${esc(l.t)}</div></div></div>`).join('')}
+    </div>
+    ${S.log.length>26?`<button class="showmore" onclick="S.logAll=!S.logAll;renderTab('life')">
+      ${showAll?'Show less':'Show all '+S.log.length+' entries'}</button>`:''}</div>`;
+
+  if(S.age===0)h+=`<div class="card tip"><div class="ct">How to play</div>
+    <div class="hsub">Press <b>AGE UP</b> to live a year. Between years, use <b>Do</b> to study, train,
+    work and build a life. Everything compounds \u2014 habits, skills, relationships and money all carry forward.</div></div>`;
+  return h;
+}
 function viewActs(){
   const L=ACTS(), max=actionsPerYear();
   const groups={};

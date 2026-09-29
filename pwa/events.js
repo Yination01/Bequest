@@ -1426,5 +1426,17 @@ const EVENTS = [
 {id:'d_plant', min:18,max:85,w:5, t:'You Were Given a Plant',
  x:['A colleague gives you a houseplant for your desk. It is a test and you both know it.'],
  c:[{l:'Keep it alive', e:{happiness:6,discipline:5}},
-    {l:'Preside over its slow decline', e:{happiness:-3}}]}
+    {l:'Preside over its slow decline', e:{happiness:-3}}]},
+{id:'t_firstphone', min:11,max:16,w:9, once:true, req:{noflags:['has_phone']}, t:'Everyone Else Has One',
+ x:['Every other person in your year has a phone and you are the subject of a running joke about it.',
+    'You have asked three times. This time your parents actually seem to be considering it.'],
+ c:[{l:'Ask your parents for one', e:{rel:{parents:-3}}, phoneRoll:true},
+    {l:'Save up and buy it yourself', e:{discipline:8,happiness:-4}, phoneSave:true},
+    {l:'Say you do not want one', e:{discipline:6,reputation:-4,smarts:3}}]},
+{id:'y_firstinvest', min:19,max:45,w:7, once:true, t:'Everyone Is Talking About It',
+ x:['Two people at work have made money on crypto this year and will not stop mentioning it.',
+    '{friend} has put money into crypto and keeps sending you charts.'],
+ c:[{l:'Put a little in', e:{money:-2000}, cryptoStart:2000},
+    {l:'Put in more than you should', e:{money:-9000}, cryptoStart:9000},
+    {l:'Keep your money in the bank', e:{discipline:5,savings:500}}]}
 ];

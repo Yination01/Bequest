@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1697,6 +1697,70 @@ t('text size is applied and saved', () => {
   atAge(30);
   G.setTextSize('xl');
   return G.S.textSize === 'xl' ? true : 'text size not stored';
+});
+
+/* ================= 4p. P0 FIXES ================= */
+section('4p. Reachability and clutter');
+
+t('owning a vehicle counts as owning a car', () => {
+  atAge(30); G.S.items=[]; G.S.vehicles=[{t:'saloon',value:20000,cond:80}];
+  if(!G.hasItem('car')) return 'a saloon on the drive did not register as a car';
+  G.S.vehicles=[{t:'bicycle',value:400,cond:80}];
+  return !G.hasItem('car') ? true : 'a bicycle counted as a car';
+});
+t('every job is reachable by someone who trains for it', () => {
+  const never=[];
+  G.DATA.jobs.forEach(j=>{
+    atAge(34); G.S.edu=Math.max(j.edu,3); G.S.record=[]; G.S.banned=[]; G.S.jailLeft=0;
+    const deg=G.DEGREES.find(d=>d.fields.includes(j.field));
+    if(deg)G.S.degreeDone=deg.id;
+    Object.keys(j.req||{}).forEach(k=>{
+      if(G.DATA.statKeys.includes(k))G.S.stats[k]=Math.min(100,j.req[k]+15);
+      else G.S.skills[k]=Math.min(100,j.req[k]+15);
+    });
+    G.S.careerLvl=5; G.S.job={id:'x',t:'x',pay:1,field:j.field,lvl:4};
+    if(!G.jobEligible(j)) never.push(j.id+' ('+(G.jobLocked(j)||'?')+')');
+  });
+  return never.length ? never.slice(0,5).join(' | ') : true;
+});
+t('skill can substitute for time served', () => {
+  const j=G.DATA.jobs.find(x=>x.id==='chef');
+  atAge(30); G.S.careerLvl=0; G.S.job=null; G.S.edu=2;
+  Object.keys(j.req).forEach(k=>{ G.S.skills[k]=j.req[k]; });
+  const bare=G.reachAllowance(j);
+  Object.keys(j.req).forEach(k=>{ G.S.skills[k]=Math.min(100,j.req[k]+30); });
+  const expert=G.reachAllowance(j);
+  return expert>bare ? true : `allowance ${bare} -> ${expert}`;
+});
+t('the Life tab never shows more than three optional cards', () => {
+  // build the most cluttered life possible
+  atAge(30);
+  G.S.billsDue=5000; G.S.arrears=2000; G.S.inSchool=true; G.S.school='Test Academy';
+  G.S.track={id:'mob',rank:1,progress:8,heat:20,followers:0,standing:0,commend:0,rating:0,years:3};
+  G.S.home='parents'; G.S.job={id:'x',t:'Clerk',pay:30000,field:'corp',lvl:1};
+  G.S.news=[{id:'boom',left:2}];
+  const html=G.viewLife();
+  // the hero card and the story card are always present
+  const cards=(html.match(/class="card/g)||[]).length;
+  return cards<=6 ? true : cards+' cards rendered on the Life tab';
+});
+t('hidden cards are acknowledged rather than silently dropped', () => {
+  atAge(30);
+  G.S.billsDue=5000; G.S.arrears=2000; G.S.inSchool=true;
+  G.S.track={id:'mob',rank:1,progress:8,heat:20,followers:0,standing:0,commend:0,rating:0,years:3};
+  G.S.home='parents'; G.S.job={id:'x',t:'Clerk',pay:30000,field:'corp',lvl:1};
+  G.S.news=[{id:'boom',left:2}]; G.S.flags.hideMoveNudge=false;
+  const html=G.viewLife();
+  return /more cards? hidden/.test(html) ? true : 'no note that cards were hidden';
+});
+t('a licence can be obtained as an adult', () => {
+  atAge(30); G.S.flags.licence=false; G.S.money=50000;
+  const act=G.ACTS().find(a=>a.id==='lessons');
+  if(!act) return 'no way to learn to drive as an adult';
+  let passed=false;
+  for(let i=0;i<40 && !passed;i++){ G.S.flags.licence=false; G.S.money=50000; G.S.actionsLeft=5;
+    act.f(); if(G.S.flags.licence)passed=true; }
+  return passed ? true : 'never passed in 40 attempts';
 });
 
 /* ================= 5. SIMULATION STABILITY ================= */
