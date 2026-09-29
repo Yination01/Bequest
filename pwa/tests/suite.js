@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','avatar.js','easter.js','achievements.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','avatar.js','easter.js','achievements.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,openSection,closeSection,openMoney,closeMoney,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,moneyShop,moneyOverview,moneyBanking,moneyCareers,moneyProperty,SHOP_MIN_AGE,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1146,6 +1146,93 @@ t('income and outgoings are recorded every year', () => {
     if (G.ledgerTotal('income') > 0 || G.ledgerTotal('spend') > 0) { seen = true; break; }
   }
   return seen ? true : 'the ledger stayed empty';
+});
+
+/* ================= 4j. THE COST OF LIVING ================= */
+section('4j. Living costs, bills and credit');
+
+t('overtime builds standing, not just cash', () => {
+  atAge(30);
+  G.S.job = {id:'analyst',t:'Junior Analyst',pay:60000,field:'corp',lvl:1};
+  G.S.perf = 50; G.S.money = 0; G.S.actionsLeft = 5;
+  const act = G.ACTS().find(a => a.id === 'overtime');
+  if (!act) return 'overtime not offered to someone with a job';
+  act.f();
+  return (G.S.money > 0 && G.S.perf > 50) ? true
+    : `money ${G.S.money}, performance ${G.S.perf}`;
+});
+t('bills are itemised and add up', () => {
+  atAge(30); G.S.home='onebed'; G.S.food='normal'; G.S.subs={utilities:true,phone:true,gym:true};
+  const items = G.billsFor();
+  if (!items.length) return 'no bills produced';
+  const hasHousing = items.some(i => /housing/i.test(i.l));
+  const hasFood = items.some(i => /food/i.test(i.l));
+  const hasSub = items.some(i => /gym/i.test(i.l));
+  const total = items.reduce((n,x)=>n+x.a,0);
+  return (hasHousing && hasFood && hasSub && total > 0) ? true
+    : 'missing lines: ' + items.map(i=>i.l).join(', ');
+});
+t('a bigger household costs more to feed', () => {
+  atAge(35); G.S.home='family'; G.S.food='normal'; G.S.subs={};
+  G.S.npcs.forEach(n => { if(n.rel==='child') n.rel='friend'; });
+  const alone = G.billsFor().reduce((n,x)=>n+x.a,0);
+  for (let i=0;i<3;i++){ const k=G.S.npcs[i]; if(k){ k.rel='child'; k.alive=true; k.age=8; } }
+  const family = G.billsFor().reduce((n,x)=>n+x.a,0);
+  return family > alone ? true : `alone ${alone} vs family ${family}`;
+});
+t('you cannot rent what you cannot afford', () => {
+  atAge(25); G.S.job = null; G.S.savings = 0; G.S.money = 500000;
+  G.S.home = 'parents';
+  G.setHome('luxury');
+  return G.S.home === 'parents' ? true : 'moved into ' + G.S.home;
+});
+t('housing and food change how you feel', () => {
+  atAge(30); G.S.home='parents'; G.S.food='skip'; G.S.subs={};
+  G.S.stats.happiness = 50; G.S.stats.health = 50;
+  for (let i=0;i<5 && G.S.alive;i++) G.ageUp();
+  const poor = G.S.stats.happiness;
+  atAge(30); G.S.home='family'; G.S.food='good'; G.S.subs={}; G.S.job={id:'manager',t:'Manager',pay:120000,field:'corp',lvl:3};
+  G.S.stats.happiness = 50; G.S.stats.health = 50; G.S.money = 900000;
+  for (let i=0;i<5 && G.S.alive;i++) G.ageUp();
+  return G.S.stats.happiness > poor ? true : `poor ${Math.round(poor)} vs comfortable ${Math.round(G.S.stats.happiness)}`;
+});
+t('auto-pay is off on Hard and Brutal', () => {
+  atAge(30); G.S.diff='normal'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='normal').m);
+  const easyOk = G.autopayAllowed();
+  G.S.diff='hard'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='hard').m);
+  const hardOk = G.autopayAllowed();
+  return (easyOk && !hardOk) ? true : `normal:${easyOk} hard:${hardOk}`;
+});
+t('unpaid bills become arrears and damage your credit', () => {
+  atAge(30);
+  G.S.diff='hard'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='hard').m);
+  G.S.home='family'; G.S.food='good'; G.S.subs={utilities:true,gym:true,therapy_s:true};
+  G.S.money=0; G.S.cards=[]; G.S.credit=700; G.S.arrears=0; G.S.job=null;
+  for (let i=0;i<4 && G.S.alive;i++) G.ageUp();
+  return (G.S.arrears > 0 && G.S.credit < 700) ? true
+    : `arrears ${Math.round(G.S.arrears)}, credit ${Math.round(G.S.credit)}`;
+});
+t('credit cards are gated by score and can be paid down', () => {
+  atAge(30); G.S.cards=[]; G.S.credit=520; G.S.money=100000;
+  G.applyCard('black');
+  if (G.S.cards.length) return 'a poor score got the black card';
+  G.S.credit=830; G.applyCard('black');
+  if (!G.S.cards.length) return 'a strong score was refused';
+  G.S.cards[0].bal = 5000;
+  G.payCard('black', true);
+  return G.S.cards[0].bal === 0 ? true : 'balance did not clear';
+});
+t('a card absorbs a shortfall instead of instant arrears', () => {
+  atAge(30); G.S.credit=700; G.S.cards=[{id:'standard',bal:0}];
+  G.S.money=0; G.S.arrears=0; G.S.billsDue=2000; G.S.billItems=[{l:'Test',a:2000}];
+  G.payBills(null,false);
+  return (G.S.cards[0].bal > 0 && G.S.arrears === 0) ? true
+    : `card ${G.S.cards[0].bal}, arrears ${G.S.arrears}`;
+});
+t('the living and credit screens render', () => {
+  atAge(30);
+  const a = G.moneyLiving(), b = G.moneyCards();
+  return (a.length > 400 && b.length > 200) ? true : 'screens did not render';
 });
 
 /* ================= 5. SIMULATION STABILITY ================= */

@@ -97,7 +97,9 @@ function migrate(){
   if(!S.slot)S.slot=1;
   if(!S.assets)S.assets=[];
   if(!S.countriesLived)S.countriesLived=[S.country];
-  if(!S.cd)S.cd={}; if(!S.echoes)S.echoes=[]; if(!S.ledger)S.ledger={income:[],spend:[]}; if(!S.pets)S.pets=[]; if(S.track===undefined)S.track=null; if(!S.orientation)S.orientation='straight'; if(!S.banned)S.banned=[]; if(S.dependents==null)S.dependents=0;
+  if(!S.cd)S.cd={}; if(!S.echoes)S.echoes=[]; if(!S.ledger)S.ledger={income:[],spend:[]};
+  if(!S.home)S.home='parents'; if(!S.food)S.food='basic'; if(!S.subs)S.subs={};
+  if(!S.cards)S.cards=[]; if(S.arrears==null)S.arrears=0; if(!S.pets)S.pets=[]; if(S.track===undefined)S.track=null; if(!S.orientation)S.orientation='straight'; if(!S.banned)S.banned=[]; if(S.dependents==null)S.dependents=0;
   if(!S.lean){const T=['i','c','t','y','a','o','s','w','m','r','h','x','f','b'].sort(()=>R()-0.5);S.lean=T.slice(0,4);S.away=T.slice(4,7);}
   if(!S.conditions)S.conditions=[]; if(!S.record)S.record=[]; if(!S.loans)S.loans=[];
   if(S.actionsLeft==null)S.actionsLeft=3; if(!S.actLog)S.actLog={}; if(S.perf==null)S.perf=60; if(S.gpa==null)S.gpa=50; if(S.parole==null)S.parole=0;
@@ -200,6 +202,8 @@ function hasEgg(id){ return !!META.eggs[id]; }
 function eggRoll(tier){ const m=(S&&S.traits&&S.traits.indexOf('marked')>=0)?2.5:1; return R() < (EGG_TIERS[tier]||0)*m; }
 function unlockedTraits(){ return Object.keys(EGG_UNLOCKS)
   .filter(k=>hasEgg(k)&&EGG_UNLOCKS[k].kind==='trait').map(k=>EGG_UNLOCKS[k].id); }
+function autopayAllowed(){ return diffRank()<2; }          // Easy and Normal only
+function autopayOn(){ return autopayAllowed() && S.autopay!==false; }
 function isPlus(){ return !!(META.premium&&(META.premium.plus||META.premium.lifetime)); }
 function requirePlus(what){
   if(isPlus())return true;
@@ -212,7 +216,8 @@ function country(){ return DATA.countries.find(c=>c.id===S.country)||DATA.countr
 function netWorth(){ return S.money+S.savings+cryptoValue()+assetValue()+(S.property?S.property.value-S.property.mortgage:0)+(S.business?S.business.value:0)-S.debt; }
 function cryptoValue(){ return S.crypto.units*S.crypto.price; }
 function assetValue(){ return (S.assets||[]).reduce((n,a)=>n+a.value,0); }
-function hasItem(tag){ return S.items.some(i=>{const it=DATA.items.find(d=>d.id===i);return it&&(it.tag===tag||it.id===tag);}); }
+function hasSub(tag){ return Object.keys(S.subs||{}).some(id=>S.subs[id]&&SUB(id)&&SUB(id).tag===tag); }
+function hasItem(tag){ return hasSub(tag)||S.items.some(i=>{const it=DATA.items.find(d=>d.id===i);return it&&(it.tag===tag||it.id===tag);}); }
 function newsMod(k){ let m=0; S.news.forEach(n=>{const d=DATA.news.find(x=>x.id===n.id); if(d&&d.m[k]!=null) m+=d.m[k];}); return m; }
 function stage(){ const a=S.age; return a<=5?'Infant':a<=12?'Child':a<=17?'Teen':a<=29?'Young adult':a<=54?'Adult':a<=69?'Older adult':'Elder'; }
 function M(k){ return (S&&S.mods&&S.mods[k]!=null)?S.mods[k]:(k==='luck'?0:1); }
@@ -266,7 +271,7 @@ function newGame(opts){
     money:0, savings:0, debt:0, familyMoney:Math.round(ri(tier.money[0],tier.money[1])*mods.start),
     crypto:{units:0,price:100}, property:null, assets:[], business:null,
     items:[], job:null, jobYears:0, careerLvl:null, edu:0, inSchool:false, followers:0, totalWorked:0,
-    lean, away, echoes:[], track:null, pets:[], orientation:null, outTo:false, npcs:[], flags:{}, log:[], news:[], seen:{}, cd:{}, moreView:'stats', employer:null, boss:null, school:null, paper:null, slot:(opts.slot||1),
+    lean, away, echoes:[], track:null, home:'parents', food:'basic', subs:{}, cards:[], autopay:null, arrears:0, pets:[], orientation:null, outTo:false, npcs:[], flags:{}, log:[], news:[], seen:{}, cd:{}, moreView:'stats', employer:null, boss:null, school:null, paper:null, slot:(opts.slot||1),
     jailLeft:0, yearsJailed:0, crimesCommitted:0, jobsHeld:0, firedCount:0,
     peakNet:0, peakIncome:0, marriedYears:0, childrenCount:0, donated:0, illness:null,
     banned:[], dependents:0, credsLost:false, actionsLeft:2, actLog:{}, logAll:false, conditions:[], record:[], credit:null, parole:0, perf:60, gpa:50, uniTier:null, disabled:false, loans:[],
@@ -551,6 +556,101 @@ function tickHabits(){
   }
   return out;
 }
+function billsFor(){
+  const c=country(), h=HOME(S.home), f=FOODTIER(S.food);
+  const people=householdSize(S);
+  const items=[];
+  if(S.age>=18){
+    if(h.cost>0)items.push({l:'Housing \u2014 '+h.n.toLowerCase(),a:Math.round(h.cost*c.col)});
+    items.push({l:'Food \u2014 '+f.n.toLowerCase()+(people>1?` (${people} people)`:''),
+                a:Math.round(f.cost*c.col*(1+(people-1)*0.6))});
+    Object.keys(S.subs).forEach(id=>{
+      if(!S.subs[id])return; const sub=SUB(id); if(!sub)return;
+      let a=sub.cost;
+      if(id==='utilities')a=Math.round(a*(0.6+h.space*0.35));
+      items.push({l:sub.n,a:Math.round(a*c.col)});
+    });
+    (S.cards||[]).forEach(cd=>{ const def=CARD(cd.id);
+      if(def&&def.fee)items.push({l:def.n+' fee',a:def.fee}); });
+  }
+  return items;
+}
+function tickBills(out){
+  if(S.age<18)return;
+  /* last year's bills, if you never paid them, do not simply disappear */
+  if(S.billsDue>0){
+    S.arrears+=S.billsDue;
+    S.credit=Math.max(300,(S.credit==null?600:S.credit)-30);
+    out.push(`You never paid last year\u2019s ${money(S.billsDue)} of bills. It is now arrears.`);
+    S.billsDue=0; S.billItems=[];
+  }
+  const items=billsFor();
+  const total=items.reduce((n,x)=>n+x.a,0);
+  if(total<=0)return;
+  S.billsDue=total; S.billItems=items;
+  if(autopayOn()){
+    payBills(out,true);
+  } else {
+    out.push(`Bills of ${money(total)} are due. Pay them from the Money tab.`);
+  }
+}
+function payBills(out,auto){
+  const total=S.billsDue||0;
+  if(total<=0)return false;
+  const use=Math.min(S.money,total);
+  S.money-=use;
+  const short=total-use;
+  (S.billItems||[]).forEach(x=>ledger('spend',x.l,x.a));
+  if(short>0){
+    const onCard=chargeToCard(short);
+    if(onCard<short){
+      S.arrears+=(short-onCard);
+      S.credit=Math.max(300,(S.credit==null?600:S.credit)-40);
+      if(out)out.push(`You could not cover ${money(short-onCard)} of your bills. It has gone into arrears.`);
+    } else if(out)out.push(`Bills of ${money(total)} paid, ${money(onCard)} of it on credit.`);
+  } else if(out)out.push(`${auto?'Bills paid automatically':'Bills paid'}: ${money(total)}.`);
+  S.billsDue=0; S.billItems=[];
+  return true;
+}
+/* arrears bite: eviction, downgrades, credit damage */
+function tickArrears(out){
+  if(S.arrears<=0)return;
+  S.arrears=Math.round(S.arrears*1.08);
+  S.credit=Math.max(300,(S.credit==null?600:S.credit)-15);
+  S.stats.happiness=clamp(S.stats.happiness-4);
+  out.push(`You owe ${money(S.arrears)} in arrears.`);
+  if(S.arrears>Math.round(18000*country().col)&&S.home!=='parents'&&R()<0.4){
+    const idx=HOUSING.findIndex(h=>h.id===S.home);
+    S.home=HOUSING[Math.max(0,idx-2)].id;
+    S.arrears=Math.round(S.arrears*0.5);
+    out.push(`You were evicted. You are now in ${HOME(S.home).n.toLowerCase()}.`);
+    logLine('You were evicted.','bad');
+  }
+}
+function chargeToCard(amount){
+  let left=amount, used=0;
+  (S.cards||[]).forEach(cd=>{
+    if(left<=0)return; const def=CARD(cd.id); if(!def)return;
+    const room=Math.max(0,def.limit-cd.bal);
+    const take=Math.min(room,left);
+    cd.bal+=take; left-=take; used+=take;
+  });
+  return used;
+}
+function tickCards(out){
+  (S.cards||[]).forEach(cd=>{
+    const def=CARD(cd.id); if(!def||cd.bal<=0)return;
+    const interest=Math.round(cd.bal*def.apr);
+    cd.bal+=interest;
+    const min=Math.round(cd.bal*0.05)+25;
+    if(autopayOn()&&S.money>=min){ S.money-=min; cd.bal-=min; ledger('spend',def.n+' payment',min);
+      S.credit=Math.min(850,(S.credit==null?600:S.credit)+4); }
+    else if(S.money<min){ S.credit=Math.max(300,(S.credit==null?600:S.credit)-35);
+      out.push(`You missed the minimum payment on your ${def.n.toLowerCase()}.`); }
+    if(cd.bal>def.limit*0.95)out.push(`Your ${def.n.toLowerCase()} is at its limit.`);
+    if(def.perk&&def.id==='black')S.stats.reputation=clamp(S.stats.reputation+6);
+  });
+}
 function tickFinance(){
   const out=[], c=country();
   if(S.job&&S.jailLeft===0){
@@ -575,10 +675,9 @@ function tickFinance(){
     S.skills.business=clamp(S.skills.business+1);
   } else if(S.job&&S.jailLeft>0){ out.push('You lost your job while in prison.'); S.job=null; }
   if(S.age>=18){
-    /* lifestyle inflation: the more you earn, the more life costs */
-    const infl=1+Math.min(1.2,Math.max(0,(S.peakIncome-40000))/220000);
-    const col=Math.round(10500*c.col*(1+newsMod('prices'))*(S.property?1.15:1)*M('cost')*infl);
-    S.money-=col; ledger('spend','Living costs',col); out.push(`Living costs: ${money(-col)}.`);
+    /* everyday incidentals on top of the itemised bills */
+    const col=Math.round(2600*c.col*(1+newsMod('prices'))*M('cost'));
+    S.money-=col; ledger('spend','Day-to-day spending',col);
     if(!S.job&&!S.flags.retired&&S.age<65){ const b=Math.round(6500*c.col); S.money+=b; ledger('earn','Unemployment support',b); out.push(`Unemployment support: ${money(b)}.`); }
     if(S.fostering){
       const allow=Math.round(5200*c.col), spend=Math.round(4400*c.col);
@@ -594,6 +693,7 @@ function tickFinance(){
     out.push(profit>=0?`Your business made ${money(profit)}.`:`Your business lost ${money(-profit)}.`);
     if(S.business.value<1000){ out.push('Your business folded.'); S.business=null; S.flags.owns_business=false; }
   }
+  tickBills(out); tickCards(out); tickArrears(out);
   if(S.savings>0)S.savings+=Math.round(S.savings*0.025);
   /* loans */
   S.loans=(S.loans||[]).filter(l=>{
@@ -2028,7 +2128,12 @@ function ACTS(){
     A('promote','Ask for promotion','Work','',()=>tryPromote());
     A('overtime','Work overtime','Work','Money now, experience too',()=>{
       if(!S.job)return popupOK('No job','You are not working.');
-      const b=Math.round(S.job.pay*0.15);applyEff({money:b,health:-4,happiness:-6,discipline:3});popupOK('Overtime',`You earned an extra ${money(b)}.`);});
+      const b=Math.round(S.job.pay*0.15);
+      applyEff({money:b,health:-4,happiness:-6,discipline:3,skill:{business:3}});
+      ledger('earn','Overtime',b);
+      const gain=ri(4,9); S.perf=clamp((S.perf==null?60:S.perf)+gain);
+      S.jobYears+=0.5;
+      popupOK('Overtime',`You earned an extra ${money(b)}.\nYour standing at work rose to ${Math.round(S.perf)}/100 (${perfBand(S.perf).n}), which counts towards promotion.`);});
     A('quit','Quit your job','Work','',()=>{ if(!S.job)return popupOK('No job','You are not working.');
       return confirmDo('Quit?',`Leave your role as ${S.job.t}?`,()=>{S.job=null;applyEff({happiness:6});popupOK('Resigned','You quit.');}); });
   }
@@ -2255,6 +2360,19 @@ function viewLife(){
       <div><b>${esc(ms.label)}</b><div class="hsub dim">in ${ms.inYears} year${ms.inYears>1?'s':''} · age ${ms.age}</div></div></div>`:''}
   </div>`;
 
+  if(S.age>=20&&S.home==='parents'&&S.job&&!S.flags.hideMoveNudge){
+    h+=`<div class="card"><div class="ct">Still at home</div>
+      <div class="hsub">You are ${S.age} and living with your parents. You are earning \u2014 you could get a place.</div>
+      <div class="nact"><button onclick="setTab('money');openMoney('living')">Look at places</button>
+        <button onclick="S.flags.hideMoveNudge=true;renderTab('life')">Not yet</button></div></div>`;
+  }
+  if(S.billsDue>0||S.arrears>0){
+    h+=`<div class="card" style="border-color:rgba(224,86,91,.5)">
+      <div class="ct" style="color:var(--r)">Outstanding</div>
+      ${S.billsDue>0?`<div class="kv"><span>Bills due</span><b class="bad">${money(S.billsDue)}</b></div>`:''}
+      ${S.arrears>0?`<div class="kv"><span>Arrears</span><b class="bad">${money(S.arrears)}</b></div>`:''}
+      <div class="nact"><button onclick="setTab('money');openMoney('living')">Deal with it</button></div></div>`;
+  }
   if(S.track){
     const def=TRACK(S.track.id), r=TRACK_RANK(S.track);
     const next=def.ranks[S.track.rank+1];
@@ -2511,19 +2629,144 @@ function moneyProperty(){
      ${S.assets.map(a=>{const it=DATA.items.find(i=>i.id===a.id)||{n:a.id};
        return `<div class="kv"><span>${esc(it.n)}</span><b>${money(a.value)}</b></div>`;}).join('')}</div>`:''}`;
 }
+function setHome(id){
+  const h=HOME(id), c=country();
+  const income=S.job?S.job.pay:(S.savings>50000?40000:0);
+  if(h.need>income&&h.id!=='parents')
+    return popupOK('Refused',`${h.n} needs about ${money(Math.round(h.need*c.col))} a year of income. You have ${money(Math.round(income))}.`);
+  const dep=Math.round(h.dep*c.col);
+  if(dep>0&&!afford(dep))return;
+  if(dep>0){ charge(dep); ledger('spend','Deposit on '+h.n.toLowerCase(),dep); }
+  S.home=id; logLine(`You moved into ${h.n.toLowerCase()}.`);
+  popupOK('Moved in',`${h.n}. ${dep>0?'Deposit of '+money(dep)+' paid.':''}`);
+  save(); renderAll();
+}
+function setFood(id){ S.food=id; popupOK('Shopping',`You now ${FOODTIER(id).n.toLowerCase()}.`); save(); renderAll(); }
+function toggleSub(id){
+  S.subs=S.subs||{};
+  const sub=SUB(id);
+  if(S.subs[id]){ S.subs[id]=false; popupOK('Cancelled',`${sub.n} cancelled.`); }
+  else { S.subs[id]=true; popupOK('Started',`${sub.n} \u2014 about ${money(Math.round(sub.cost*country().col))} a year.`); }
+  save(); renderAll();
+}
+function toggleAutopay(){
+  if(!autopayAllowed())return popupOK('Not on this difficulty',
+    'On Hard and Brutal you pay your own bills. That is part of the setting.');
+  S.autopay=!autopayOn();
+  popupOK('Payments',S.autopay?'Bills will be paid automatically.':'You will pay bills yourself each year.');
+  save(); renderAll();
+}
+function payBillsNow(){
+  if(!(S.billsDue>0))return popupOK('Nothing due','Your bills are settled.');
+  payBills(null,false); popupOK('Paid','Your bills are settled.'); save(); renderAll();
+}
+function payArrears(){
+  if(S.arrears<=0)return popupOK('Nothing owed','You are not in arrears.');
+  const pay=Math.min(S.money,S.arrears);
+  if(pay<=0)return popupOK('No money','You have nothing to pay with.');
+  S.money-=pay; S.arrears-=pay; ledger('spend','Arrears',pay);
+  S.credit=Math.min(850,(S.credit==null?600:S.credit)+10);
+  popupOK('Paid',`${money(pay)} off your arrears. ${money(S.arrears)} remaining.`); save(); renderAll();
+}
+function applyCard(id){
+  const def=CARD(id), sc=S.credit==null?600:S.credit;
+  if((S.cards||[]).some(c=>c.id===id))return popupOK('You have one','You already hold that card.');
+  if(sc<def.minScore)return popupOK('Declined',
+    `${def.n} needs a score of ${def.minScore}. Yours is ${Math.round(sc)}.`);
+  S.cards=S.cards||[]; S.cards.push({id:id,bal:0});
+  S.credit=Math.max(300,sc-10);
+  popupOK('Approved',`${def.n}, limit ${money(def.limit)} at ${Math.round(def.apr*100)}% APR.`);
+  save(); renderAll();
+}
+function payCard(id,all){
+  const cd=(S.cards||[]).find(c=>c.id===id); if(!cd||cd.bal<=0)return popupOK('Nothing owed','That card is clear.');
+  const want=all?cd.bal:Math.min(cd.bal,Math.round(cd.bal*0.25)+50);
+  const pay=Math.min(S.money,want);
+  if(pay<=0)return popupOK('No money','You cannot pay anything towards it.');
+  S.money-=pay; cd.bal-=pay; ledger('spend',CARD(id).n+' payment',pay);
+  S.credit=Math.min(850,(S.credit==null?600:S.credit)+6);
+  popupOK('Paid',`${money(pay)} off. ${money(cd.bal)} remaining.`); save(); renderAll();
+}
+function moneyLiving(){
+  if(S.age<18)return '<div class="card"><div class="muted">You live with your family. This opens at 18.</div></div>';
+  const c=country(), h=HOME(S.home), f=FOODTIER(S.food), people=householdSize(S);
+  const items=billsFor(), total=items.reduce((n,x)=>n+x.a,0);
+  return `<div class="card"><div class="ctrow"><div class="ct">Your commitments</div>
+      <div class="hsub dim">${money(total)}/yr</div></div>
+    ${items.map(x=>`<div class="lrow"><span>${esc(x.l)}</span><b>${money(x.a)}</b></div>`).join('')}
+    <div class="kv mt"><span>Household</span><b>${people} ${people===1?'person':'people'} \u00b7 ${h.space} space${h.space===1?'':'s'}</b></div>
+    ${S.billsDue>0?`<div class="hardnote">${money(S.billsDue)} due now</div>
+      <button class="btn wide mt" onclick="payBillsNow()">Pay ${money(S.billsDue)}</button>`:''}
+    ${S.arrears>0?`<div class="hardnote" style="color:var(--r)">${money(S.arrears)} in arrears</div>
+      <button class="btn wide mt" onclick="payArrears()">Clear arrears</button>`:''}
+    <button class="row mt" onclick="toggleAutopay()"><div><div class="rn">Automatic payment</div>
+      <div class="hsub dim">${autopayAllowed()?(autopayOn()?'On \u2014 bills settle themselves':'Off \u2014 you pay each year'):'Not available on '+diffDef(S.diff).n}</div></div>
+      <i>${autopayOn()?'\u2713':'\u25CB'}</i></button>
+  </div>
+  <div class="card"><div class="ct">Where you live</div>
+    ${HOUSING.map(x=>{const cur=x.id===S.home, income=S.job?S.job.pay:0;
+      const afford=x.need<=income||x.id==='parents';
+      return `<button class="row ${cur?'locked':''}" ${cur?'':`onclick="setHome('${x.id}')"`}>
+        <div><div class="rn">${esc(x.n)}${cur?' <span class="owned">current</span>':''}</div>
+        <div class="hsub dim">${x.cost?money(Math.round(x.cost*c.col))+'/yr':'free'}${x.dep?' \u00b7 '+money(Math.round(x.dep*c.col))+' deposit':''}
+        ${x.need?' \u00b7 needs '+money(Math.round(x.need*c.col))+' income':''}${afford?'':' \u00b7 <span class="bad">out of reach</span>'}</div></div>
+        <i>${cur?'\u2713':'\u203a'}</i></button>`;}).join('')}
+  </div>
+  <div class="card"><div class="ct">How you eat</div>
+    ${FOOD.map(x=>{const cur=x.id===S.food;
+      return `<button class="row ${cur?'locked':''}" ${cur?'':`onclick="setFood('${x.id}')"`}>
+        <div><div class="rn">${esc(x.n)}${cur?' <span class="owned">current</span>':''}</div>
+        <div class="hsub dim">${money(Math.round(x.cost*c.col))}/yr \u00b7 Health ${x.health>0?'+':''}${x.health}, Happiness ${x.happy>0?'+':''}${x.happy}</div></div>
+        <i>${cur?'\u2713':'\u203a'}</i></button>`;}).join('')}
+  </div>
+  ${[...new Set(SUBS.map(x=>x.cat))].map(cat=>`<div class="card"><div class="ct">${cat}</div>
+    ${SUBS.filter(x=>x.cat===cat).map(x=>{const on=!!(S.subs||{})[x.id];
+      return `<button class="row" onclick="toggleSub('${x.id}')">
+        <div><div class="rn">${esc(x.n)}${on?' <span class="owned">active</span>':''}</div>
+        <div class="hsub dim">${money(Math.round(x.cost*c.col))}/yr${x.d?' \u00b7 '+esc(x.d):''}</div></div>
+        <i>${on?'\u2713':'\u25CB'}</i></button>`;}).join('')}</div>`).join('')}`;
+}
+function moneyCards(){
+  if(S.age<18)return '<div class="card"><div class="muted">Credit opens at 18.</div></div>';
+  const sc=Math.round(S.credit==null?600:S.credit), band=creditBand(sc);
+  return `<div class="card"><div class="ct">Credit</div>
+    <div class="budgetbar"><div><div class="hlbl">Score</div><div>${sc}</div></div>
+      <div><div class="hlbl">Band</div><div>${band.n}</div></div>
+      <div><div class="hlbl">Owed</div><div class="bbad">${money((S.cards||[]).reduce((n,c)=>n+c.bal,0))}</div></div></div>
+    <div class="hsub dim">Paying on time lifts your score. Missing payments, debt and arrears drag it down.</div>
+  </div>
+  ${(S.cards||[]).length?`<div class="card"><div class="ct">Your cards</div>
+    ${S.cards.map(cd=>{const def=CARD(cd.id);
+      return `<div class="npc"><div class="npcline"><div><div class="rn">${esc(def.n)}</div>
+        <div class="hsub dim">${money(cd.bal)} of ${money(def.limit)} \u00b7 ${Math.round(def.apr*100)}% APR</div></div></div>
+        <div class="bt"><i class="${cd.bal/def.limit>0.8?'r':cd.bal/def.limit>0.4?'a':'g'}"
+          style="width:${Math.min(100,Math.round(cd.bal/def.limit*100))}%"></i></div>
+        <div class="nact"><button onclick="payCard('${cd.id}',false)">Pay some</button>
+          <button onclick="payCard('${cd.id}',true)">Pay it off</button></div></div>`;}).join('')}</div>`:''}
+  <div class="card"><div class="ct">Available to you</div>
+    ${CARDS.map(def=>{const have=(S.cards||[]).some(c=>c.id===def.id), ok=sc>=def.minScore;
+      return `<button class="row ${have||!ok?'locked':''}" ${(have||!ok)?'':`onclick="applyCard('${def.id}')"`}>
+        <div><div class="rn">${esc(def.n)}${have?' <span class="owned">held</span>':''}</div>
+        <div class="hsub dim">Needs ${def.minScore} \u00b7 ${money(def.limit)} limit \u00b7 ${Math.round(def.apr*100)}% APR${def.fee?' \u00b7 '+money(def.fee)+' a year':''}<br>${esc(def.perk)}</div></div>
+        <i>${have?'\u2713':ok?'\u203a':'\u1F512'}</i></button>`;}).join('')}</div>`;
+}
 function viewMoney(){
   const cats=[...new Set(DATA.items.filter(i=>!i.secret).map(i=>i.cat))];
   if(S.msection){
     const sec=S.msection;
     const body = sec==='overview'?moneyOverview() : sec==='bank'?moneyBanking()
       : sec==='careers'?moneyCareers() : sec==='property'?moneyProperty()
+      : sec==='living'?moneyLiving() : sec==='cards'?moneyCards()
       : sec.indexOf('shop:')===0?moneyShop(sec.slice(5)) : moneyOverview();
     const title = sec==='overview'?'Budget' : sec==='bank'?'Banking' : sec==='careers'?'Careers'
-      : sec==='property'?'Property' : sec.slice(5);
+      : sec==='property'?'Property' : sec==='living'?'Living costs' : sec==='cards'?'Credit'
+      : sec.slice(5);
     return `<div class="card secthead"><button class="backbtn" onclick="closeMoney()">\u2039 Money</button>
       <div class="secttitle">${esc(title)}</div></div>` + body;
   }
   const tiles=[['overview','\u25A6','Budget','In, out and net worth'],
+               ['living','\u2302','Living costs','Home, food, bills, subscriptions'],
+               ['cards','\u25A4','Credit','Score, cards and balances'],
                ['bank','\u00A4','Banking','Savings, debt, investments'],
                ['careers','\u25B2','Careers','Every job and what it needs'],
                ['property','\u2302','Property','Buy, let, and other holdings']]
