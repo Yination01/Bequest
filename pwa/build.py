@@ -14,7 +14,16 @@ sysm  = (d/'systems.js').read_text()
 avat  = (d/'avatar.js').read_text()
 egg   = (d/'easter.js').read_text()
 game  = (d/'game.js').read_text()
-icon  = 'data:image/png;base64,' + (d/'.icon-b64.txt').read_text().strip()
+# Derive the inline icon from the committed PNG so the build has no hidden
+# dependency on a generated file. Falls back to the cache if it exists.
+def _icon_data_uri():
+    cache = d / '.icon-b64.txt'
+    if cache.exists():
+        return 'data:image/png;base64,' + cache.read_text().strip()
+    png = d / 'icons' / 'icon-192.png'
+    return 'data:image/png;base64,' + base64.b64encode(png.read_bytes()).decode()
+
+icon  = _icon_data_uri()
 
 game = game.replace('src="ICON"', 'src="%s"' % icon)
 
