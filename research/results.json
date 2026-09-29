@@ -1,0 +1,75 @@
+{
+  "note": "Competitor figures come from MODELS built on documented mechanics, not the real apps.",
+  "table": {
+    "BitLife": {
+      "lives": 100,
+      "withinLifeUniqueness": 0.44414363793518885,
+      "betweenLifeOverlap": 0.09242896479192417,
+      "emptyYearRate": 0.1447971151982948,
+      "eventsPerYear": 1.23834219286731,
+      "midGameSag": 0.9892528854601906,
+      "systemsPerLife": 5.78,
+      "medianAge": 74,
+      "medianWealth": 192498,
+      "ageSpread": 30,
+      "npcAutonomy": 0.35000000000000064,
+      "grounded": 0.19999999999999962,
+      "humour": 0.9000000000000008,
+      "agency": 0.34
+    },
+    "AltLife": {
+      "lives": 100,
+      "withinLifeUniqueness": 0.38441447170170817,
+      "betweenLifeOverlap": 0.08945732523493177,
+      "emptyYearRate": 0.2795383262475591,
+      "eventsPerYear": 0.938636233908388,
+      "midGameSag": 0.9926372152140367,
+      "systemsPerLife": 6,
+      "medianAge": 68,
+      "medianWealth": 25986,
+      "ageSpread": 29,
+      "npcAutonomy": 0.17999999999999983,
+      "grounded": 0.549999999999999,
+      "humour": 0.4500000000000004,
+      "agency": 0.41
+    },
+    "ReLife": {
+      "lives": 100,
+      "withinLifeUniqueness": 0.3845243781405457,
+      "betweenLifeOverlap": 0.07660287743880323,
+      "emptyYearRate": 0.3719288016506171,
+      "eventsPerYear": 0.6280711983493829,
+      "midGameSag": 0.9942606531336412,
+      "systemsPerLife": 7.98,
+      "medianAge": 76,
+      "medianWealth": 650956,
+      "ageSpread": 27,
+      "npcAutonomy": 0.1199999999999998,
+      "grounded": 0.8499999999999993,
+      "humour": 0.15000000000000024,
+      "agency": 0.55
+    },
+    "Twelvemonth": {
+      "lives": 100,
+      "withinLifeUniqueness": 0.9698507468901925,
+      "betweenLifeOverlap": 0.22216392493040907,
+      "emptyYearRate": 0.008800246802058136,
+      "eventsPerYear": 1.4271382982395326,
+      "midGameSag": 1.0078834253745383,
+      "systemsPerLife": 6.81,
+      "medianAge": 75,
+      "medianWealth": 1374410.52,
+      "ageSpread": 42,
+      "npcAutonomy": 0.9511610455535398,
+      "grounded": 0.9500000000000017,
+      "humour": 0.19999999999999962,
+      "agency": 0.4080746143827161
+    }
+  },
+  "signatures": {
+    "BitLife": 100,
+    "AltLife": 100,
+    "ReLife": 100,
+    "Twelvemonth": 100
+  }
+}

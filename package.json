@@ -1,0 +1,24 @@
+{
+  "name": "bequest",
+  "version": "1.0.0",
+  "description": "A grounded, text-based life simulator. One year at a time.",
+  "private": true,
+  "scripts": {
+    "build": "python3 pwa/build.py",
+    "test": "node pwa/tests/suite.js",
+    "audit": "node research/audit.js",
+    "compare": "node research/compare.js",
+    "serve": "python3 pwa/serve.py 8080",
+    "android:init": "npx cap add android",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:open": "npx cap open android",
+    "apk:debug": "npm run android:sync && cd android && ./gradlew assembleDebug",
+    "apk:release": "npm run android:sync && cd android && ./gradlew bundleRelease"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/splash-screen": "^6.0.2"
+  }
+}
