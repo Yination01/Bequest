@@ -38,7 +38,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'          # AGP 8 requires JDK 17, not 11
-      - uses: android-actions/setup-android@v3
+      # The ubuntu runner already ships the Android SDK. The setup-android
+      # action tries to install the long-obsolete 'tools' package and fails,
+      # so we use the preinstalled SDK and just accept the licences.
+      - name: Accept Android SDK licences
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
 
       - name: Rebuild the inlined bundle
         run: python3 pwa/build.py
