@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 315 tests, 23 modules, 737 KB, no known integrity
+Current state: 533 events, 318 tests, 23 modules, 737 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -461,9 +461,13 @@ Required before it goes on a store, in rough order.
 | 18 | **Google Play Billing** | The purchase flow is simulated. The Plus gates already exist and are enforced by a test. |
 | 19 | **Firebase cloud saves** | Decided, not built. The prototype syncs to a sandbox server that will not exist. |
 | 20 | ~~**Privacy policy and data declaration**~~ — **drafted** | Play requires both. We collect nothing, which makes this easy and worth saying loudly. |
-| 21 | **Content rating** | Crime, alcohol, drugs, gambling. Expect 16+. Declare honestly. |
-| 22 | **Store listing** | Screenshots, description, and a name search against the registers one final time. |
+| 21 | ~~**Content rating**~~ — **answered and measured** | Crime, alcohol, drugs, gambling. Expect 16+. Declare honestly. |
+| 22 | ~~**Store listing**~~ — **drafted** | Screenshots, description, and a name search against the registers one final time. |
 | 23 | **Crash reporting** — *capture built, destination deliberately open* | Currently blind to anything that happens on a real device. |
+
+**Everything left in P3 needs a console, a key, money or a decision.** They are
+collected in `LAUNCH_CHECKLIST.md`, ordered by what blocks what, with a
+recommendation on each.
 
 ### Where crash reporting got to
 

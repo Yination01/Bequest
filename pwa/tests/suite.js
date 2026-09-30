@@ -1364,6 +1364,64 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
   } finally { global.document.getElementById = realGet; }
 });
 
+/* ---- the store declarations have to stay true ---- */
+function allGameStrings(){
+  const fs2 = require('fs'), p2 = require('path');
+  let all = '';
+  FILES.forEach(f => { try { all += fs2.readFileSync(p2.join(DIR, f), 'utf8') + '\n'; } catch(e){} });
+  // strip comments: a developer note is not something the player can read
+  const code = all.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  return (code.match(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`/g) || []).join(' ').toLowerCase();
+}
+
+t('the game contains no profanity, as declared to the rating board', () => {
+  // PLAY_LISTING.md answers "Profanity: No" to IARC. A wrong answer there is
+  // a policy violation, so it cannot be left to memory.
+  const s = allGameStrings();
+  const words = ['fuck','shit','bastard','bitch','bollock','bugger','wank','prick','cunt','slut','whore'];
+  const hits = [];
+  words.forEach(w => {
+    const m = s.match(new RegExp('\\b' + w + '\\w*\\b', 'g'));
+    if (m) hits.push(w + ' x' + m.length);
+  });
+  if (hits.length) return 'declared clean but found: ' + hits.join(', ');
+  if (s.length < 100000) return 'the scan only saw ' + s.length + ' characters, so it proves nothing';
+  return true;
+});
+
+t('the game does contain what we declared it contains', () => {
+  // the paired positive: a negative check alone would pass on an empty game
+  const s = allGameStrings();
+  const musts = {
+    'references to illegal drugs': /\bdrugs?\b/,
+    'alcohol': /\b(alcohol|drinking|drunk)\b/,
+    'tobacco': /\bsmoking\b/,
+    'simulated gambling': /\bgambl/,
+    'crime': /\b(burglary|shoplift|mugging)\b/
+  };
+  const missing = Object.keys(musts).filter(k => !musts[k].test(s));
+  if (missing.length)
+    return 'declared as present but not found, so the rating answers are now wrong: ' + missing.join(', ');
+  return true;
+});
+
+t('the store listing fits the fields it has to go in', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const doc = fs2.readFileSync(p2.join(DIR, '..', 'PLAY_LISTING.md'), 'utf8');
+  const block = re => { const m = doc.match(re); return m ? m[1].trim() : null; };
+  const name = block(/\*\*App name\*\*[^\n]*\n\n([\s\S]*?)\n\n/);
+  const short = block(/\*\*Short description\*\*[^\n]*\n\n([\s\S]*?)\n\n/);
+  const full = block(/\*\*Full description\*\*[^\n]*\n\n([\s\S]*?)\n\n\*\*Category/);
+  if (!name || !short || !full) return 'the listing no longer has the three text fields in it';
+  const clean = t2 => t2.split('\n').map(l => l.replace(/^ {4}/, '')).join('\n').trim();
+  if (clean(name).length > 30) return 'app name is ' + clean(name).length + ' characters, limit is 30';
+  if (clean(short).length > 80) return 'short description is ' + clean(short).length + ', limit is 80';
+  if (clean(full).length > 4000) return 'full description is ' + clean(full).length + ', limit is 4000';
+  if (clean(name).toLowerCase().indexOf('life') < 0)
+    return 'the app name dropped the genre, which is the whole reason it is findable';
+  return true;
+});
+
 /* ---- the privacy policy has to stay true ---- */
 t('the app talks to nobody except the sync server the player chose', () => {
   // PRIVACY.md claims no analytics, no ad networks, no third-party SDKs and

@@ -42,7 +42,25 @@ as a mark.
 - **Invented company, school and newspaper names** are generated from our own
   word lists and are not real businesses.
 
-## ⚠ NAME CONFLICT CONFIRMED — action required
+## ✓ NAME CONFLICT — RESOLVED BY RENAME (updated 2026-09-30)
+
+**The rename described below already happened.** The game was called
+Lifespan; it is now Bequest. Everything from here to the Recommendation is
+kept as the record of why, and refers to the *old* name.
+
+Re-checked 2026-09-30: no app or game called Bequest was found in the
+simulation category on either store. The word is a common legal term, so a
+search for it returns estate-planning articles rather than a competitor.
+That is a **discoverability** problem, not a legal one, and the fix is in
+the store name rather than the product name: ship as
+`Bequest: Life Simulator`. See `PLAY_LISTING.md`.
+
+The `bequests.app` collision noted below did not surface in the 2026-09-30
+check. Worth one more look before submission, but it is not a blocker.
+
+---
+
+## ⚠ The original finding, for the record
 
 **There is already a game called "Lifespan - Life Simulator".**
 
