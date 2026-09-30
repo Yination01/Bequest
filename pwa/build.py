@@ -51,7 +51,7 @@ html = f"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
 <title>Bequest</title>
-<meta name="theme-color" content="#0b1020">
+<meta name="theme-color" content="#080c16">
 <meta name="description" content="Bequest — a grounded life simulator. One year at a time.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">

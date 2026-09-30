@@ -82,3 +82,31 @@ the choice is deliberate rather than incidental.
 
 **This is unresolved, not decided.** Which mark is the real one is a
 question for the owner.
+
+
+### The other logo surfaces, checked
+
+Asked to check everywhere else the mark appears. Three things disagreed
+with the brand:
+
+| surface | was | now |
+|---|---|---|
+| `apple-touch.png` | mark at **99%** of the frame, a different crop entirely | 44% |
+| every `pwa/icons/*.png` | background `#0b1020` | `#080c16` |
+| `apple-touch.png` background | `#0d111c` | `#080c16` |
+| `theme-color` meta | `#0b1020` | `#080c16` |
+
+`#080c16` is the brand navy: it is the Capacitor `backgroundColor`, the
+splash colour, and `--bg` in the stylesheet. Three surfaces were using two
+other navies nobody had noticed, and the Apple icon was a different design.
+
+Every surface now measures 43 to 44% of frame on `#080c16`: the four web
+icons, the favicon inlined into the page, and the Android launcher icon
+round and square. The splash sits at 25%, which is correct for a splash.
+
+### A note on this sandbox
+
+The toolchain is reclaimed between commands: the JDK, the Android SDK and
+even `android/gradle/wrapper/gradle-wrapper.jar` disappeared three times
+mid-build. Anything here has to install the toolchain and build in a
+**single** shell invocation. A CI runner would not have this problem.
