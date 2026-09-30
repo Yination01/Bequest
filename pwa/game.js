@@ -104,6 +104,7 @@ function migrate(){
   if(S.overdue==null)S.overdue=0; if(!S.overdueItems)S.overdueItems=[];
   if(S.arrPaid==null)S.arrPaid=0; if(S.arrPlan===undefined)S.arrPlan=null;
   if(!S.career)S.career=[];
+  willMigrate(S);
   if(!S.properties)S.properties=[]; if(!S.vehicles)S.vehicles=[]; if(!S.businesses)S.businesses=[];
   if(S.property&&!S.properties.length){
     S.properties.push({t:'flat',value:S.property.value,mortgage:S.property.mortgage,
@@ -316,9 +317,14 @@ function newGame(opts){
   /* most people are born into a family that already exists */
   { const roll=R();
     const count = roll<0.34?0 : roll<0.70?1 : roll<0.90?2 : 3;
+    const taken=[S.name.split(' ')[0]];
     for(let i=0;i<count;i++){
       const sib=mkNPC('sibling',pick(['m','f']),ri(1,14),reg);
-      sib.surname=sur; sib.name=nameFor(reg,sib.gender)+' '+sur;
+      /* three brothers all called Takumi is not a family, it is a bug */
+      let f=nameFor(reg,sib.gender), tries=0;
+      while(taken.indexOf(f)>=0&&tries++<12) f=nameFor(reg,sib.gender);
+      taken.push(f);
+      sib.surname=sur; sib.name=f+' '+sur;
       sib.r=ri(45,85); S.npcs.push(sib);
     }
   }
@@ -331,6 +337,8 @@ function newGame(opts){
     for(const x of DATA.orientations){ const w=x.id==='gay'?(g==='m'?6:0):x.id==='lesbian'?(g==='f'?6:0):x.w;
       acc+=w; if(roll<=acc){o=x;break;} }
     S.orientation=o.id; }
+  willBirth(S);
+  SETTLEMENT=null;   /* the last life's estate must never leak into this one */
   S.bmonth=ri(1,12); S.bday=ri(1,28);
   if(R()<0.0007){ S.bmonth=2; S.bday=29; }
   if(R()<0.004){ S.bmonth=1; S.bday=1; S.midnightBorn=true; }
@@ -541,6 +549,7 @@ function ageUp(){
       'Your caring responsibilities have eased.']));
   }
   S.record.forEach(r=>{ if(!r.spent&&S.age-r.age>=(r.sev===1?6:r.sev===2?12:99))r.spent=true; });
+  willLeak();
   if(S.jailLeft>0){
     S.jailLeft--; S.yearsJailed++;
     S.stats.happiness=clamp(S.stats.happiness-8); S.stats.health=clamp(S.stats.health-3);
@@ -1845,6 +1854,9 @@ function showDeath(){
     push({type:'AD'}); drain();
   }
   DEATH_STATS=false;
+  /* settle the estate exactly once: renderDeath() runs again on every toggle
+     and an estate that reshuffled itself as you read would be a lie */
+  SETTLEMENT=settleEstate(S,netWorth());
   renderDeath();
 }
 function toggleDeathStats(){ DEATH_STATS=!DEATH_STATS; renderDeath(); }
@@ -1852,7 +1864,8 @@ function toggleDeathStats(){ DEATH_STATS=!DEATH_STATS; renderDeath(); }
    tap, because some people do want the spreadsheet - just not first. */
 function renderDeath(){
   const worth=netWorth();
-  const o=eulogy(S,worth);
+  const st=SETTLEMENT||(SETTLEMENT=settleEstate(S,worth));
+  const o=eulogy(S,worth,st);
   const earned=DATA.ribs.filter(r=>{try{return r.f(S);}catch(e){return false;}});
   const lp=(S.achThisLife||[]).reduce((n,id)=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return n+(a?a.p:0);},0);
   const moments=S.log.filter(l=>l.k==='good'||l.k==='bad').slice(-6);
@@ -1882,6 +1895,8 @@ function renderDeath(){
       <div class="awards">${S.eggsThisLife.map(id=>{const e=EGG(id);
         return e?`<span class="award egg">${esc(EGG_EPITAPHS[id]||e.n)}</span>`:'';}).join('')}</div>`:''}
 
+    ${willDeathBlock(st)}
+
     <div class="lpline">+${lp} Legacy Points this life \u00b7 ${META.lp} total</div>
 
     <button class="statstoggle" onclick="toggleDeathStats()">
@@ -1898,9 +1913,19 @@ function renderDeath(){
       <div class="sec">Achievements this life</div>
       <div class="awards">${(S.achThisLife&&S.achThisLife.length)?S.achThisLife.map(id=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return a?`<span class="award t${a.t}">${esc(a.n)}</span>`:'';}).join(''):'<span class="muted">None unlocked this life.</span>'}</div>`:''}
 
+    ${(()=>{
+      const pool=anyOf('child').length?anyOf('child'):anyOf('sibling');
+      if(!pool.length)return '';
+      return `<div class="sec">Carry on as</div>
+        <div class="heirs">${pool.map(n=>{
+          const g=settlementFor(n.id,st)||{cash:0,assets:[],heirloom:false};
+          const things=g.assets.map(x=>x.name.toLowerCase()).concat(g.heirloom?['the heirloom']:[]);
+          return `<button class="heir${S.will&&S.will.main===n.id?' main':''}" onclick="continueAs('${n.id}')">
+            <div class="rn">${esc(n.name.split(' ')[0])}<span class="hage"> \u00b7 ${n.rel}</span></div>
+            <div class="hsub dim">${g.cash>0?money(g.cash):'nothing'}${things.length?' + '+esc(things.join(', ')):''}</div>
+          </button>`;}).join('')}</div>`;
+    })()}
     <div class="row">
-      ${anyOf('child').length?'<button class="btn primary" onclick="continueAs(\'child\')">Continue as your child</button>':
-        anyOf('sibling').length?'<button class="btn primary" onclick="continueAs(\'sibling\')">Continue as your sibling</button>':''}
       ${(!S.usedSecondChance)?`<button class="btn" onclick="secondChance()">
         ${isPlus()?'Second Chance':'Watch an ad for a Second Chance'}</button>`:''}
       <button class="btn" onclick="toTitle()">New life</button>
@@ -1917,14 +1942,63 @@ function secondChance(){
   save(); renderAll();
   popupOK('You pulled through',`Whatever it was, it was not the end. You are ${S.age} and still here.`);
 }
-function continueAs(kind){
-  const heir=anyOf(kind)[0];
-  const inh=kind==='child'?Math.max(0,Math.round(netWorth()*((META.perks&&META.perks.inheritance)?0.9:0.7))):0;
-  const gen=S.gen+1, sur=S.surname, cty=S.country;
+/* The hand-off. Takes an npc id, or 'child'/'sibling' for the old call shape.
+   Everything the heir is owed has to be read out of the old save before
+   newGame() overwrites it. */
+function continueAs(which){
+  const st = SETTLEMENT || settleEstate(S,netWorth());
+  let heir = (S.npcs||[]).find(n=>n.id===which&&n.alive);
+  if(!heir){
+    const pool = anyOf(which==='sibling'?'sibling':'child');
+    heir = (S.will&&S.will.main&&pool.find(n=>n.id===S.will.main)) || pool[0];
+  }
+  if(!heir) return;
+
+  const got  = settlementFor(heir.id,st) || {cash:0,assets:[],heirloom:false};
+  const perk = (META.perks&&META.perks.inheritance)?1.15:1;
+  const cash = Math.max(0,Math.round(got.cash*perk));
+  /* deep copy: these objects still belong to the save we are about to drop */
+  const things = got.assets.map(a=>({kind:a.kind,name:a.name,obj:JSON.parse(JSON.stringify(a.ref))}));
+  const loom = got.heirloom&&S.heirloom ? JSON.parse(JSON.stringify(S.heirloom)) : null;
+  const gen=S.gen+1, sur=S.surname, cty=S.country, from=S.name, fromGen=S.gen;
+
   newGame({gender:heir.gender,country:cty,name:heir.name});
-  S.gen=gen; S.surname=sur; S.money=inh; S.flags.heir=true;
-  if(inh>0)logLine(`You inherited ${money(inh)}.`,'good');
+  S.gen=gen; S.surname=sur; S.money=cash; S.flags.heir=true;
+
+  if(cash>0)logLine(`You inherited ${money(cash)} from ${from}.`,'good');
+  else if(st.intestate)logLine(`${from} died without a will.`,'bad');
+
+  things.forEach(t=>{
+    delete t.obj.uid;
+    if(t.kind==='prop'){
+      /* a baby cannot live in it, so it is held and let until they can */
+      t.obj.home=false; t.obj.rented=true;
+      S.properties.push(t.obj);
+      logLine(`${t.name} came to you. It is let out until you are old enough.`,'good');
+    } else if(t.kind==='veh'){
+      S.vehicles.push(t.obj);
+      logLine(`${t.name} was put away for you.`,'good');
+    } else if(t.kind==='biz'){
+      S.businesses.push(t.obj);
+      S.flags.owns_business=true; S.counters.businesses++;
+      logLine(`${t.name} is yours, run by someone else until you can.`,'good');
+    }
+  });
+
+  if(loom){
+    /* the deceased is written into it on the way past, then the new holder */
+    loom.gens = (loom.gens||[]);
+    if(!loom.gens.some(g=>g.gen===fromGen)) loom.gens.push({gen:fromGen,name:from});
+    loom.gens.push({gen:gen,name:S.name});
+    if(loom.gens.length>12) loom.gens=loom.gens.slice(-12);
+    S.heirloom = loom;
+    logLine(`You were left ${loom.name}. ${heirloomLine(loom)}`,'good');
+  } else {
+    S.heirloom = null;   /* newGame may have rolled one; an heir does not get both */
+  }
+
   document.getElementById('modal').className='modal';
+  SETTLEMENT=null;
   renderAll(); save();
 }
 function toTitle(){ document.getElementById('modal').className='modal'; document.getElementById('app').dataset.screen='title'; renderTitle(); }
@@ -2749,6 +2823,7 @@ function setTab(t){ rememberScroll(); SCROLL[t]=0; app().dataset.tab=t;
   if(m){ void m.offsetWidth; m.classList.add('in'); } }
 let SCROLL={};
 let DEATH_STATS=false;
+let SETTLEMENT=null;
 function renderTab(t,keepScroll){
   const m=document.getElementById('main');
   const prev=m?m.scrollTop:0;
@@ -3625,10 +3700,12 @@ function viewMoney(){
       : sec==='mkt_property'?marketView('property','Property for sale')
       : sec==='mkt_item'?marketView('item','Things for sale')
       : sec==='biz'?moneyBusinesses()
+      : sec==='will'?willView()
       : sec.indexOf('shop:')===0?moneyShop(sec.slice(5)) : moneyOverview();
     const title = sec==='overview'?'Budget' : sec==='bank'?'Banking' : sec==='careers'?'Careers'
       : sec==='property'?'Property' : sec==='living'?'Living costs' : sec==='cards'?'Credit'
       : sec==='estate'?'Your property' : sec==='vehicles'?'Your vehicles' : sec==='biz'?'Businesses'
+      : sec==='will'?'Your will'
       : sec==='mkt_vehicle'?'Vehicle market' : sec==='mkt_property'?'Property market' : sec==='mkt_item'?'Marketplace'
       : sec.slice(5);
     return `<div class="card secthead"><button class="backbtn" onclick="closeMoney()">\u2039 Money</button>
@@ -3644,7 +3721,8 @@ function viewMoney(){
                ['mkt_item','\u25CF','Marketplace','New and secondhand goods'],
                ['estate','\u229E','Your property','Let, renovate and sell'],
                ['vehicles','\u229F','Your vehicles','Service and sell'],
-               ['biz','\u25A3','Businesses','Start, staff, upgrade and sell']]
+               ['biz','\u25A3','Businesses','Start, staff, upgrade and sell'],
+               ['will','\u25C8','Your will','Who gets what, and what it costs them']]
     .concat(cats.map(c=>['shop:'+c,'\u25CF',c,'Shop']));
   return `<div class="card"><div class="ctrow"><div class="ct">Money</div>
       <div class="hsub dim">${money(S.money)}</div></div>

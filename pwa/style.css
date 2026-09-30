@@ -176,6 +176,17 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 .statstoggle{width:100%;margin-top:18px;padding:10px;background:transparent;border:1px solid var(--line);
   border-radius:10px;color:var(--mut);font-size:12px;font-weight:600;letter-spacing:.04em;cursor:pointer}
 .statstoggle:hover{color:var(--t);border-color:rgba(240,166,60,.35)}
+/* ---- the will ---- */
+.willsel{background:#101a2c;color:#dfe7f5;border:1px solid #23324a;border-radius:8px;
+  padding:7px 9px;font:inherit;font-size:13px;width:100%;max-width:100%}
+.heirs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 10px}
+.heir{display:block;text-align:left;background:#111c30;border:1px solid #23324a;border-radius:12px;
+  padding:10px 11px;color:inherit;font:inherit;cursor:pointer}
+.heir:active{transform:scale(.985)}
+.heir.main{border-color:#c98b2e;background:#1a1708}
+.heir .rn{font-weight:650;font-size:14px;margin-bottom:2px}
+.heir .hage{font-weight:400;opacity:.55;font-size:12px}
+
 .lpline{font-size:12.5px;color:var(--am);margin-bottom:14px;font-weight:600}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .sec{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--mut);margin:16px 0 8px;font-weight:700}

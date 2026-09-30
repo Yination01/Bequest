@@ -226,16 +226,95 @@ function eulogyPeople(s){
   if(s.marriedYears >= 40) notes.push(eSentence([`The marriage lasted ${eNum(s.marriedYears)} years`]));
   else if(s.counters && s.counters.divorces > 0)
     notes.push(eSentence([`${p.cap} divorced ${eNum(s.counters.divorces)} time${s.counters.divorces > 1 ? 's' : ''}`]));
-  if(s.childrenCount === 0 && s.age >= 45 && !lostKids.length)
+  /* trust the people, not the counter: anything that adds a child without
+     bumping childrenCount would otherwise print a flat lie */
+  const kidCount = Math.max(s.childrenCount || 0, npcs.filter(n => n.rel === 'child').length);
+  if(kidCount === 0 && s.age >= 45)
     notes.push(eSentence([`${p.cap} had no children`]));
-  else if(s.childrenCount >= 3)
-    notes.push(eSentence([`${p.cap} raised ${eNum(s.childrenCount)}`]));
+  else if(kidCount >= 3)
+    notes.push(eSentence([`${p.cap} raised ${eNum(kidCount)}`]));
 
   out.notes = notes.slice(0, 3);
   return out;
 }
 
 /* ---- what was left ---- */
+/* When the estate has actually been settled we say what happened, not what
+   probably happened. Falls back to the guess when there is no settlement. */
+function eulogyEstateFrom(s, worth, st){
+  const p = ePron(s);
+  const out = [];
+  if(s.age < 16) return out;
+  const nm = a => String(a.name || '').split(' ')[0];
+
+  if(worth <= -1000){
+    out.push(eSentence([p.cap, `died owing ${money(-worth)}`]));
+    if((st.allocations || []).length || (s.npcs || []).some(n => n.alive && n.rel === 'child'))
+      out.push(eSentence(['A debt is the one thing that does not pass on']));
+    return out;
+  }
+  if(worth < 1000){
+    out.push(eSentence([p.cap, 'left nothing to speak of']));
+    return out;
+  }
+
+  const props = (s.properties || []).length, biz = (s.businesses || []).length;
+  const things = [];
+  if(props) things.push(`${eNum(props)} propert${props > 1 ? 'ies' : 'y'}`);
+  if(biz)   things.push(`${eNum(biz)} business${biz > 1 ? 'es' : ''}`);
+  out.push(eSentence([`The estate came to ${money(worth)}`
+    + (things.length ? `, including ${eList(things)}` : '')]));
+
+  const got = (st.allocations || []).filter(a => a.cash > 0 || a.assets.length || a.heirloom);
+
+  if(st.intestate){
+    if(!got.length) out.push(eSentence(['There was no will, and no one to claim it']));
+    else out.push(eSentence([`There was no will. It was sold off and split between ${eList(got.map(nm))}`]));
+  } else {
+    /* the specific things first: those are the sentences worth reading */
+    const inKind = [];
+    (st.allocations || []).forEach(a => {
+      a.assets.forEach(x => inKind.push({ thing: x.name.toLowerCase(), who: nm(a) }));
+    });
+    if(inKind.length){
+      /* the verb goes in once, on the first item: "the house went to Margot
+         and the cafe to Tom" */
+      const parts = inKind.slice(0, 3).map((x, i) =>
+        i === 0 ? `${x.thing} went to ${x.who}` : `${x.thing} to ${x.who}`);
+      out.push(eSentence([eList(parts).replace(/^\w/, c => c.toUpperCase())]));
+    }
+    const cashers = got.filter(a => a.cash > 0);
+    if(cashers.length > 1)
+      out.push(eSentence([`${inKind.length ? 'The rest was' : 'It was'} split between ${eList(cashers.map(nm))}`]));
+    else if(cashers.length === 1)
+      out.push(eSentence([`${inKind.length ? 'The rest went' : 'It went'} to ${nm(cashers[0])}`]));
+    else if(!inKind.length)
+      out.push(eSentence(['There was no one to leave it to']));
+  }
+
+  if((st.contested || []).length)
+    out.push(eSentence([`${eList(st.contested.map(nm))} went to court over it`
+      + (st.legal > 0 ? `, and the lawyers took ${money(st.legal)}` : '')]));
+
+  if(s.heirloom){
+    const g = (s.heirloom.gens || []).length;
+    if(st.heirloomLost)
+      out.push(eSentence([`${s.heirloom.name.replace(/^\w/, c => c.toUpperCase())} that had been kept for ${eNum(g)} generations was sold with the rest`]));
+    else {
+      const to = (st.allocations || []).find(a => a.heirloom);
+      if(to) out.push(eSentence([`${s.heirloom.name.replace(/^\w/, c => c.toUpperCase())} went to ${nm(to)}, who is the ${eOrd(g + 1)} to have it`]));
+    }
+  }
+
+  if(s.peakNet > worth * 3 && s.peakNet > 100000)
+    out.push(eSentence([`${p.cap} had been worth ${money(s.peakNet)} once`]));
+  return out;
+}
+function eOrd(n){
+  const w = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
+  return w[n] || (n + 'th');
+}
+
 function eulogyEstate(s, worth){
   worth = Number(worth);
   if(!isFinite(worth)) worth = 0;   /* never print "$NaN" on this screen */
@@ -324,7 +403,7 @@ function eulogyClose(s){
 }
 
 /* ---- the whole document ---- */
-function eulogy(s, worth){
+function eulogy(s, worth, st){
   const people = eulogyPeople(s);
   return {
     name: s.name,
@@ -332,7 +411,8 @@ function eulogy(s, worth){
     life: eulogyOpening(s).concat(eulogyWork(s)).filter(Boolean),
     people: [people.survived].concat(people.predeceased ? [people.predeceased] : [])
               .concat(people.notes).filter(Boolean),
-    estate: eulogyEstate(s, worth).filter(Boolean),
+    estate: (st ? eulogyEstateFrom(s, Number(worth) || 0, st)
+                : eulogyEstate(s, worth)).filter(Boolean),
     close: eulogyClose(s)
   };
 }

@@ -14,7 +14,7 @@ global.localStorage={_d:{},getItem(k){return this._d[k]||null},setItem(k,v){this
   removeItem(k){delete this._d[k]},clear(){this._d={}}};
 global.setTimeout=f=>f();
 const F=['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js',
-  'social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','coach.js','game.js'];
+  'social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','coach.js','game.js'];
 const SRC=F.map(f=>fs.readFileSync(path.join(PWA,f),'utf8')).join('\n')+`
 showPopup=function(p){ if(p.type==='A')resolveChoice(p.ev,Math.floor(Math.random()*p.ev.c.length));
  else if(p.type==='D'){ if(p.yes&&Math.random()<0.5)p.yes(); drain(); } else drain(); };

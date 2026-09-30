@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,showDeath,renderDeath,toggleDeathStats,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1335,6 +1335,318 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- the will ---- */
+function estateLife(opts){
+  opts = opts || {};
+  G.newGame({});
+  const s = G.S;
+  s.seed = opts.seed == null ? 4242 : opts.seed;
+  s.name = 'John Vale'; s.surname = 'Vale'; s.gender = 'm'; s.age = 80;
+  s.alive = false; s.cause = 'old age'; s.gen = 2;
+  s.money = opts.money == null ? 300000 : opts.money;
+  s.savings = 0; s.debt = 0; s.cards = []; s.arrears = 0; s.overdue = 0;
+  s.crypto = {units:0, price:100}; s.assets = []; s.loans = [];
+  s.properties = opts.properties || []; s.vehicles = []; s.businesses = opts.businesses || [];
+  s.childrenCount = (opts.npcs || []).filter(n => n.rel === 'child').length;
+  s.npcs = opts.npcs || [
+    {id:'k1', rel:'child', name:'Anna Vale',  gender:'f', alive:true, r:82, age:50},
+    {id:'k2', rel:'child', name:'Ben Vale',   gender:'m', alive:true, r:60, age:47}];
+  s.heirloom = opts.heirloom === undefined ? null : opts.heirloom;
+  s.will = Object.assign({made:0, updated:0, main:null, shares:{}, gifts:{}, told:false, cut:[]},
+                          opts.will || {});
+  return s;
+}
+
+t('a new life has a will that is empty rather than missing', () => {
+  G.newGame({});
+  if (!G.S.will) return 'no will on the save';
+  if (G.S.will.made) return 'born with a will already drawn up';
+  if (G.willShareTotal(G.S) !== 0) return 'born with shares allocated';
+  return true;
+});
+
+t('an old save without a will is migrated, not crashed', () => {
+  const s = estateLife({});
+  delete s.will; delete s.heirloom;
+  G.willMigrate(s);
+  if (!s.will || !s.will.shares || !s.will.gifts || !s.will.cut) return 'migrate left the will half-built';
+  const st = G.settleEstate(s, 100000);
+  if (!st || !st.intestate) return 'a migrated save should settle as intestate';
+  return true;
+});
+
+t('dying without a will costs more and liquidates everything', () => {
+  const s = estateLife({properties:[{t:'flat', value:200000, mortgage:0, cond:60, home:true}]});
+  const st = G.settleEstate(s, 500000);
+  if (!st.intestate) return 'should be intestate';
+  if (st.probateRate <= 0.04) return 'intestate probate should cost more than a will';
+  if (st.allocations.some(a => a.assets.length)) return 'nothing should pass in kind without a will';
+  const cash = st.allocations.reduce((n, a) => n + a.cash, 0);
+  if (Math.abs(cash + st.probate - 500000) > 4) return 'the intestate estate does not add up';
+  return true;
+});
+
+t('a will passes named things in kind and keeps more of the money', () => {
+  const prop = {t:'flat', value:200000, mortgage:0, cond:60, home:true};
+  const s = estateLife({properties:[prop], will:{made:60, shares:{k1:50, k2:50}}});
+  const uid = G.willAssets(s).find(a => a.kind === 'prop').uid;
+  s.will.gifts[uid] = 'k2';
+  const st = G.settleEstate(s, 500000);
+  if (st.intestate) return 'should not be intestate';
+  if (st.probateRate >= 0.12) return 'a will should reduce probate';
+  const ben = st.allocations.find(a => a.id === 'k2');
+  if (!ben || !ben.assets.length) return 'the flat did not reach the person it was left to';
+  if (ben.assets[0].kind !== 'prop') return 'the wrong kind of thing was handed over';
+  return true;
+});
+
+t('every settlement accounts for every last pound', () => {
+  for (let i = 0; i < 120; i++) {
+    const gross = 1000 + i * 9137;
+    const s = estateLife({seed:i, will: i % 2 ? {made:60, shares:{k1:70, k2:30}} : {}});
+    if (i % 3 === 0) s.npcs.push({id:'k3', rel:'child', name:'Cara Vale', gender:'f', alive:true, r:12, age:40});
+    const st = G.settleEstate(s, gross);
+    const cash = st.allocations.reduce((n, a) => n + a.cash, 0);
+    const kind = st.allocations.reduce((n, a) => n + a.assets.reduce((m, x) => m + x.worth, 0), 0);
+    const sum = cash + kind + st.probate + st.legal + st.lost;
+    if (Math.abs(sum - gross) > Math.max(40, gross * 0.005))
+      return `estate ${gross} accounts for ${sum} (seed ${i})`;
+    if (st.allocations.some(a => a.cash < 0)) return 'an heir was left owing money';
+  }
+  return true;
+});
+
+t('the same death settles the same way every time', () => {
+  const s = estateLife({seed:99, will:{made:60, shares:{k1:100}}});
+  s.npcs.push({id:'k3', rel:'child', name:'Cara Vale', gender:'f', alive:true, r:9, age:40});
+  const a = JSON.stringify(G.settleEstate(s, 800000));
+  const b = JSON.stringify(G.settleEstate(s, 800000));
+  const c = JSON.stringify(G.settleEstate(s, 800000));
+  if (a !== b || b !== c) return 'the estate re-settled itself between reads';
+  return true;
+});
+
+t('being cut out of a large estate provokes a fight, a small one does not', () => {
+  let big = 0, small = 0;
+  for (let i = 0; i < 200; i++) {
+    const mk = () => {
+      const s = estateLife({seed:i, will:{made:60, shares:{k1:100}, cut:['k3']}});
+      s.npcs.push({id:'k3', rel:'child', name:'Cara Vale', gender:'f', alive:true, r:14, age:40});
+      return s;
+    };
+    if (G.settleEstate(mk(), 900000).contested.length) big++;
+    if (G.settleEstate(mk(), 6000).contested.length) small++;
+  }
+  if (big < 20) return `cutting a resentful child out of $900k almost never provokes a claim (${big}/200)`;
+  if (small > big / 3) return `a $6,000 estate draws lawyers too readily (${small}/200)`;
+  return true;
+});
+
+t('telling the family while alive makes a contest less likely', () => {
+  let quiet = 0, told = 0;
+  for (let i = 0; i < 300; i++) {
+    const mk = tl => {
+      const s = estateLife({seed:i, will:{made:60, shares:{k1:100}, cut:['k3'], told:tl}});
+      s.npcs.push({id:'k3', rel:'child', name:'Cara Vale', gender:'f', alive:true, r:16, age:40});
+      return s;
+    };
+    if (G.settleEstate(mk(false), 700000).contested.length) quiet++;
+    if (G.settleEstate(mk(true),  700000).contested.length) told++;
+  }
+  if (!(told < quiet)) return `telling them made no difference (${told} vs ${quiet})`;
+  return true;
+});
+
+t('a contest takes real money out of the people who were left some', () => {
+  let found = null;
+  for (let i = 0; i < 300 && !found; i++) {
+    const s = estateLife({seed:i, will:{made:60, shares:{k1:100}, cut:['k3']}});
+    s.npcs.push({id:'k3', rel:'child', name:'Cara Vale', gender:'f', alive:true, r:10, age:40});
+    const st = G.settleEstate(s, 900000);
+    if (st.contested.length) found = st;
+  }
+  if (!found) return 'no contest happened in 300 tries';
+  if (found.legal <= 0) return 'a contest cost nothing in legal fees';
+  const claimant = found.allocations.find(a => a.id === 'k3');
+  if (!claimant || claimant.cash <= 0) return 'the person who went to court got nothing out of it';
+  const main = found.allocations.find(a => a.id === 'k1');
+  if (!main || main.cash >= 900000 * 0.96) return 'the main heir did not feel the contest at all';
+  return true;
+});
+
+t('a bequest to someone already dead lapses instead of vanishing quietly', () => {
+  const prop = {t:'flat', value:200000, mortgage:0, cond:60, home:true};
+  const s = estateLife({properties:[prop], will:{made:60, shares:{k1:100}}});
+  const uid = G.willAssets(s).find(a => a.kind === 'prop').uid;
+  s.will.gifts[uid] = 'k9';
+  s.npcs.push({id:'k9', rel:'child', name:'Dead Vale', gender:'m', alive:false, r:70, age:55});
+  const st = G.settleEstate(s, 400000);
+  if (!st.lapsed.length) return 'the bequest did not lapse';
+  if (st.allocations.some(a => a.assets.length)) return 'a dead person was handed a house';
+  return true;
+});
+
+t('an estate in debt leaves nothing and blames no one for it', () => {
+  const s = estateLife({will:{made:60, shares:{k1:100}}});
+  const st = G.settleEstate(s, -50000);
+  if (st.allocations.length) return 'debt was passed on to the children';
+  if (st.probate > 0) return 'probate charged on an estate with nothing in it';
+  return true;
+});
+
+t('an heirloom survives a will and is lost without one', () => {
+  const loom = {id:'watch', name:'a gold pocket watch', v:3800, gens:[{gen:1, name:'Old Vale'}], origin:'family'};
+  const kept = estateLife({heirloom:loom, will:{made:60, shares:{k1:100}}});
+  kept.will.gifts['heirloom'] = 'k1';
+  const a = G.settleEstate(kept, 200000);
+  if (a.heirloomLost) return 'an heirloom left to someone was still sold';
+  if (!a.allocations.find(x => x.id === 'k1' && x.heirloom)) return 'the heirloom did not reach the heir';
+
+  const lost = estateLife({heirloom:loom});
+  const b = G.settleEstate(lost, 200000);
+  if (!b.heirloomLost) return 'an heirloom with no will should be sold with the rest';
+  return true;
+});
+
+t('an heirloom is worth more for having been kept, but not much', () => {
+  const one = {v:1000, gens:[{gen:1}]};
+  const five = {v:1000, gens:[1,2,3,4,5].map(g => ({gen:g}))};
+  if (!(G.heirloomValue(five) > G.heirloomValue(one))) return 'age adds nothing';
+  if (G.heirloomValue(five) > G.heirloomValue(one) * 3) return 'an heirloom became an investment';
+  if (G.heirloomAge(five) !== 5) return 'generations miscounted';
+  return true;
+});
+
+t('the heir arrives owning the actual house, not the cash for it', () => {
+  const prop = {t:'detached', value:410000, mortgage:0, cond:70, home:true};
+  const s = estateLife({properties:[prop], money:100000, will:{made:60, shares:{k1:100}}});
+  const uid = G.willAssets(s).find(a => a.kind === 'prop').uid;
+  s.will.gifts[uid] = 'k1';
+  s.will.main = 'k1';
+  G.continueAs('k1');
+  const n = G.S;
+  if (n.gen !== 3) return 'the generation did not advance';
+  if (!n.properties.length) return 'the house did not arrive';
+  if (n.properties[0].t !== 'detached') return 'the wrong property arrived';
+  if (n.properties[0].home) return 'a newborn was moved into the house';
+  if (n.money <= 0) return 'the cash share did not arrive';
+  return true;
+});
+
+t('the heirloom gains the name of everyone who holds it', () => {
+  const loom = {id:'watch', name:'a gold pocket watch', v:3800,
+                gens:[{gen:1, name:'Old Vale'}], origin:'family'};
+  const s = estateLife({heirloom:loom, will:{made:60, shares:{k1:100}, main:'k1'}});
+  s.will.gifts['heirloom'] = 'k1';
+  const before = s.heirloom.gens.length, dead = s.name;
+  G.continueAs('k1');
+  const after = G.S.heirloom;
+  if (!after) return 'the heirloom did not survive the generation';
+  if (after.gens.length <= before) return 'no new holder was recorded';
+  if (!after.gens.some(g => g.name === dead)) return 'the person who just died is not in its history';
+  if (G.heirloomLine(after).indexOf('generation') < 0) return 'the heirloom cannot describe itself';
+  return true;
+});
+
+t('an heir left nothing still inherits nothing, and the game continues', () => {
+  const s = estateLife({will:{made:60, shares:{k1:100}}});
+  G.continueAs('k2');
+  if (G.S.money !== 0) return 'someone cut out of the will still received money';
+  if (!G.S.alive) return 'the next life did not start';
+  return true;
+});
+
+t('shares can never be pushed past a hundred percent', () => {
+  const s = estateLife({});
+  G.S = s;
+  G.willSetShare('k1', 80);
+  G.willSetShare('k2', 80);
+  if (G.willShareTotal(s) > 100) return 'allocated ' + G.willShareTotal(s) + '%';
+  G.willEven();
+  if (G.willShareTotal(s) !== 100) return 'an even split came to ' + G.willShareTotal(s) + '%';
+  return true;
+});
+
+t('cutting someone out clears what they were going to get', () => {
+  const s = estateLife({});
+  G.S = s;
+  G.willEven();
+  const uid = 'heirloom';
+  s.heirloom = {id:'ring', name:'a signet ring', v:2400, gens:[], origin:'made'};
+  G.willSetGift(uid, 'k2');
+  G.willCut('k2');
+  if (s.will.shares.k2) return 'a disinherited child kept their share';
+  if (s.will.gifts[uid] === 'k2') return 'a disinherited child kept their bequest';
+  G.willCut('k2');
+  if (s.will.cut.indexOf('k2') >= 0) return 'they could not be put back in';
+  return true;
+});
+
+t('the will screen renders at every stage without throwing', () => {
+  const s = estateLife({properties:[{t:'flat', value:200000, mortgage:50000, cond:60, home:true}],
+                        heirloom:{id:'ring', name:'a signet ring', v:2400, gens:[], origin:'made'}});
+  s.alive = true;
+  G.S = s;
+  const before = G.willView();
+  if (before.indexOf('have not made a will') < 0) return 'no warning that there is no will';
+  s.will.made = 60; G.willEven();
+  const after = G.willView();
+  if (after.indexOf('%') < 0) return 'no shares shown once a will exists';
+  if (/undefined|NaN|\[object/.test(before + after)) return 'the will screen leaked a raw value';
+  s.age = 10;
+  if (G.willView().indexOf('until you are 18') < 0) return 'a child was offered a will';
+  return true;
+});
+
+t('the obituary reports the estate that was actually settled', () => {
+  const prop = {t:'detached', value:410000, mortgage:0, cond:70, home:true};
+  const s = estateLife({properties:[prop], money:200000, will:{made:60, shares:{k1:50, k2:50}}});
+  const uid = G.willAssets(s).find(a => a.kind === 'prop').uid;
+  s.will.gifts[uid] = 'k1';
+  const st = G.settleEstate(s, 610000);
+  const text = G.eulogy(s, 610000, st).estate.join(' ');
+  if (text.indexOf('Anna') < 0) return 'the obituary does not name who got the house';
+  if (text.indexOf('went to') < 0) return 'the in-kind bequest has no verb in it: ' + text;
+  if (/undefined|NaN|\[object|\s,|,,/.test(text)) return 'malformed estate prose: ' + text;
+  if (!/[.!?]$/.test(text.trim())) return 'the estate paragraph does not end: ' + text;
+  return true;
+});
+
+t('the obituary says so when there was no will', () => {
+  const s = estateLife({});
+  const st = G.settleEstate(s, 400000);
+  const text = G.eulogy(s, 400000, st).estate.join(' ');
+  if (text.indexOf('no will') < 0) return 'dying intestate went unmentioned: ' + text;
+  return true;
+});
+
+t('the death screen offers each heir and says what they get', () => {
+  const s = estateLife({will:{made:60, shares:{k1:70, k2:30}, main:'k1'}});
+  let html = '';
+  const realGet = global.document.getElementById;
+  global.document.getElementById = id => ({ set innerHTML(v){ html = v; }, get innerHTML(){ return html; },
+                                            set className(v){}, get className(){ return ''; }, dataset:{} });
+  try {
+    G.showDeath();
+    G.renderDeath();
+    if (html.indexOf('Carry on as') < 0) return 'no heir picker on the death screen';
+    if (html.indexOf('Anna') < 0 || html.indexOf('Ben') < 0) return 'not every heir was offered';
+    if (html.indexOf('What was left') < 0) return 'the estate was not reported';
+    if (/undefined|NaN|\[object/.test(html)) return 'the death screen leaked a raw value';
+    return true;
+  } finally { global.document.getElementById = realGet; }
+});
+
+t('a family never hands two siblings the same first name', () => {
+  for (let i = 0; i < 400; i++) {
+    G.newGame({});
+    const names = G.S.npcs.filter(n => n.rel === 'sibling').map(n => n.name.split(' ')[0]);
+    if (new Set(names).size !== names.length) return 'duplicate siblings: ' + names.join(', ');
+    if (names.indexOf(G.S.name.split(' ')[0]) >= 0) return 'a sibling shares the player\'s name';
+  }
+  return true;
 });
 
 /* ---- sound and haptics ---- */

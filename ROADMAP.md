@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 326 events, 225 tests, 17 modules, 547 KB, no known integrity
+Current state: 326 events, 248 tests, 18 modules, 579 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and two P1 items with it. All are covered by tests.
@@ -107,6 +107,48 @@ Measured over 250 simulated lives: 8.6 sentences per obituary, 250 distinct
 opening lines, 61 distinct closing lines with the commonest at 16%. Eleven tests
 cover it, including one that renders the same life three times and requires the
 three obituaries to be identical.
+
+### The will (asked for separately, not from this list)
+
+`will.js`. Dying used to take the first living child out of the array and hand
+them 70% of net worth as cash. The house, the business and the car were
+deleted. For a game called Bequest that was the wrong ending.
+
+Now you can write one, from the Money tab, and three rules make it matter:
+
+- **Without a will the estate is liquidated.** Everything is sold by strangers,
+  **12% goes to probate**, and a formula splits the cash. With a will probate
+  takes **4%** and things pass *in kind* — the heir wakes up owning the actual
+  house, let out until they are old enough to live in it.
+- **Leaving someone out is not free.** They may hear about it while you are
+  alive, and they can contest it once you are not. A resentful child cut out of
+  a large estate goes to court often enough to be frightening; the lawyers take
+  up to 18% off the top and the court hands the claimant a forced share out of
+  everyone else's. Telling the family while you are alive costs you the
+  relationship but roughly halves the chance of a fight. Nobody sues over a
+  small estate.
+- **One object can outlive all of it.** An heirloom — a watch, a violin, a
+  service medal — carries the name of every generation that held it. It can be
+  commissioned, or a wealthy family may already have one. Leave it to nobody
+  and it is sold with the furniture.
+
+The death screen now offers every child as a separate card showing exactly what
+they inherit, so "carry on as" is a real decision rather than an array index.
+An heir left nothing says so, in one word.
+
+Two things worth knowing:
+
+- **Bequests lapse rather than fail loudly.** Assets are matched by uid, so if
+  you leave Margot the house and then sell the house, the gift quietly
+  disappears. That is the real doctrine and it is also the safe behaviour.
+- **The settlement is computed once, at death, and cached.** Like the obituary
+  it must not re-roll while it is being read. It is also cleared in `newGame`,
+  because a stale estate leaking into the next life was a real bug the tests
+  caught.
+
+23 tests, including one that settles 120 estates and requires every pound to be
+accounted for, and one that asserts a family never gives two siblings the same
+first name — which it did, until this went in.
 
 ### What item 6 turned into
 
