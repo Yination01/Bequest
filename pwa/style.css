@@ -195,6 +195,11 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 .subjline b{font-variant-numeric:tabular-nums}
 .subjline b.g{color:var(--g)}
 
+/* ---- problem reports ---- */
+.crashbox{background:#0b1220;border:1px solid #23324a;border-radius:10px;padding:10px 11px;
+  font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#9fb0c9;
+  white-space:pre-wrap;word-break:break-word;max-height:240px;overflow:auto;margin:10px 0}
+
 .lpline{font-size:12.5px;color:var(--am);margin-bottom:14px;font-weight:600}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .sec{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--mut);margin:16px 0 8px;font-weight:700}

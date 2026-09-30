@@ -209,6 +209,11 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 .subjline b{font-variant-numeric:tabular-nums}
 .subjline b.g{color:var(--g)}
 
+/* ---- problem reports ---- */
+.crashbox{background:#0b1220;border:1px solid #23324a;border-radius:10px;padding:10px 11px;
+  font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#9fb0c9;
+  white-space:pre-wrap;word-break:break-word;max-height:240px;overflow:auto;margin:10px 0}
+
 .lpline{font-size:12.5px;color:var(--am);margin-bottom:14px;font-weight:600}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .sec{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--mut);margin:16px 0 8px;font-weight:700}
@@ -6931,6 +6936,218 @@ function healthCard(){
     ${rows}</div>`;
 }
 
+/* BEQUEST — knowing when something broke.
+
+   The game had no global error handler. A thrown error anywhere outside the
+   fourteen local try/catch blocks left the screen frozen with no message, and
+   the player had no way to tell anyone what happened. The try/catch blocks
+   themselves were worse in their way: a save that failed to write, a corrupt
+   load, an achievement predicate that threw — all swallowed in silence, for
+   years potentially, because nothing ever looked.
+
+   This records both, on the device, and goes nowhere.
+
+   DELIBERATELY NO TRANSPORT. crashSink() is the single seam a destination
+   plugs into later — an endpoint, Crashlytics, Sentry, whatever is chosen.
+   Until one exists, reports stay in localStorage and the only way anything
+   leaves the phone is the player pressing Copy. Sending is gated on an
+   explicit opt-in that defaults to off, so the claim that the game collects
+   nothing stays true as written.
+
+   WHAT A REPORT MAY NOT CONTAIN: the player's name, any NPC's name, their
+   employer, school or manager, any log line, or the save. A life is
+   described by its shape — age, country, difficulty, what was on screen,
+   what they had just done — which is enough to reproduce nearly everything
+   and is not about anybody. There is a test that puts a distinctive name in
+   the save and fails if it appears anywhere in a report.                   */
+
+const CRASH_KEY = 'bequest.crashlog';
+const CRASH_MAX = 12;             /* a ring buffer; old reports fall off   */
+const CRASH_STACK_LINES = 12;
+
+let CRASH_ACTS = [];              /* the last few things the player did    */
+let CRASH_POPUP = null;           /* what was on screen when it went wrong */
+let CRASH_LAST = null;            /* most recent report, for the screen    */
+let CRASH_INSTALLED = false;
+
+/* ---- the seam ----
+   Returns false because nothing is wired up. A destination replaces the
+   body of this one function and honours crashOptIn(). */
+function crashSink(report){ return false; }
+function crashOptIn(){ return !!(typeof META !== 'undefined' && META && META.crashOptIn); }
+function setCrashOptIn(v){
+  if(typeof META === 'undefined' || !META) return;
+  META.crashOptIn = !!v;
+  if(typeof saveMeta === 'function') saveMeta();
+  if(typeof renderAll === 'function') renderAll();
+}
+
+/* ---- context: the shape of the life, never the life ---- */
+function moneyBand(n){
+  n = Number(n) || 0;
+  const a = Math.abs(n);
+  const b = a < 100 ? '0' : a < 1000 ? '<1k' : a < 10000 ? '1k-10k'
+          : a < 100000 ? '10k-100k' : a < 1000000 ? '100k-1m' : '1m+';
+  return (n < 0 ? '-' : '') + b;
+}
+function crashContext(){
+  const s = (typeof S !== 'undefined') ? S : null;
+  const ctx = {
+    acts: CRASH_ACTS.slice(-6),
+    popup: CRASH_POPUP
+  };
+  if(!s) return ctx;
+  try{
+    ctx.age    = s.age;
+    ctx.alive  = !!s.alive;
+    ctx.gen    = s.gen;
+    ctx.country= s.country;                       /* a country, not an address */
+    ctx.diff   = s.diff;
+    ctx.edu    = s.edu;
+    ctx.job    = s.job ? s.job.field : null;      /* the field, not the title  */
+    ctx.money  = moneyBand(s.money);
+    ctx.worth  = moneyBand(typeof netWorth === 'function' ? netWorth() : 0);
+    ctx.npcs   = (s.npcs || []).length;
+    ctx.kids   = (s.npcs || []).filter(n => n.rel === 'child').length;
+    ctx.conds  = (s.conditions || []).map(k => k.id);
+    ctx.flags  = Object.keys(s.flags || {}).filter(k => s.flags[k]).slice(0, 14);
+    /* the tab lives on the DOM, not the save */
+    ctx.screen = (typeof document !== 'undefined' && document.getElementById
+                  && document.getElementById('app') && document.getElementById('app').dataset)
+                 ? (document.getElementById('app').dataset.tab || null) : null;
+    ctx.section= s.section || s.msection || null;
+    ctx.actionsLeft = s.actionsLeft;
+    ctx.inSchool = !!s.inSchool;
+    ctx.jail   = s.jailLeft || 0;
+    ctx.case   = s.legalCase ? s.legalCase.stage : null;
+    ctx.holds  = Object.keys(s.holdings || {});
+    /* log KINDS only: the text has names in it */
+    ctx.recent = (s.log || []).slice(-6).map(l => ({ a: l.a, k: l.k || '' }));
+    ctx.queue  = (typeof QUEUE !== 'undefined' && QUEUE) ? QUEUE.map(p => p.type) : [];
+  }catch(e){ ctx.ctxError = String(e && e.message || e); }
+  return ctx;
+}
+
+function trimStack(stack){
+  return String(stack || '').split('\n').slice(0, CRASH_STACK_LINES)
+    .map(l => l.trim().replace(/https?:\/\/[^\s)]+/g, m => m.split('/').pop()))
+    .join('\n');
+}
+
+/* ---- recording ---- */
+function crashLog(){
+  try{ return JSON.parse(localStorage.getItem(CRASH_KEY) || '[]') || []; }
+  catch(e){ return []; }
+}
+function crashSave(list){
+  try{ localStorage.setItem(CRASH_KEY, JSON.stringify(list.slice(-CRASH_MAX))); }catch(e){}
+}
+function crashClear(){ try{ localStorage.removeItem(CRASH_KEY); }catch(e){} CRASH_LAST = null; }
+
+function recordCrash(kind, where, message, stack){
+  const report = {
+    v: (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0.0'),
+    at: Date.now(),
+    kind: kind,
+    where: String(where || ''),
+    msg: String(message || '').slice(0, 300),
+    stack: trimStack(stack),
+    ctx: crashContext()
+  };
+  CRASH_LAST = report;
+  const list = crashLog(); list.push(report); crashSave(list);
+  /* nothing leaves the device unless a destination exists AND they said yes */
+  if(crashOptIn()){ try{ crashSink(report); }catch(e){} }
+  return report;
+}
+
+/* A failure that does not throw its way to the top: a save that would not
+   write, an achievement predicate that blew up, a corrupt load. These were
+   all swallowed by bare catch blocks. */
+function softFail(where, err, extra){
+  try{
+    const msg = (err && err.message) ? err.message : String(err == null ? (extra || 'failed') : err);
+    return recordCrash('soft', where, msg, err && err.stack);
+  }catch(e){ return null; }
+}
+
+/* ---- what the player sees ---- */
+function crashReportText(r){
+  r = r || CRASH_LAST || crashLog().slice(-1)[0];
+  if(!r) return 'No problems have been recorded.';
+  const c = r.ctx || {};
+  return [
+    'Bequest ' + r.v + '  ' + r.kind,
+    'where: ' + r.where,
+    r.msg,
+    '',
+    r.stack,
+    '',
+    'age ' + c.age + '  gen ' + c.gen + '  ' + c.country + '  ' + c.diff,
+    'screen ' + c.screen + '/' + c.section + '  popup ' + c.popup,
+    'did: ' + (c.acts || []).join(' > '),
+    'queue: ' + (c.queue || []).join(',') + '  actions ' + c.actionsLeft,
+    'money ' + c.money + '  worth ' + c.worth + '  npcs ' + c.npcs + '  conds ' + (c.conds || []).join(',')
+  ].join('\n');
+}
+
+function crashCopy(){
+  const t = crashReportText();
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t);
+    else {
+      const ta = document.createElement('textarea');
+      ta.value = t; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    if(typeof popupOK === 'function') popupOK('Copied', 'The report is on your clipboard.');
+  }catch(e){
+    if(typeof popupOK === 'function') popupOK('Could not copy', t);
+  }
+}
+
+function crashScreen(){
+  const el = (typeof document !== 'undefined') ? document.getElementById('modal') : null;
+  if(!el) return;
+  el.className = 'modal show';
+  el.innerHTML = `<div class="sheet">
+    <div class="phead"><span class="ptag">Something went wrong</span></div>
+    <div class="ph">That was not supposed to happen</div>
+    <div class="pb">The game hit a problem. Your save is untouched \u2014 it was written at the
+      start of the year and nothing since has been committed. You can carry on, and if it
+      keeps happening the report below is what a developer needs.</div>
+    <pre class="crashbox">${esc(crashReportText())}</pre>
+    <div class="choices">
+      <button class="choice" onclick="crashCopy()"><span>Copy the report</span><i>\u203a</i></button>
+      <button class="choice ok" onclick="closePopup()"><span>Carry on</span><i>\u203a</i></button>
+    </div></div>`;
+}
+
+/* ---- installation ---- */
+function noteAct(id){ CRASH_ACTS.push(String(id)); if(CRASH_ACTS.length > 12) CRASH_ACTS.shift(); }
+function notePopup(p){
+  try{ CRASH_POPUP = p ? (p.type + (p.ev ? ':' + p.ev.id : '')) : null; }catch(e){ CRASH_POPUP = null; }
+}
+
+function installCrashHandlers(){
+  if(CRASH_INSTALLED) return;
+  if(typeof window === 'undefined' || !window || !window.addEventListener) return;
+  CRASH_INSTALLED = true;
+  window.addEventListener('error', ev => {
+    try{
+      recordCrash('error', (ev.filename || '').split('/').pop() + ':' + (ev.lineno || 0),
+        ev.message, ev.error && ev.error.stack);
+      crashScreen();
+    }catch(e){}
+  });
+  window.addEventListener('unhandledrejection', ev => {
+    try{
+      const r = ev.reason;
+      recordCrash('promise', 'promise', (r && r.message) || String(r), r && r.stack);
+    }catch(e){}
+  });
+}
+
 </script>
 <script>
 /* BEQUEST — coaching.
@@ -7166,7 +7383,7 @@ function loadMeta(){
   if(m.premium.protoUnlocked===undefined){ m.premium.protoUnlocked=true; m.premium.plus=false; }
   return m;
 }
-function saveMeta(){ try{localStorage.setItem(META_KEY,JSON.stringify(META));}catch(e){} }
+function saveMeta(){ try{localStorage.setItem(META_KEY,JSON.stringify(META));}catch(e){ softFail('saveMeta',e); } }
 const slotKey=n=>'bequest.slot'+n;
 function save(){ if(!S)return; try{
     const blob=JSON.stringify(S);
@@ -7174,10 +7391,10 @@ function save(){ if(!S)return; try{
     localStorage.setItem(SAVE_KEY,blob);                 // autosave / quick-continue
     localStorage.setItem('bequest.lastslot',String(S.slot||1));
     if(CLOUD.on&&CLOUD.code)cloudPush(true);
-  }catch(e){} }
-function hasSave(){ try{return !!localStorage.getItem(SAVE_KEY);}catch(e){return false;} }
+  }catch(e){ softFail('save',e); } }
+function hasSave(){ try{return !!localStorage.getItem(SAVE_KEY);}catch(e){ softFail('hasSave',e); return false;} }
 function load(){ try{ S=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!S)return false;
-  RNG=mulberry32((S.seed+S.age*7919)>>>0); migrate(); return true; }catch(e){return false;} }
+  RNG=mulberry32((S.seed+S.age*7919)>>>0); migrate(); return true; }catch(e){ softFail('load',e); return false;} }
 function migrate(){
   if(!S)return;
   if(!S.counters)S.counters={promotions:0,businesses:0,divorces:0,relapses:0,cryptoProfit:0,debtCleared:0,maxDebt:0,heistWins:0,illnessesBeaten:0,gifts:0,partners:0};
@@ -8280,7 +8497,7 @@ function tickTrack(notes){
   S.track.years=(S.track.years||0)+1;
   const before=S.track.rank;
   TRACK_RANK(S.track);
-  try{ def.yearly(notes); }catch(e){}
+  try{ def.yearly(notes); }catch(e){ softFail('track.yearly:'+(def&&def.id),e); }
   TRACK_RANK(S.track);
   if(S.track.rank>before){
     const r=def.ranks[S.track.rank];
@@ -8972,7 +9189,7 @@ function checkAch(silent){
     if(META.ach[a.id])return;
     if(a.atDeath&&S.alive)return;            // "die with..." must not fire at birth
     if(a.meta!==true&&S.age<1&&!a.atDeath)return;   // nothing is earned before you can act
-    let ok=false; try{ok=!!a.f(S,C);}catch(e){ok=false;}
+    let ok=false; try{ok=!!a.f(S,C);}catch(e){ok=false; softFail('achievement:'+a.id,e);}
     if(ok){
       if(a.hard&&diffRank()<2) return;             // Hard+ only
       const pts=Math.round(a.p*lpMult()*(isPlus()?1.1:1));
@@ -8985,7 +9202,7 @@ function checkAch(silent){
   CHALLENGES.forEach(c=>{
     if(META.done[c.id])return;
     if(c.atDeath&&S.alive)return;
-    let v=0; try{v=c.prog(S);}catch(e){}
+    let v=0; try{v=c.prog(S);}catch(e){ softFail('challenge.prog:'+c.id,e); }
     if(v>=c.goal){ const pts=Math.round(c.p*lpMult()); META.done[c.id]=true; META.lp+=pts; logLine(`Challenge complete: ${c.n} (+${pts} LP)`,'good'); }
   });
   saveMeta();
@@ -8996,7 +9213,7 @@ function checkGoals(){
   S.goals.forEach(g=>{
     if(g.done)return;
     const def=GOAL_POOL.find(x=>x.id===g.id); if(!def)return;
-    let ok=false; try{ ok=!!def.test(S); }catch(e){}
+    let ok=false; try{ ok=!!def.test(S); }catch(e){ softFail('challenge.test:'+(def&&def.id),e); }
     if(ok){ g.done=true; const lp=Math.round(def.lp*lpMult());
       META.lp+=lp; saveMeta();
       logLine(`Goal met: ${def.n} (+${lp} LP)`,'good');
@@ -9007,10 +9224,10 @@ function checkGoals(){
 function checkChallenges(){ checkAch(); }
 function finalChallenges(){
   checkAch(true);
-  RECORDS.forEach(r=>{ let v=0; try{v=r.get(S);}catch(e){} if(META.rec[r.id]==null||v>META.rec[r.id])META.rec[r.id]=v; });
+  RECORDS.forEach(r=>{ let v=0; try{v=r.get(S);}catch(e){ softFail('record:'+r.id,e); } if(META.rec[r.id]==null||v>META.rec[r.id])META.rec[r.id]=v; });
   saveMeta();
 }
-function chProgress(c){ if(!S)return 0; let v=0; try{v=c.prog(S);}catch(e){} return Math.min(1,v/c.goal); }
+function chProgress(c){ if(!S)return 0; let v=0; try{v=c.prog(S);}catch(e){ softFail('challenge.prog:'+c.id,e); } return Math.min(1,v/c.goal); }
 
 /* ---------------- death ---------------- */
 function showDeath(){
@@ -9043,7 +9260,7 @@ function renderDeath(){
   const worth=netWorth();
   const st=SETTLEMENT||(SETTLEMENT=settleEstate(S,worth));
   const o=eulogy(S,worth,st);
-  const earned=DATA.ribs.filter(r=>{try{return r.f(S);}catch(e){return false;}});
+  const earned=DATA.ribs.filter(r=>{try{return r.f(S);}catch(e){ softFail('ribbon:'+r.id,e); return false;}});
   const lp=(S.achThisLife||[]).reduce((n,id)=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return n+(a?a.p:0);},0);
   const moments=S.log.filter(l=>l.k==='good'||l.k==='bad').slice(-6);
   const el=document.getElementById('modal'); el.className='modal show';
@@ -9205,7 +9422,7 @@ function popupCue(p){
 }
 function showPopup(p){
   const el=document.getElementById('modal'); el.className='modal show';
-  popupCue(p);
+  notePopup(p); popupCue(p);
   if(p.type==='A'){
     const ev=p.ev;
     if(p.cast)CAST=p.cast;   /* title, labels and outcome all read the same cast */
@@ -9882,6 +10099,7 @@ function doAct(id){
       return popupOK('Enough for one year','You have already indulged this year. Try something else.');
   }
   ACT_BLOCKED=false;
+  noteAct(id);
   EFF_SCALE=diminish(id);
   EFF_LOG=[];
   const qBefore=QUEUE.length;
@@ -11174,6 +11392,24 @@ function viewStats(){
      ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>
        `<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}
    </div></div>
+   <div class="card"><div class="ct">Problem reports</div>
+   <div class="hsub dim mb">If the game breaks, it keeps a note of what it was doing.
+     The note stays on this device. It never contains your name, anybody else's name,
+     or your save \u2014 only the shape of the life: age, country, difficulty, what was on
+     screen.</div>
+   <button class="row" onclick="setCrashOptIn(${crashOptIn()?'false':'true'})"><div>
+     <div class="rn">Allow reports to be sent</div>
+     <div class="hsub dim">${crashOptIn()?'Allowed \u2014 but there is nowhere to send them yet'
+       :'Off. Nothing leaves this device.'}</div></div>
+     <i>${crashOptIn()?'\u2713':'\u25CB'}</i></button>
+   ${crashLog().length?`<button class="row" onclick="crashScreen()"><div>
+     <div class="rn">See the last problem</div>
+     <div class="hsub dim">${crashLog().length} recorded</div></div><i>\u203a</i></button>
+   <button class="row" onclick="crashClear();renderAll()"><div>
+     <div class="rn">Delete the reports</div></div><i>\u203a</i></button>`
+     :'<div class="hsub dim">Nothing has gone wrong so far.</div>'}
+   </div>
+
    <div class="card"><div class="ct">Sound and feel</div>
    <div class="hsub dim mb">Cues are generated by the app, so they cost nothing to download and work offline.</div>
    <button class="row" onclick="setSound(${soundOn()?'false':'true'})"><div><div class="rn">Sound</div>
@@ -11385,6 +11621,7 @@ function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('l
 
 /* ---------------- boot ---------------- */
 if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener('DOMContentLoaded',()=>{
+  installCrashHandlers();
   renderTitle();
   bindTapSounds();
   document.getElementById('ageBtn').addEventListener('click',()=>{

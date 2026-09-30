@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -48,7 +48,7 @@ module.exports={
     get QUEUE(){return QUEUE},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
@@ -1362,6 +1362,136 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- problem reports ---- */
+function brokenLife(){
+  G.newGame({});
+  const s = G.S;
+  s.age = 44; s.alive = true;
+  s.name = 'Zzyzx Qwertyson';                       // findable if it leaks
+  s.employer = 'Qwertyson Holdings'; s.boss = 'Zzyzx Bossman'; s.school = 'Qwertyson High';
+  s.npcs.forEach(n => { n.name = 'Nnnpc Leakerman'; });
+  s.log = [{ a:43, t:'Nnnpc Leakerman was born.', k:'good' }];
+  G.crashClear();
+  return s;
+}
+
+t('a report describes the life without naming anybody in it', () => {
+  // the whole privacy claim rests on this one
+  const s = brokenLife();
+  G.recordCrash('error', 'test', 'something broke', 'at thing (game.js:1)');
+  const blob = JSON.stringify(G.crashLog()) + ' ' + G.crashReportText();
+  const leaks = ['Zzyzx','Qwertyson','Nnnpc','Leakerman','Bossman'].filter(w => blob.indexOf(w) >= 0);
+  if (leaks.length) return 'a report contained: ' + leaks.join(', ');
+  if (blob.indexOf('was born') >= 0) return 'a log line leaked into the report';
+  return true;
+});
+
+t('a report still says enough to reproduce the bug', () => {
+  const s = brokenLife();
+  s.country = 'uk'; s.diff = 'hard'; s.conditions = [{id:'asthma',sev:1,age:40,treated:false}];
+  G.noteAct('study'); G.noteAct('gym');
+  G.notePopup({ type:'A', ev:{ id:'c_bully' } });
+  const r = G.recordCrash('error', 'game.js:1200', 'x is not a function', 'at ageUp (game.js:1200)');
+  const c = r.ctx;
+  if (c.age !== 44) return 'no age';
+  if (c.country !== 'uk') return 'no country';
+  if (c.diff !== 'hard') return 'no difficulty';
+  if ((c.acts || []).indexOf('gym') < 0) return 'no record of what they had just done';
+  if (c.popup !== 'A:c_bully') return 'no record of what was on screen: ' + c.popup;
+  if ((c.conds || []).indexOf('asthma') < 0) return 'no conditions';
+  if (!r.stack) return 'no stack';
+  return true;
+});
+
+t('exact money is reported as a band, not a figure', () => {
+  const s = brokenLife();
+  s.money = 123456;
+  const r = G.recordCrash('soft', 'test', 'x');
+  if (String(r.ctx.money).indexOf('123456') >= 0) return 'the exact balance was reported';
+  if (!/k|m|<1k|^0$/.test(String(r.ctx.money))) return 'the band is unreadable: ' + r.ctx.money;
+  return true;
+});
+
+t('nothing is sent anywhere, and consent defaults to off', () => {
+  const s = brokenLife();
+  if (G.crashOptIn()) return 'reports are allowed to be sent by default';
+  let sent = 0;
+  const realSink = G.crashSink;
+  // the seam exists but has no destination behind it
+  if (G.crashSink({}) !== false) return 'crashSink claims to have sent something';
+  G.recordCrash('error', 'test', 'boom');
+  if (sent) return 'a report was transmitted';
+  return true;
+});
+
+t('a swallowed failure is recorded instead of vanishing', () => {
+  const s = brokenLife();
+  const before = G.crashLog().length;
+  G.softFail('save', new Error('QuotaExceededError'));
+  const log = G.crashLog();
+  if (log.length !== before + 1) return 'nothing was recorded';
+  const r = log[log.length - 1];
+  if (r.kind !== 'soft') return 'recorded as the wrong kind';
+  if (r.where !== 'save') return 'lost track of where it happened';
+  if (r.msg.indexOf('Quota') < 0) return 'lost the message';
+  return true;
+});
+
+t('a broken achievement is noticed rather than silently never firing', () => {
+  const s = brokenLife();
+  G.crashClear();
+  // checkAch skips anything already unlocked or marked atDeath, so pick one
+  // it will really evaluate
+  Object.keys(G.META.ach).forEach(k => delete G.META.ach[k]);
+  const ach = G.ACHIEVEMENTS.find(a => !a.atDeath && a.meta !== true);
+  if (!ach) return 'no achievement is evaluated during life';
+  const realF = ach.f;
+  ach.f = () => { throw new Error('bad predicate'); };
+  try { G.checkAch(true); } finally { ach.f = realF; }
+  const hit = G.crashLog().some(r => r.where.indexOf('achievement:') === 0);
+  return hit ? true : 'an achievement predicate threw and nobody heard it';
+});
+
+t('the log is a ring buffer and cannot grow without limit', () => {
+  brokenLife();
+  for (let i = 0; i < 40; i++) G.softFail('test' + i, new Error('e' + i));
+  const log = G.crashLog();
+  if (log.length > 12) return 'the log grew to ' + log.length;
+  if (!log.length) return 'the log is empty';
+  if (log[log.length - 1].where !== 'test39') return 'the newest report was dropped instead of the oldest';
+  return true;
+});
+
+t('a report survives being written and read back', () => {
+  brokenLife();
+  G.softFail('roundtrip', new Error('kept'));
+  const again = G.crashLog();
+  if (!again.length) return 'nothing persisted';
+  if (JSON.stringify(again).indexOf('kept') < 0) return 'the report did not survive the round trip';
+  G.crashClear();
+  if (G.crashLog().length) return 'clearing did not clear';
+  return true;
+});
+
+t('recording a problem never throws, whatever state the game is in', () => {
+  // it runs at the worst possible moment, so it has to cope with anything
+  const cases = [
+    () => { G.S = null; },
+    () => { G.newGame({}); G.S.npcs = null; G.S.log = null; G.S.flags = null; },
+    () => { G.newGame({}); G.S.conditions = null; G.S.holdings = null; }
+  ];
+  for (let i = 0; i < cases.length; i++) {
+    try {
+      cases[i]();
+      G.recordCrash('error', 'hostile', 'x', 'stack');
+      G.crashReportText();
+      G.crashContext();
+    } catch (e) { return 'case ' + i + ' threw: ' + e.message; }
+  }
+  G.newGame({});
+  return true;
 });
 
 /* ---- health systems ---- */

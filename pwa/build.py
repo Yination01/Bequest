@@ -27,6 +27,7 @@ school= (d/'school.js').read_text()
 court = (d/'court.js').read_text()
 invest= (d/'invest.js').read_text()
 health= (d/'health.js').read_text()
+crash = (d/'crash.js').read_text()
 game  = (d/'game.js').read_text()
 # Derive the inline icon from the committed PNG so the build has no hidden
 # dependency on a generated file. Falls back to the cache if it exists.
@@ -125,6 +126,7 @@ html = f"""<!doctype html>
 {court}
 {invest}
 {health}
+{crash}
 </script>
 <script>
 {coach}

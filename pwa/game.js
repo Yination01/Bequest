@@ -78,7 +78,7 @@ function loadMeta(){
   if(m.premium.protoUnlocked===undefined){ m.premium.protoUnlocked=true; m.premium.plus=false; }
   return m;
 }
-function saveMeta(){ try{localStorage.setItem(META_KEY,JSON.stringify(META));}catch(e){} }
+function saveMeta(){ try{localStorage.setItem(META_KEY,JSON.stringify(META));}catch(e){ softFail('saveMeta',e); } }
 const slotKey=n=>'bequest.slot'+n;
 function save(){ if(!S)return; try{
     const blob=JSON.stringify(S);
@@ -86,10 +86,10 @@ function save(){ if(!S)return; try{
     localStorage.setItem(SAVE_KEY,blob);                 // autosave / quick-continue
     localStorage.setItem('bequest.lastslot',String(S.slot||1));
     if(CLOUD.on&&CLOUD.code)cloudPush(true);
-  }catch(e){} }
-function hasSave(){ try{return !!localStorage.getItem(SAVE_KEY);}catch(e){return false;} }
+  }catch(e){ softFail('save',e); } }
+function hasSave(){ try{return !!localStorage.getItem(SAVE_KEY);}catch(e){ softFail('hasSave',e); return false;} }
 function load(){ try{ S=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!S)return false;
-  RNG=mulberry32((S.seed+S.age*7919)>>>0); migrate(); return true; }catch(e){return false;} }
+  RNG=mulberry32((S.seed+S.age*7919)>>>0); migrate(); return true; }catch(e){ softFail('load',e); return false;} }
 function migrate(){
   if(!S)return;
   if(!S.counters)S.counters={promotions:0,businesses:0,divorces:0,relapses:0,cryptoProfit:0,debtCleared:0,maxDebt:0,heistWins:0,illnessesBeaten:0,gifts:0,partners:0};
@@ -1192,7 +1192,7 @@ function tickTrack(notes){
   S.track.years=(S.track.years||0)+1;
   const before=S.track.rank;
   TRACK_RANK(S.track);
-  try{ def.yearly(notes); }catch(e){}
+  try{ def.yearly(notes); }catch(e){ softFail('track.yearly:'+(def&&def.id),e); }
   TRACK_RANK(S.track);
   if(S.track.rank>before){
     const r=def.ranks[S.track.rank];
@@ -1884,7 +1884,7 @@ function checkAch(silent){
     if(META.ach[a.id])return;
     if(a.atDeath&&S.alive)return;            // "die with..." must not fire at birth
     if(a.meta!==true&&S.age<1&&!a.atDeath)return;   // nothing is earned before you can act
-    let ok=false; try{ok=!!a.f(S,C);}catch(e){ok=false;}
+    let ok=false; try{ok=!!a.f(S,C);}catch(e){ok=false; softFail('achievement:'+a.id,e);}
     if(ok){
       if(a.hard&&diffRank()<2) return;             // Hard+ only
       const pts=Math.round(a.p*lpMult()*(isPlus()?1.1:1));
@@ -1897,7 +1897,7 @@ function checkAch(silent){
   CHALLENGES.forEach(c=>{
     if(META.done[c.id])return;
     if(c.atDeath&&S.alive)return;
-    let v=0; try{v=c.prog(S);}catch(e){}
+    let v=0; try{v=c.prog(S);}catch(e){ softFail('challenge.prog:'+c.id,e); }
     if(v>=c.goal){ const pts=Math.round(c.p*lpMult()); META.done[c.id]=true; META.lp+=pts; logLine(`Challenge complete: ${c.n} (+${pts} LP)`,'good'); }
   });
   saveMeta();
@@ -1908,7 +1908,7 @@ function checkGoals(){
   S.goals.forEach(g=>{
     if(g.done)return;
     const def=GOAL_POOL.find(x=>x.id===g.id); if(!def)return;
-    let ok=false; try{ ok=!!def.test(S); }catch(e){}
+    let ok=false; try{ ok=!!def.test(S); }catch(e){ softFail('challenge.test:'+(def&&def.id),e); }
     if(ok){ g.done=true; const lp=Math.round(def.lp*lpMult());
       META.lp+=lp; saveMeta();
       logLine(`Goal met: ${def.n} (+${lp} LP)`,'good');
@@ -1919,10 +1919,10 @@ function checkGoals(){
 function checkChallenges(){ checkAch(); }
 function finalChallenges(){
   checkAch(true);
-  RECORDS.forEach(r=>{ let v=0; try{v=r.get(S);}catch(e){} if(META.rec[r.id]==null||v>META.rec[r.id])META.rec[r.id]=v; });
+  RECORDS.forEach(r=>{ let v=0; try{v=r.get(S);}catch(e){ softFail('record:'+r.id,e); } if(META.rec[r.id]==null||v>META.rec[r.id])META.rec[r.id]=v; });
   saveMeta();
 }
-function chProgress(c){ if(!S)return 0; let v=0; try{v=c.prog(S);}catch(e){} return Math.min(1,v/c.goal); }
+function chProgress(c){ if(!S)return 0; let v=0; try{v=c.prog(S);}catch(e){ softFail('challenge.prog:'+c.id,e); } return Math.min(1,v/c.goal); }
 
 /* ---------------- death ---------------- */
 function showDeath(){
@@ -1955,7 +1955,7 @@ function renderDeath(){
   const worth=netWorth();
   const st=SETTLEMENT||(SETTLEMENT=settleEstate(S,worth));
   const o=eulogy(S,worth,st);
-  const earned=DATA.ribs.filter(r=>{try{return r.f(S);}catch(e){return false;}});
+  const earned=DATA.ribs.filter(r=>{try{return r.f(S);}catch(e){ softFail('ribbon:'+r.id,e); return false;}});
   const lp=(S.achThisLife||[]).reduce((n,id)=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return n+(a?a.p:0);},0);
   const moments=S.log.filter(l=>l.k==='good'||l.k==='bad').slice(-6);
   const el=document.getElementById('modal'); el.className='modal show';
@@ -2117,7 +2117,7 @@ function popupCue(p){
 }
 function showPopup(p){
   const el=document.getElementById('modal'); el.className='modal show';
-  popupCue(p);
+  notePopup(p); popupCue(p);
   if(p.type==='A'){
     const ev=p.ev;
     if(p.cast)CAST=p.cast;   /* title, labels and outcome all read the same cast */
@@ -2794,6 +2794,7 @@ function doAct(id){
       return popupOK('Enough for one year','You have already indulged this year. Try something else.');
   }
   ACT_BLOCKED=false;
+  noteAct(id);
   EFF_SCALE=diminish(id);
   EFF_LOG=[];
   const qBefore=QUEUE.length;
@@ -4086,6 +4087,24 @@ function viewStats(){
      ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>
        `<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}
    </div></div>
+   <div class="card"><div class="ct">Problem reports</div>
+   <div class="hsub dim mb">If the game breaks, it keeps a note of what it was doing.
+     The note stays on this device. It never contains your name, anybody else's name,
+     or your save \u2014 only the shape of the life: age, country, difficulty, what was on
+     screen.</div>
+   <button class="row" onclick="setCrashOptIn(${crashOptIn()?'false':'true'})"><div>
+     <div class="rn">Allow reports to be sent</div>
+     <div class="hsub dim">${crashOptIn()?'Allowed \u2014 but there is nowhere to send them yet'
+       :'Off. Nothing leaves this device.'}</div></div>
+     <i>${crashOptIn()?'\u2713':'\u25CB'}</i></button>
+   ${crashLog().length?`<button class="row" onclick="crashScreen()"><div>
+     <div class="rn">See the last problem</div>
+     <div class="hsub dim">${crashLog().length} recorded</div></div><i>\u203a</i></button>
+   <button class="row" onclick="crashClear();renderAll()"><div>
+     <div class="rn">Delete the reports</div></div><i>\u203a</i></button>`
+     :'<div class="hsub dim">Nothing has gone wrong so far.</div>'}
+   </div>
+
    <div class="card"><div class="ct">Sound and feel</div>
    <div class="hsub dim mb">Cues are generated by the app, so they cost nothing to download and work offline.</div>
    <button class="row" onclick="setSound(${soundOn()?'false':'true'})"><div><div class="rn">Sound</div>
@@ -4297,6 +4316,7 @@ function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('l
 
 /* ---------------- boot ---------------- */
 if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener('DOMContentLoaded',()=>{
+  installCrashHandlers();
   renderTitle();
   bindTapSounds();
   document.getElementById('ageBtn').addEventListener('click',()=>{

@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 297 tests, 22 modules, 723 KB, no known integrity
+Current state: 533 events, 306 tests, 23 modules, 733 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -463,7 +463,46 @@ Required before it goes on a store, in rough order.
 | 20 | **Privacy policy and data declaration** | Play requires both. We collect nothing, which makes this easy and worth saying loudly. |
 | 21 | **Content rating** | Crime, alcohol, drugs, gambling. Expect 16+. Declare honestly. |
 | 22 | **Store listing** | Screenshots, description, and a name search against the registers one final time. |
-| 23 | **Crash reporting** | Currently blind to anything that happens on a real device. |
+| 23 | **Crash reporting** — *capture built, destination deliberately open* | Currently blind to anything that happens on a real device. |
+
+### Where crash reporting got to
+
+The capture half is built and the transport half is deliberately not.
+
+There was no global error handler at all: a thrown error outside the
+fourteen local `try/catch` blocks left the screen frozen with no message and
+no way for the player to tell anyone. The `try/catch` blocks were worse in
+their way — a save that failed to write, a corrupt load, an achievement
+predicate that threw, all swallowed in silence, possibly for years, because
+nothing ever looked.
+
+Both are now recorded, on the device, in a twelve-report ring buffer. Ten of
+the silent catches report what they swallowed.
+
+**Nothing is sent anywhere.** `crashSink()` is the single seam a destination
+plugs into — an endpoint, Crashlytics, Sentry — and until one exists the only
+way a report leaves the phone is the player pressing Copy. Sending is gated
+on an opt-in that defaults to off, so item 20's claim that the game collects
+nothing is true as written.
+
+**What a report may not contain:** the player's name, any NPC's name, their
+employer, school or manager, any log line, or the save. A life is described
+by its shape instead — age, generation, country, difficulty, what was on
+screen, what they had just done, conditions, and money as a band rather than
+a figure. A test puts `Zzyzx Qwertyson` in the save and fails if it appears
+anywhere in a report.
+
+A real report reads:
+
+    Bequest 1.0.0  error
+    where: game.js:1200
+    Cannot read properties of null (reading 'boom')
+    age 34  gen 1  us  normal
+    screen money/invest  popup C
+    did: gym
+    money 10k-100k  worth 10k-100k  npcs 8  conds anxiety
+
+which is enough to reproduce most things and is not about anybody.
 
 ## P4 — Later
 
