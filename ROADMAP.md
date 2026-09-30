@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 335 tests, 25 modules, 750 KB, no known integrity
+Current state: 533 events, 340 tests, 25 modules, 754 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -546,13 +546,42 @@ out **184 of 480 simulated lives** until every entry point was guarded.
 Accessibility must never be the reason a life cannot run, and there is a
 test that says so.
 
+### What item 26 turned into
+
+The roadmap said the renderer supported it, and it did: `avatar.js` already
+handled age bands, pallor from failing health, hair greying and thinning, a
+mouth that follows happiness, and a collar coloured by career field. The
+three things it named were the three it did not do.
+
+- **Clothing by wealth.** Four tiers off net worth, not off cash in hand, so
+  somebody with a paid-off house and an empty current account reads
+  correctly. A plain darkened garment at the bottom, lapels in the middle,
+  lapels and a tie at the top.
+- **Ageing below the neck.** Shoulders narrow and drop, and the neck thins,
+  from the mid fifties onwards and faster when there is something untreated.
+  The face was doing all the work before.
+- **Conditions, without costume.** An untreated condition of severity two or
+  more hollows the cheeks; treating it clears them again, which is the whole
+  point of treating it. Heavy drinking flushes the nose and cheeks. A long
+  junk food habit fills out the jaw. Nothing announces a diagnosis, because
+  a portrait should not.
+
+All of it is self-contained: `avatarMini()` renders NPCs from a fabricated
+state with no money, habits, conditions or property on it, so every new
+input copes with being absent. There is a test that renders a bare NPC, a
+dead one, a baby and a ninety-nine-year-old.
+
+Five tests, all mutation-tested: flattening the wealth tier, letting a
+managed condition still show, and freezing the shoulders were each killed
+by the right one.
+
 ## P4 — Later
 
 | # | Item | Why |
 |---|---|---|
 | 24 | **Localisation** | Your market is global and the game is 100% English text. Also the single biggest translation bill in the project — worth planning before the library reaches 500 events. |
 | 25 | **Leaderboards** | ReLife has them; they extend a game's life considerably. Needs accounts. |
-| 26 | **An avatar that shows more** | Clothing by wealth, visible ageing beyond the face, conditions. The renderer supports it. |
+| 26 | ~~**An avatar that shows more**~~ — **done** | Clothing by wealth, visible ageing beyond the face, conditions. The renderer supports it. |
 | 27 | ~~**Accessibility pass**~~ — **done, and moved out of P4** | Screen-reader labels, contrast checks, larger tap targets. Text sizing is done. |
 | 28 | **iOS** | The build is a WebView; the same bundle would run. Only worth it once Android is proven. |
 

@@ -51,7 +51,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1378,6 +1378,93 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- the avatar shows more than a face ---- */
+function portrait(over){
+  // newGame() rolls a different person every call, and the portrait is
+  // derived from name, seed and country. Pin the person, or every
+  // comparison below is between two strangers.
+  G.newGame({});
+  const s = G.S;
+  s.age = 40; s.name = 'Ada Vale'; s.gender = 'f'; s.seed = 12345; s.country = 'uk';
+  s.stats = { health:70, happiness:60, smarts:50, looks:50, reputation:50, discipline:50 };
+  s.money = 0; s.savings = 0; s.debt = 0;
+  s.properties = []; s.businesses = []; s.conditions = []; s.habits = {};
+  s.jailLeft = 0; s.job = null;
+  Object.keys(over || {}).forEach(k => { s[k] = over[k]; });
+  return G.avatarSVG(s, 96);
+}
+
+t('what you are worth shows in what you are wearing', () => {
+  const poor = portrait({ money: 200 });
+  const mid  = portrait({ money: 300000 });
+  const rich = portrait({ money: 2000000 });
+  if (poor === rich) return 'a pauper and a millionaire render identically';
+  if (G.avatarWealthTier({ money: 200 }) !== 0) return 'tier 0 is not the floor';
+  if (G.avatarWealthTier({ money: 2000000 }) !== 3) return 'tier 3 is not the ceiling';
+  // the tie only belongs to the top tier
+  if (poor.indexOf('#8d2733') >= 0) return 'a pauper is wearing a tie';
+  if (rich.indexOf('#8d2733') < 0) return 'the wealthiest tier has no tie';
+  if (mid === poor) return 'the middle tier is indistinguishable from the bottom';
+  // and property counts, not just cash in hand
+  const landed = G.avatarWealthTier({ money: 0, properties: [{ value: 900000, mortgage: 0 }] });
+  if (landed < 3) return 'someone with a paid-off house reads as poor';
+  return true;
+});
+
+t('age shows below the neck as well as above it', () => {
+  const young = portrait({ age: 25 });
+  const old   = portrait({ age: 82 });
+  const shoulders = svg => {
+    const m = svg.match(/M ([\d.]+) 100 Q/);
+    return m ? parseFloat(m[1]) : null;
+  };
+  const y = shoulders(young), o = shoulders(old);
+  if (y == null || o == null) return 'the shoulder path is no longer readable';
+  if (!(o > y)) return `shoulders do not narrow with age: ${y} at 25, ${o} at 82`;
+  return true;
+});
+
+t('an untreated illness is visible, a managed one is not', () => {
+  const well    = portrait({ conditions: [] });
+  const managed = portrait({ conditions: [{ id:'diabetes', sev:2, treated:true }] });
+  const ill     = portrait({ conditions: [{ id:'diabetes', sev:2, treated:false }] });
+  if (G.avatarAiling({ conditions: [{ id:'x', sev:2, treated:true }] }) !== 0)
+    return 'a managed condition still counts as ailing';
+  if (G.avatarAiling({ conditions: [{ id:'x', sev:1, treated:false }] }) !== 0)
+    return 'a minor condition is being treated as serious';
+  if (ill === well) return 'a serious untreated illness does not show at all';
+  if (managed !== well) return 'treating it does not clear the face';
+  return true;
+});
+
+t('habits show in the face, but only once they are habits', () => {
+  const clean = portrait({ habits: {} });
+  const light = portrait({ habits: { drinking: 20 } });
+  const heavy = portrait({ habits: { drinking: 80 } });
+  if (light !== clean) return 'the occasional drink already shows';
+  if (heavy === clean) return 'heavy drinking does not show at all';
+  const fed = portrait({ habits: { junkfood: 80 } });
+  if (fed === clean) return 'a long junk food habit does not show';
+  return true;
+});
+
+t('a portrait renders for anybody, however little is known about them', () => {
+  // avatarMini builds a fabricated state for NPCs, with no money, habits,
+  // conditions or properties on it at all
+  const bare = { name:'X Y', id:'n1', age:30, gender:'m', alive:true, r:60 };
+  let out = null, err = null;
+  try { out = G.avatarMini(bare, 38); } catch(e){ err = e.message; }
+  if (err) return 'an NPC portrait threw: ' + err;
+  if (!out || out.indexOf('<svg') !== 0) return 'no svg came back';
+  if (/undefined|NaN/.test(out)) return 'the portrait leaked a raw value';
+  // and a dead one, and a baby
+  for (const t2 of [{...bare, alive:false}, {...bare, age:1}, {...bare, age:99}]) {
+    const o = G.avatarMini(t2, 38);
+    if (/undefined|NaN/.test(o)) return 'a portrait leaked on ' + JSON.stringify(t2).slice(0, 40);
+  }
+  return true;
 });
 
 /* ---- accessibility ---- */
