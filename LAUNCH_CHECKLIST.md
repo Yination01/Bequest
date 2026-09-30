@@ -130,11 +130,10 @@ and it will be dispatched, uploaded to internal testing first.
 
 ## Not blocking, but worth deciding
 
-- **Accessibility.** The quality bar calls it a compliance requirement and
-  a legal liability. The roadmap has it in P4. The built bundle contains
-  one `aria-` attribute and three `role=` attributes across a five-item tab
-  bar, three toggle switches and a modal system. `research/SIBLING-AUDIT.md`
-  section 3 has the detail.
+- ~~**Accessibility.**~~ Done. The bundle now carries a real tablist with
+  arrow-key navigation, `role="switch"` on every toggle, a proper dialog
+  with focus return and Escape, a polite live region, a focus ring distinct
+  from the selected state, and 44px minimum tap targets. Five tests hold it.
 - **The no-dash rule.** The house pack forbids em and en dashes. This repo
   has roughly 791 and six were in its first commit, so it predates the
   rule. Recorded as a known divergence in `.agent/agent-pack.json`.

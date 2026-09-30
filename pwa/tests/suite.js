@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','adminlink.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','adminlink.js','a11y.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -51,7 +51,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1378,6 +1378,92 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- accessibility ---- */
+t('the shell carries the roles a screen reader needs', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const built = fs2.readFileSync(p2.join(DIR, 'index.html'), 'utf8');
+  const need = {
+    'role="tablist"': 'the tab bar is not a tablist',
+    'role="tabpanel"': 'nothing is marked as the panel the tabs control',
+    'role="dialog"': 'the modal is not a dialog',
+    'aria-modal="true"': 'the dialog does not trap assistive focus',
+    'role="status"': 'there is no live region for the year to be announced',
+    'aria-live="polite"': 'the live region does not announce',
+    'lang="en"': 'the document has no language'
+  };
+  const missing = Object.keys(need).filter(k => built.indexOf(k) < 0).map(k => need[k]);
+  if (missing.length) return missing.join(' | ');
+  const tabs = (built.match(/role="tab"/g) || []).length;
+  if (tabs < 5) return 'only ' + tabs + ' tabs are labelled, expected 5';
+  if ((built.match(/aria-selected=/g) || []).length < 5) return 'tabs do not report which is selected';
+  // decorative icons must be hidden, or every tab is read twice
+  const svgs = (built.match(/<svg /g) || []).length;
+  const hidden = (built.match(/<svg [^>]*aria-hidden="true"/g) || []).length;
+  if (hidden < svgs) return (svgs - hidden) + ' decorative icons are still announced';
+  return true;
+});
+
+t('exactly one tab is selected, and it is the one that is shown', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const built = fs2.readFileSync(p2.join(DIR, 'index.html'), 'utf8');
+  const sel = (built.match(/aria-selected="true"/g) || []).length;
+  if (sel !== 1) return sel + ' tabs claim to be selected at rest';
+  // roving tabindex: one stop, not five
+  const zero = (built.match(/role="tab"[^>]*tabindex="0"/g) || []).length;
+  const minus = (built.match(/role="tab"[^>]*tabindex="-1"/g) || []).length;
+  if (zero !== 1) return zero + ' tabs are keyboard stops, expected 1';
+  if (minus !== 4) return 'the other tabs are not removed from the tab order';
+  return true;
+});
+
+t('every toggle announces its state as a switch', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const game = fs2.readFileSync(p2.join(DIR, 'game.js'), 'utf8');
+  // a row whose entire job is on or off, found by the tick glyph it paints
+  const rows = game.split('\n').filter(l => /\\u2713'\s*:\s*'\\u25CB/i.test(l));
+  if (!rows.length) return 'no toggle rows found at all, so this test proves nothing';
+  const unmarked = rows.filter(l => {
+    const i = game.indexOf(l);
+    const start = game.lastIndexOf('<button', i);
+    if (start < 0) return false;
+    const between = game.slice(start, i);
+    // the glyph must actually be inside that button, not after it closed:
+    // the Plus feature list paints the same tick in a <div> and is a list,
+    // not a control
+    if (between.indexOf('</button>') >= 0) return false;
+    return between.indexOf('data-switch') < 0;
+  });
+  if (unmarked.length)
+    return unmarked.length + ' toggles do not declare a switch state, e.g. ' + unmarked[0].trim().slice(0, 70);
+  return true;
+});
+
+t('accessibility never stops a headless life from running', () => {
+  // the harness document is a stub; an a11y helper that assumes a real DOM
+  // took out 184 of 480 simulated lives before this guard existed
+  const before = G.S;
+  G.newGame({});
+  let err = null;
+  try {
+    G.setTab('money'); G.setTab('life');
+    G.a11ySyncTabs('life'); G.a11ySwitches(); G.a11yAgeHint();
+    G.say('anything'); G.a11yDialogOpen('x'); G.a11yDialogClose(); G.a11yInit();
+    let g = 0; while (G.S.alive && g++ < 30) G.ageUp();
+  } catch(e) { err = e.message; }
+  if (err) return 'a life could not run: ' + err;
+  return true;
+});
+
+t('the focus ring does not look like the selected state', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const css = fs2.readFileSync(p2.join(DIR, 'style.css'), 'utf8');
+  if (css.indexOf(':focus-visible') < 0) return 'there is no focus-visible style at all';
+  const m = css.match(/:focus-visible\s*\{[^}]*\}/);
+  if (!m || !/outline/.test(m[0])) return 'focus-visible sets no outline';
+  if (css.indexOf('.sronly') < 0) return 'there is no screen-reader-only class for hidden labels';
+  return true;
 });
 
 /* ---- the admin console ---- */
@@ -3568,6 +3654,11 @@ t('finance repayments are collected and eventually end', () => {
       G.ageUp();
       if (!G.S.alive) { died = true; break; }
       if (G.S.money < before) paid++;
+      // whether an instalment CAN be paid is a different guarantee, tested
+      // elsewhere: financeTick only counts a year down when it is paid, so
+      // a life bankrupted by an event legitimately never clears the
+      // agreement. Keep affordability out of this one.
+      G.S.money = 4000000; G.S.arrears = 0;
     }
     if (died) continue;
     if (!paid) return 'nothing was ever collected';

@@ -12,18 +12,18 @@ const money = v => (v<0?'-':'')+'$'+Math.abs(Math.round(v)).toLocaleString('en-U
 const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const DICE = '<span class="die">⚄</span>';
 const IC={
- life:'<svg viewBox="0 0 24 24"><path d="M12 21s-7-4.7-9.2-9A5.4 5.4 0 0 1 12 6.6 5.4 5.4 0 0 1 21.2 12C19 16.3 12 21 12 21z"/></svg>',
- act:'<svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
- ppl:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0z"/><circle cx="17.5" cy="9.5" r="2.6"/><path d="M14.6 20a5.5 5.5 0 0 1 7.9-4.6"/></svg>',
- money:'<svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><circle cx="12" cy="12" r="3"/></svg>',
- more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
- health:'<svg viewBox="0 0 24 24"><path d="M12 20s-6.5-4.3-8.5-8.2A4.9 4.9 0 0 1 12 7a4.9 4.9 0 0 1 8.5 4.8C18.5 15.7 12 20 12 20z"/></svg>',
- happiness:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.2" fill="#0b1020"/><circle cx="15" cy="10" r="1.2" fill="#0b1020"/><path d="M8 14.5a5 5 0 0 0 8 0" stroke="#0b1020" stroke-width="1.6" fill="none"/></svg>',
- smarts:'<svg viewBox="0 0 24 24"><path d="M12 2.5 14.6 9l6.9.4-5.3 4.4 1.7 6.7L12 16.9 6.1 20.5l1.7-6.7L2.5 9.4 9.4 9z"/></svg>',
- looks:'<svg viewBox="0 0 24 24"><path d="M12 3 20 12l-8 9-8-9z"/></svg>',
- reputation:'<svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="M8 14 6.5 22 12 19l5.5 3L16 14"/></svg>',
- discipline:'<svg viewBox="0 0 24 24"><path d="M12 3 21 19H3z"/></svg>',
- cake:'<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M12 4v5"/></svg>'
+ life:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-7-4.7-9.2-9A5.4 5.4 0 0 1 12 6.6 5.4 5.4 0 0 1 21.2 12C19 16.3 12 21 12 21z"/></svg>',
+ act:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
+ ppl:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0z"/><circle cx="17.5" cy="9.5" r="2.6"/><path d="M14.6 20a5.5 5.5 0 0 1 7.9-4.6"/></svg>',
+ money:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><circle cx="12" cy="12" r="3"/></svg>',
+ more:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+ health:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20s-6.5-4.3-8.5-8.2A4.9 4.9 0 0 1 12 7a4.9 4.9 0 0 1 8.5 4.8C18.5 15.7 12 20 12 20z"/></svg>',
+ happiness:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.2" fill="#0b1020"/><circle cx="15" cy="10" r="1.2" fill="#0b1020"/><path d="M8 14.5a5 5 0 0 0 8 0" stroke="#0b1020" stroke-width="1.6" fill="none"/></svg>',
+ smarts:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.5 14.6 9l6.9.4-5.3 4.4 1.7 6.7L12 16.9 6.1 20.5l1.7-6.7L2.5 9.4 9.4 9z"/></svg>',
+ looks:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3 20 12l-8 9-8-9z"/></svg>',
+ reputation:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="9" r="5.5"/><path d="M8 14 6.5 22 12 19l5.5 3L16 14"/></svg>',
+ discipline:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3 21 19H3z"/></svg>',
+ cake:'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="11" width="18" height="9" rx="2"/><path d="M12 4v5"/></svg>'
 };
 
 
@@ -2188,6 +2188,7 @@ function popupCue(p){
 function showPopup(p){
   const el=document.getElementById('modal'); el.className='modal show';
   notePopup(p); popupCue(p);
+  const label = p.title || (p.ev&&p.ev.t) || (p.type==='COURT'?'Court':'Message');
   if(p.type==='A'){
     const ev=p.ev;
     if(p.cast)CAST=p.cast;   /* title, labels and outcome all read the same cast */
@@ -2302,7 +2303,9 @@ function showPopup(p){
       <div class="ph">${esc(p.title)}</div><div class="pb">${esc(p.text||'').replace(/\n/g,'<br>')}</div>${res}
       <div class="choices"><button class="choice ok" onclick="closePopup()"><span>Continue</span><i>›</i></button></div></div>`;
   }
+  a11yDialogOpen(label);
 }
+
 function setCapsule(k){ S.capsule=k; document.getElementById('modal').className='modal'; save(); drain(); }
 function pickFrom(i){
   const c=CHOOSER; document.getElementById('modal').className='modal';
@@ -2312,7 +2315,7 @@ function pickFrom(i){
 function cdo(y){ const p=CONFIRM; document.getElementById('modal').className='modal'; if(y&&p.yes)p.yes(); if(!y&&p.no)p.no(); drain(); }
 function pickChoice(id,i){ document.getElementById('modal').className='modal'; resolveChoice(EVENTS.find(e=>e.id===id),i); }
 function fateChoice(id){ const ev=EVENTS.find(e=>e.id===id); pickChoice(id,Math.floor(R()*ev.c.length)); }
-function closePopup(){ document.getElementById('modal').className='modal'; drain(); }
+function closePopup(){ document.getElementById('modal').className='modal'; a11yDialogClose(); drain(); }
 
 /* ---------------- ACTIVITIES ---------------- */
 function ACTS(){
@@ -2884,7 +2887,8 @@ function randomAct(){
 
 /* ---------------- RENDER ---------------- */
 const app=()=>document.getElementById('app');
-function renderAll(){ if(!S)return; applyTextSize(); renderHeader(); renderTab(app().dataset.tab||'life',true); }
+function renderAll(){ if(!S)return; applyTextSize(); renderHeader(); renderTab(app().dataset.tab||'life',true);
+  a11ySwitches(); a11yAgeHint(); }
 function initials(n){ return n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
 function doAgeUp(){
   cue('year','year');
@@ -2946,7 +2950,7 @@ function renderHeader(){
   document.getElementById('hdr').innerHTML=`
     <div class="hero">
       <div class="avwrap">
-        <svg class="ring" viewBox="0 0 88 88"><circle class="rbg" cx="44" cy="44" r="40"/>
+        <svg class="ring" viewBox="0 0 88 88" aria-hidden="true" focusable="false"><circle class="rbg" cx="44" cy="44" r="40"/>
           <circle class="rfg ${h>=70?'g':h>=40?'a':'r'}" cx="44" cy="44" r="40"
             stroke-dasharray="${ring} 251" /></svg>
         <div class="avin">${avatarSVG(S,64)}</div>
@@ -2990,6 +2994,7 @@ function renderHeader(){
 }
 function setTab(t){ rememberScroll(); SCROLL[t]=0; app().dataset.tab=t;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  a11ySyncTabs(t);
   const m=document.getElementById('main'); if(m)m.classList.remove('in');
   renderTab(t);
   if(m){ void m.offsetWidth; m.classList.add('in'); } }
@@ -3357,7 +3362,7 @@ function moneyCareers(){
   return `<div class="card"><div class="ct">Find work</div>
     <input class="search" placeholder="Search jobs, e.g. nurse or chef" value="${esc(S.jobFilter||'')}"
       oninput="setJobFilter(this.value)">
-    <button class="row" onclick="S.jobOpenOnly=!S.jobOpenOnly;renderTab('money',true)">
+    <button class="row" onclick="S.jobOpenOnly=!S.jobOpenOnly;renderTab('money',true)" data-switch="${openOnly?'on':'off'}">
       <div class="rn">Only show jobs I can apply for</div><i>${openOnly?'\u2713':'\u25CB'}</i></button></div>
    <div class="card"><div class="ct">Careers</div>
    ${Object.keys(DATA.fieldNames).map(f=>{
@@ -3504,7 +3509,7 @@ function moneyLiving(){
              <div class="hsub dim">${money(S.arrPlan.amt)} a year \u00b7 interest frozen${S.arrPlan.missed?` \u00b7 ${S.arrPlan.missed} missed`:''}</div></div><i>\u2715</i></button>`
         : `<button class="row mt" onclick="startArrPlan()"><div><div class="rn">Agree a repayment plan</div>
              <div class="hsub dim">${money(arrPlanAmount())} a year and the interest stops</div></div><i>\u203a</i></button>`}`:''}
-    <button class="row mt" onclick="toggleAutopay()"><div><div class="rn">Direct debit</div>
+    <button class="row mt" onclick="toggleAutopay()" data-switch="${autopayOn()?'on':'off'}"><div><div class="rn">Direct debit</div>
       <div class="hsub dim">${autopayOn()
         ? (autopayBounces()?'On \u2014 but it bounces if the account is short':'On \u2014 bills settle themselves')
         : (autopayBounces()?'Off \u2014 arrange one, or pay each year yourself':'Off \u2014 you pay each year')}</div></div>
@@ -3528,7 +3533,7 @@ function moneyLiving(){
   </div>
   ${[...new Set(SUBS.map(x=>x.cat))].map(cat=>`<div class="card"><div class="ct">${cat}</div>
     ${SUBS.filter(x=>x.cat===cat).map(x=>{const on=!!(S.subs||{})[x.id];
-      return `<button class="row" onclick="toggleSub('${x.id}')">
+      return `<button class="row" onclick="toggleSub('${x.id}')" data-switch="${on?'on':'off'}">
         <div><div class="rn">${esc(x.n)}${on?' <span class="owned">active</span>':''}</div>
         <div class="hsub dim">${money(Math.round(x.cost*c.col))}/yr${x.d?' \u00b7 '+esc(x.d):''}</div></div>
         <i>${on?'\u2713':'\u25CB'}</i></button>`;}).join('')}</div>`).join('')}`;
@@ -4171,7 +4176,7 @@ function viewStats(){
      The note stays on this device. It never contains your name, anybody else's name,
      or your save \u2014 only the shape of the life: age, country, difficulty, what was on
      screen.</div>
-   <button class="row" onclick="setCrashOptIn(${crashOptIn()?'false':'true'})"><div>
+   <button class="row" onclick="setCrashOptIn(${crashOptIn()?'false':'true'})" data-switch="${crashOptIn()?'on':'off'}"><div>
      <div class="rn">Allow reports to be sent</div>
      <div class="hsub dim">${crashOptIn()?'Allowed \u2014 but there is nowhere to send them yet'
        :'Off. Nothing leaves this device.'}</div></div>
@@ -4186,10 +4191,10 @@ function viewStats(){
 
    <div class="card"><div class="ct">Sound and feel</div>
    <div class="hsub dim mb">Cues are generated by the app, so they cost nothing to download and work offline.</div>
-   <button class="row" onclick="setSound(${soundOn()?'false':'true'})"><div><div class="rn">Sound</div>
+   <button class="row" onclick="setSound(${soundOn()?'false':'true'})" data-switch="${soundOn()?'on':'off'}"><div><div class="rn">Sound</div>
      <div class="hsub dim">${soundOn()?'On \u2014 years, events, outcomes':'Off \u2014 silent'}</div></div>
      <i>${soundOn()?'\u2713':'\u25CB'}</i></button>
-   <button class="row" onclick="setHaptics(${hapticsOn()?'false':'true'})"><div><div class="rn">Vibration</div>
+   <button class="row" onclick="setHaptics(${hapticsOn()?'false':'true'})" data-switch="${hapticsOn()?'on':'off'}"><div><div class="rn">Vibration</div>
      <div class="hsub dim">${hapticsOn()?'On':'Off'}</div></div>
      <i>${hapticsOn()?'\u2713':'\u25CB'}</i></button>
    ${soundOn()?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div>
@@ -4396,6 +4401,7 @@ function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('l
 /* ---------------- boot ---------------- */
 if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener('DOMContentLoaded',()=>{
   installCrashHandlers();
+  a11yInit();
   renderTitle();
   bindTapSounds();
   document.getElementById('ageBtn').addEventListener('click',()=>{

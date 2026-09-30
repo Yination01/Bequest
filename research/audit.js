@@ -5,7 +5,7 @@ global.document={getElementById:()=>stub(),querySelectorAll:()=>[],addEventListe
 global.window=undefined; global.fetch=()=>Promise.reject(); global.alert=()=>{};
 global.localStorage={_d:{},getItem(k){return this._d[k]||null},setItem(k,v){this._d[k]=v},removeItem(k){delete this._d[k]}};
 global.setTimeout=f=>f();
-const F=['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','adminlink.js','coach.js','game.js'];
+const F=['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','adminlink.js','a11y.js','coach.js','game.js'];
 const SRC=F.map(f=>fs.readFileSync(path.join(PWA,f),'utf8')).join('\n')+`
 showPopup=function(p){ if(p.type==='A')resolveChoice(p.ev,Math.floor(Math.random()*p.ev.c.length));
   else if(p.type==='D'){ if(p.yes&&Math.random()<0.6)p.yes(); drain(); } else drain(); };

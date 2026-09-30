@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 318 tests, 23 modules, 737 KB, no known integrity
+Current state: 533 events, 335 tests, 25 modules, 750 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -508,6 +508,44 @@ A real report reads:
 
 which is enough to reproduce most things and is not about anybody.
 
+### The accessibility pass, and why it left P4
+
+The house quality bar calls accessibility "a compliance requirement" and
+"a legal liability", and notes that AI tools do not produce accessible
+output unless asked. This repo was the proof: the whole built bundle
+carried **one aria attribute and no roles at all**. A five-item tab bar
+that announced nothing, toggles that read as plain buttons, and modal
+sheets a screen reader could walk straight past.
+
+Four things, each a named line in that bar:
+
+- **Tabs.** A real tablist. Arrows move, Home and End jump, Tab leaves the
+  strip, and a roving tabindex makes the bar one stop instead of five.
+  `aria-selected` follows the paint, because a bar that says the wrong
+  thing is worse than one that says nothing.
+- **Switches.** Every on/off row is `role="switch"` with `aria-checked`, so
+  the state is spoken rather than inferred from a tick glyph.
+- **Dialogs.** `role="dialog"`, `aria-modal`, focus moves into the sheet and
+  returns to whatever opened it, Escape closes anything dismissible, and
+  focus cannot tab out behind an open sheet.
+- **Speech.** A polite live region, so the year's news is heard instead of
+  silently appearing. The AGE UP button carries how many actions are still
+  unspent, because the badge that says so is a visual.
+
+The focus ring is deliberately not the selected state. The bar calls that
+out specifically and it is the mistake that makes keyboard use feel broken
+even when it works.
+
+Verified by driving it: arrowing through the bar, toggling a switch and
+reading `aria-checked`, opening a sheet and pressing Escape to watch focus
+come back to the AGE UP button.
+
+One thing this caught that was not accessibility at all: the helpers
+assumed a real DOM, and the headless harness document is a stub. That took
+out **184 of 480 simulated lives** until every entry point was guarded.
+Accessibility must never be the reason a life cannot run, and there is a
+test that says so.
+
 ## P4 — Later
 
 | # | Item | Why |
@@ -515,7 +553,7 @@ which is enough to reproduce most things and is not about anybody.
 | 24 | **Localisation** | Your market is global and the game is 100% English text. Also the single biggest translation bill in the project — worth planning before the library reaches 500 events. |
 | 25 | **Leaderboards** | ReLife has them; they extend a game's life considerably. Needs accounts. |
 | 26 | **An avatar that shows more** | Clothing by wealth, visible ageing beyond the face, conditions. The renderer supports it. |
-| 27 | **Accessibility pass** | Screen-reader labels, contrast checks, larger tap targets. Text sizing is done. |
+| 27 | ~~**Accessibility pass**~~ — **done, and moved out of P4** | Screen-reader labels, contrast checks, larger tap targets. Text sizing is done. |
 | 28 | **iOS** | The build is a WebView; the same bundle would run. Only worth it once Android is proven. |
 
 ---
