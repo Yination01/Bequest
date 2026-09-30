@@ -108,6 +108,7 @@ function migrate(){
   schoolMigrate(S);
   courtMigrate(S);
   investMigrate(S);
+  healthMigrate(S);
   /* a case in progress when the game was closed has to come back, or the
      charge quietly disappears and S.legalCase blocks the next one */
   if(S.legalCase&&S.alive){ QUEUE.push({type:'COURT'}); }
@@ -601,6 +602,7 @@ function ageUp(){
   notes.push(...tickHabits());
   notes.push(...tickFinance());
   tickInvest(S,notes);
+  tickHealth(S,notes);
   notes.push(...tickConditions());
   notes.push(...tickAging());
   tickNPCs(notes); tickPets(notes); tickTrack(notes); tickSchool(notes); tickNews(notes);
@@ -2257,15 +2259,21 @@ function ACTS(){
   });
   S.conditions.forEach(k=>{
     const c=COND(k.id); if(!c)return;
-    const cost=Math.round(c.cost*country().med*(hasItem('insurance')?0.45:1)*k.sev/c.sev);
-    A('tr_'+c.id,'Treat '+c.n.toLowerCase(),'Health',
-      `${k.treated?'Currently managed':'Untreated'} \u00b7 severity ${k.sev}/3 \u00b7 ${money(cost)}`,()=>{
-      if(!afford(cost))return; charge(cost); k.treated=true;
-      S.stats.health=clamp(S.stats.health+c.sev*3);
-      let t=`Your ${c.n.toLowerCase()} is being managed. Its effects are reduced by about two thirds.`;
-      if(!c.chronic&&R()<c.cure){ S.conditions=S.conditions.filter(x=>x!==k); S.counters.illnessesBeaten++;
-        t=`You have fully recovered from ${c.n.toLowerCase()}.`; logLine(`Recovered from ${c.n}.`,'good'); }
-      popupOK('Treatment',t); });
+    const waiting=k.waiting&&S.age<k.waiting;
+    const pub=condCost(k,false), priv=condCost(k,true);
+    if(!k.treated&&!waiting)
+      A('tr_'+c.id,'Treat '+c.n.toLowerCase(),'Health',
+        `Untreated \u00b7 severity ${k.sev}/3 \u00b7 ${pub?money(pub):'free'}${healthSystem().wait[1]?', and a wait':''}`,
+        ()=>treatJoin(c.id));
+    if(waiting)
+      A('pv_'+c.id,'Go private for '+c.n.toLowerCase(),'Health',
+        `Seen this year instead of ${k.waiting} \u00b7 ${money(priv)}`,()=>treatPrivate(c.id));
+    if(!k.specialist)
+      A('sp_'+c.id,'See a specialist about '+c.n.toLowerCase(),'Health',
+        'Doubles the chance of beating it',()=>seeSpecialist(c.id));
+    if(k.treated)
+      A('rh_'+c.id,'Rehabilitation for '+c.n.toLowerCase(),'Health',
+        `${k.rehab||0} year${(k.rehab||0)===1?'':'s'} done \u00b7 two brings the severity down`,()=>doRehab(c.id));
   });
   if(S.age>=18)A('loan','Apply for a loan','Money',
     `Credit ${Math.round(S.credit==null?600:S.credit)} \u00b7 ${creditBand(S.credit==null?600:S.credit).n}`,()=>{
@@ -2983,6 +2991,7 @@ function viewLife(){
   const slots=[];
   const add=(pri,html)=>slots.push({pri,html});
   if(S.inSchool&&S.age>=SCHOOL_START&&S.age<=SCHOOL_END){ const sc=subjectsCard(); if(sc)add(4,sc); }
+  if((S.conditions||[]).length){ const hc=healthCard(); if(hc)add(2,hc); }
 
   if(S.billsDue>0||S.overdue>0||S.arrears>0)add(1,`<div class="card" style="border-color:rgba(224,86,91,.5)">
       <div class="ct" style="color:var(--r)">Needs dealing with</div>

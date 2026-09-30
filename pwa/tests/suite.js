@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -48,7 +48,7 @@ module.exports={
     get QUEUE(){return QUEUE},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
@@ -1364,6 +1364,141 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
   } finally { global.document.getElementById = realGet; }
 });
 
+/* ---- health systems ---- */
+function ill(countryId, condId, sev){
+  G.newGame({ country: countryId });
+  const s = G.S;
+  s.age = 45; s.alive = true; s.money = 400000; s.savings = 0; s.items = [];
+  s.conditions = [{ id: condId || 'diabetes', age: 44, sev: sev || 2, treated: false,
+                    waiting: 0, specialist: false, rehab: 0 }];
+  return s;
+}
+const PUBLIC_C  = (G.DATA.countries.find(c => c.med <= 0.40) || {}).id;
+const PRIVATE_C = (G.DATA.countries.find(c => c.med >= 0.85) || {}).id;
+
+t('every country falls into a healthcare system', () => {
+  const kinds = new Set();
+  const bad = [];
+  G.DATA.countries.forEach(c => {
+    G.newGame({ country: c.id });
+    const sys = G.healthSystem();
+    if (!sys || !sys.n || !sys.wait) bad.push(c.id);
+    else kinds.add(sys.id);
+  });
+  if (bad.length) return 'no system for: ' + bad.join(', ');
+  if (kinds.size < 2) return 'every country has the same system';
+  return true;
+});
+
+t('a public system is cheap and slow, a private one is dear and quick', () => {
+  if (!PUBLIC_C || !PRIVATE_C) return 'the data has no contrasting countries';
+  const pub = ill(PUBLIC_C), pubCost = G.condCost(pub.conditions[0], false);
+  const pubSys = G.healthSystem();
+  const prv = ill(PRIVATE_C), prvCost = G.condCost(prv.conditions[0], false);
+  const prvSys = G.healthSystem();
+  if (!(pubCost < prvCost)) return `public care costs ${pubCost} and private ${prvCost}`;
+  if (!(pubSys.wait[1] > prvSys.wait[1])) return 'the public system has no more of a wait';
+  return true;
+});
+
+t('being referred on a public system means waiting, and you can pay to skip it', () => {
+  if (!PUBLIC_C) return 'no public country in the data';
+  let waited = 0;
+  for (let i = 0; i < 40; i++) {
+    const s = ill(PUBLIC_C, 'diabetes', 1);       // low severity: least urgent
+    G.treatJoin('diabetes');
+    if (s.conditions[0] && s.conditions[0].waiting > s.age) waited++;
+  }
+  if (!waited) return 'nobody ever had to wait on a public system';
+  // and paying jumps it
+  const s = ill(PUBLIC_C, 'diabetes', 1);
+  G.treatJoin('diabetes');
+  const cash = s.money;
+  G.treatPrivate('diabetes');
+  const k = s.conditions[0];
+  if (k && k.waiting > s.age) return 'paying privately did not clear the wait';
+  if (s.money >= cash) return 'going private was free';
+  if (k && !k.treated) return 'paying privately did not treat it';
+  return true;
+});
+
+t('a waiting list delivers treatment on its own, in time', () => {
+  if (!PUBLIC_C) return 'no public country in the data';
+  let delivered = 0;
+  for (let i = 0; i < 40; i++) {
+    const s = ill(PUBLIC_C, 'diabetes', 1);
+    G.treatJoin('diabetes');
+    for (let y = 0; y < 6; y++) { s.age++; G.tickHealth(s, []); }
+    const k = (s.conditions || []).find(x => x.id === 'diabetes');
+    if (!k || (k.treated && !k.waiting)) delivered++;
+  }
+  if (delivered < 35) return `only ${delivered}/40 waiting lists ever delivered`;
+  return true;
+});
+
+t('a specialist improves the odds of beating something, not just managing it', () => {
+  const beat = withSpec => {
+    let cured = 0;
+    for (let i = 0; i < 400; i++) {
+      const s = ill(PRIVATE_C || PUBLIC_C, 'injury', 2);
+      s.conditions[0].specialist = withSpec;
+      G.applyTreatment(s.conditions[0], true);
+      if (!(s.conditions || []).some(x => x.id === 'injury')) cured++;
+    }
+    return cured / 400;
+  };
+  const without = beat(false), with_ = beat(true);
+  if (!(with_ > without + 0.05)) return `specialist cured ${(with_*100).toFixed(0)}% vs ${(without*100).toFixed(0)}%`;
+  return true;
+});
+
+t('rehabilitation brings the severity down, but only with time put in', () => {
+  const s = ill(PRIVATE_C || PUBLIC_C, 'backinjury', 3);
+  s.conditions[0].treated = true;
+  const sev0 = s.conditions[0].sev;
+  G.doRehab('backinjury');
+  if (s.conditions[0].sev < sev0) return 'one year of rehab was enough';
+  G.doRehab('backinjury');
+  if (!(s.conditions[0].sev < sev0)) return 'two years of rehab changed nothing';
+  // and it cannot be done before treatment
+  const s2 = ill(PRIVATE_C || PUBLIC_C, 'backinjury', 3);
+  s2.conditions[0].treated = false;
+  const r0 = s2.conditions[0].rehab;
+  G.doRehab('backinjury');
+  if (s2.conditions[0].rehab > r0) return 'rehab ran before any treatment';
+  return true;
+});
+
+t('nobody is treated for free on a private system', () => {
+  if (!PRIVATE_C) return 'no private country in the data';
+  const s = ill(PRIVATE_C, 'diabetes', 2);
+  const before = s.money;
+  G.treatJoin('diabetes');
+  if (s.money >= before) return 'treatment on a private system cost nothing';
+  if (!s.conditions[0].treated && !s.conditions[0].waiting) return 'paid and got nothing';
+  return true;
+});
+
+t('you cannot be treated with no money, and it does not go negative', () => {
+  const s = ill(PRIVATE_C || PUBLIC_C, 'cancer', 3);
+  s.money = 5; s.savings = 0;
+  G.treatPrivate('cancer');
+  if (s.money < 0) return 'money went negative: ' + s.money;
+  G.seeSpecialist('cancer');
+  if (s.money < 0) return 'a specialist overdrew the account';
+  return true;
+});
+
+t('the health card renders and disappears when you are well', () => {
+  const s = ill(PUBLIC_C || PRIVATE_C, 'asthma', 1);
+  const html = G.healthCard();
+  if (html.indexOf('Asthma') < 0) return 'the condition is not listed';
+  if (/undefined|NaN|\[object/.test(html)) return 'the card leaked a raw value';
+  s.conditions = [];
+  if (G.healthCard() !== '') return 'the card shows with nothing wrong';
+  return true;
+});
+
 /* ---- investments ---- */
 function investor(alloc){
   G.newGame({});
@@ -2310,14 +2445,19 @@ t('every tip names a real place to go', () => {
   return (!bad.length && !nameless.length) ? true : `${bad.length} bad links, ${nameless.length} malformed`;
 });
 t('a first life meets a tip at each system as it opens', () => {
+  // one sample, and a life that dies at eight teaches nothing: whether the
+  // tips arrive is a separate question from whether you survive to see them
   G.META.tips = {}; G.META.lives = 0;
   G.newGame({});
   const met = [];
   let g = 0;
-  while (G.S.alive && G.S.age < 30 && g++ < 60) {
+  while (G.S.age < 30 && g++ < 60) {
     const c = G.coachTip();
     if (c) { met.push(c.id); G.coachMark(c.id); }
     G.ageUp();
+    if (!G.S.alive) { G.S.alive = true; G.S.cause = null; }
+    G.S.stats.health = Math.max(G.S.stats.health, 80);
+    G.S.conditions = [];
   }
   const want = ['ageup','acts','stats','people','work','money'];
   const missed = want.filter(w => met.indexOf(w) < 0);
