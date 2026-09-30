@@ -4,10 +4,10 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 326 events, 203 tests, 15 modules, 520 KB, no known integrity
+Current state: 326 events, 214 tests, 16 modules, 529 KB, no known integrity
 problems, a life simulates in 37 ms.
 
-**P0 is clear.** All five items are done and covered by tests.
+**P0 is clear**, and the first P1 item with it. All are covered by tests.
 
 ---
 
@@ -73,11 +73,41 @@ The things that would most improve a session.
 
 | # | Item | Why | Effort |
 |---|---|---|---|
-| 6 | **Sound and haptics** | Every tap is silent. A year turning, a promotion, a death — none of them land. This is the single biggest "feels like a real app" gap. *opinion* | M |
+| 6 | ~~**Sound and haptics**~~ — **done** | Every tap is silent. A year turning, a promotion, a death — none of them land. This is the single biggest "feels like a real app" gap. *opinion* | M |
 | 7 | **Close the agency gap: 41% vs ReLife's 55%** — **measured** | More branching forks that change a life's direction rather than its statistics. This is the one metric where we still lose. | L |
 | 8 | **A proper death and legacy screen** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
 | 9 | **Year-summary pacing** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
 | 10 | **Notifications** | "Your character is waiting" brings people back. Needs the native layer, so it belongs after the APK. | S |
+
+### What item 6 turned into
+
+Fifteen cues, **synthesised at play time** rather than shipped as audio files.
+The game is one self-contained offline document, and a sample library would
+have cost more bytes than the entire rest of the game; a cue is instead a
+short list of notes over a shaped envelope, which also means any of them can
+be retuned by editing two numbers rather than opening an audio editor. The
+whole feature adds 9 KB to the bundle.
+
+They share a key — A minor pentatonic — so a promotion, an achievement and a
+year turning sound like the same game rather than three asset packs. The year
+is a low three-note swell, the heartbeat everything else is measured against.
+Death is the same root note held for one and a half seconds.
+
+Sound is attached at seven places, not sprinkled: the year turn, every popup
+(by what the popup *is* — a result reads its own effect chips, so a costly
+year does not sound like a profitable one), death, promotion, refusals, being
+born, and one quiet tick bound once at the document level for any button that
+does not already make a noise of its own.
+
+Haptics go through Capacitor's plugin on a real device, `navigator.vibrate`
+in a browser, and nothing anywhere else. `@capacitor/haptics` is now a
+dependency; no native code needed.
+
+Sound, vibration and volume are all switchable from More › Stats, on by
+default. Nothing throws when there is no audio device, no Web Audio or no
+window at all, which is the environment the test suite runs in — a test
+proves every cue named anywhere in the code actually exists, since a typo in
+a cue name is otherwise silent in the most literal way.
 
 ## P2 — Depth and content
 
@@ -123,11 +153,9 @@ Required before it goes on a store, in rough order.
 ~~**Then:** onboarding (1)~~ — done, along with item 5, which turned out to be
 the larger of the two once the arrears numbers were properly measured.
 
-**Next: sound and haptics (6).** With P0 clear this is now the single biggest
-"feels like a real app" gap, and the cheapest remaining win. Every tap is
-silent: a year turning, a promotion, a death — none of them land.
+~~**Next:** sound and haptics (6)~~ — done.
 
-**Then:** the death screen (8), because it is the moment the game is *about* and
+**Next: the death screen (8)**, because it is the moment the game is *about* and
 it currently reads like a spreadsheet. Onboarding taught people how to play;
 the death screen is what makes them want to play again.
 
@@ -137,6 +165,8 @@ ReLife, and it is a long job, so it wants a clear run.
 **Only then** content volume (11) — it is the largest single job here and it is
 wasted if the first five minutes lose people anyway.
 
-The APK is no longer blocked. Everything that a player would notice within one
-life is fixed, and the build is worth putting in front of someone. Sound is the
-first thing they will comment on.
+The APK is no longer blocked, and it is now worth putting in front of someone:
+the first five minutes teach you the game, the difficulty is a difficulty
+rather than a script, and it makes a noise when something happens. What is
+left on P1 is the ending and the branching, both of which are about how a life
+*reads* rather than whether it works.

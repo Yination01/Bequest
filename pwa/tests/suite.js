@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1202,6 +1202,100 @@ t('housing and food change how you feel', () => {
   const crowded = G.livingEffect();
   return crowded.happy < comfy.happy ? true : 'overcrowding did not hurt';
 });
+/* ---- sound and haptics ---- */
+t('every cue the code asks for actually exists', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const src = ['game.js','coach.js','sound.js'].map(f => fs2.readFileSync(p2.join(DIR,f),'utf8')).join('\n');
+  const asked = new Set();
+  let m;
+  const re = /\b(?:sfx|cue)\(\s*'([a-zA-Z]+)'/g;
+  while ((m = re.exec(src))) asked.add(m[1]);
+  if (!asked.size) return 'nothing plays a sound at all';
+  const missing = [...asked].filter(id => !G.SFX[id]);
+  return missing.length ? 'no such cue: ' + missing.join(',') : true;
+});
+t('every haptic the code asks for actually exists', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const src = ['game.js','coach.js','sound.js'].map(f => fs2.readFileSync(p2.join(DIR,f),'utf8')).join('\n');
+  const asked = new Set();
+  let m;
+  const re = /\bcue\(\s*'[a-zA-Z]+'\s*,\s*'([a-zA-Z]+)'/g;
+  while ((m = re.exec(src))) asked.add(m[1]);
+  const missing = [...asked].filter(k => G.HAPTIC[k] == null);
+  return missing.length ? 'no such haptic: ' + missing.join(',') : true;
+});
+t('every cue is a playable shape', () => {
+  const bad = [];
+  Object.keys(G.SFX).forEach(id => {
+    const c = G.SFX[id];
+    if (!c.w || !Array.isArray(c.n) || !c.n.length) { bad.push(id + ':empty'); return; }
+    if (!(c.g > 0 && c.g <= 0.4)) bad.push(id + ':gain ' + c.g);
+    c.n.forEach(([hz, at, len, vol]) => {
+      if (!(hz > 20 && hz < 20000)) bad.push(id + ':hz ' + hz);
+      if (!(at >= 0 && at < 3)) bad.push(id + ':offset ' + at);
+      if (!(len > 0 && len <= 2)) bad.push(id + ':len ' + len);
+      if (vol != null && !(vol > 0 && vol <= 1)) bad.push(id + ':vol ' + vol);
+    });
+  });
+  return bad.length ? bad.join(', ') : true;
+});
+t('the moments that matter all have a sound', () => {
+  const want = ['year','event','good','bad','ach','death','promote','denied','tap'];
+  const missing = want.filter(k => !G.SFX[k]);
+  return missing.length ? 'no cue for ' + missing.join(',') : true;
+});
+t('a year, a death and an achievement do not all sound the same', () => {
+  const sig = c => c.w + '|' + c.n.map(n => n[0].toFixed(1)).join(',');
+  const s = new Set(['year','death','ach','good','bad','promote'].map(k => sig(G.SFX[k])));
+  return s.size === 6 ? true : 'only ' + s.size + ' distinct cues among 6';
+});
+t('sound is on by default but silent without an audio device', () => {
+  G.META.sfx = null;
+  if (!G.soundOn()) return 'sound defaulted to off';
+  if (!G.hapticsOn()) return 'haptics defaulted to off';
+  // the harness has no window and no Web Audio: every call must be a safe no-op
+  const played = G.sfx('year'), buzzed = G.haptic('year'), both = G.cue('ach','medium');
+  return (played === false && buzzed === false && both === false) ? true
+    : `played:${played} buzzed:${buzzed} both:${both}`;
+});
+t('muting is respected before anything is synthesised', () => {
+  G.setSound(false);
+  const off = G.sfx('year');
+  G.setHaptics(false);
+  const noBuzz = G.haptic('death');
+  G.META.sfx = null;
+  return (off === false && noBuzz === false) ? true : `off:${off} noBuzz:${noBuzz}`;
+});
+t('an unknown cue is ignored rather than thrown', () => {
+  G.META.sfx = null;
+  return (G.sfx('no_such_cue') === false && G.haptic('no_such_haptic') === false) ? true : 'did not ignore';
+});
+t('a result popup sounds like what it did to you', () => {
+  if (typeof G.popupCue !== 'function') return 'no popupCue';
+  // There is no audio device here, so assert on the branch popupCue takes
+  // rather than on what comes out of the speakers.
+  const src = require('fs').readFileSync(require('path').join(DIR,'game.js'),'utf8');
+  const fn = src.slice(src.indexOf('function popupCue'));
+  const body = fn.slice(0, fn.indexOf('\n}'));
+  const reads = /p\.res/.test(body), splits = /'bad'/.test(body) && /'good'/.test(body);
+  const quietBirthday = /p\.type==='B'\)\s*return;/.test(body);   // the year cue already played
+  return (reads && splits && quietBirthday) ? true
+    : `reads:${reads} splits:${splits} quietBirthday:${quietBirthday}`;
+});
+t('the sound settings are reachable and can be turned off', () => {
+  G.newGame({}); G.S.age = 30; G.S.alive = true; G.META.sfx = null;
+  const html = G.viewStats();
+  return (/setSound\(/.test(html) && /setHaptics\(/.test(html) && /setVolume\(/.test(html)) ? true
+    : 'no sound settings on the More tab';
+});
+t('a whole life can be lived with the sound code in the loop', () => {
+  G.META.sfx = null;
+  G.newGame({diff:'normal'});
+  let g = 0;
+  while (G.S.alive && g++ < 130) G.ageUp();
+  return true;                                   // a throw anywhere above fails the test
+});
+
 /* ---- onboarding ---- */
 t('a new player is shown the opening before their first life', () => {
   G.META.tips = {};
@@ -1329,16 +1423,19 @@ t('settling a final notice stops it reaching collection', () => {
   return G.S.arrears === 0 ? true : `arrears appeared anyway: ${G.S.arrears}`;
 });
 t('paying anything at all freezes the arrears interest for a year', () => {
-  atAge(30);
-  G.S.arrears=10000; G.S.money=200; G.S.arrPlan=null; G.S.arrPaid=0; G.S.savings=0;
-  G.payArrears();                          // pays 200, leaves 9800
+  // kept well under the enforcement threshold so only the interest rule is
+  // under test — seizure and write-off have their own tests below
+  atAge(30); G.S.home='parents';
+  G.S.arrears=400; G.S.money=100; G.S.arrPlan=null; G.S.arrPaid=0; G.S.savings=0;
+  G.payArrears();                          // pays 100, leaves 300
   const owed=G.S.arrears;
-  const out=[]; G.tickArrears(out);
-  const frozen = G.S.arrears <= owed;
-  G.S.arrears=10000; G.S.arrPaid=0; G.S.money=0; G.S.savings=0;
-  const out2=[]; G.tickArrears(out2);
-  const grew = G.S.arrears > 10000;
-  return (frozen && grew) ? true : `frozen:${frozen} (${owed}->${G.S.arrears}) grew:${grew}`;
+  G.S.money=0;
+  G.tickArrears([]);
+  const frozen = G.S.arrears === owed;
+  G.S.arrears=400; G.S.arrPaid=0; G.S.money=0; G.S.savings=0;
+  G.tickArrears([]);
+  const grew = G.S.arrears === 432;        // 400 x 1.08
+  return (frozen && grew) ? true : `frozen:${frozen} (300 -> ${owed}) grew:${grew} (${G.S.arrears})`;
 });
 t('a repayment plan clears a debt instead of it compounding forever', () => {
   atAge(30);
