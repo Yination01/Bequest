@@ -153,6 +153,19 @@ function crashReportText(r){
   ].join('\n');
 }
 
+/* The house quality bar: "No backend details in user-facing errors: friendly
+   message client-side; full details (stack traces, connection strings,
+   internal hosts) logged server-side only; exposure is a UX fail and a
+   security vulnerability." So the screen shows what went wrong in words and
+   the stack travels only via Copy. */
+function crashSummary(r){
+  r = r || CRASH_LAST || crashLog().slice(-1)[0];
+  if(!r) return 'Nothing has gone wrong.';
+  const c = r.ctx || {};
+  const what = r.kind === 'soft' ? 'A background task failed' : 'The game stopped responding';
+  return `${what} while you were ${c.screen ? 'on the ' + c.screen + ' screen' : 'playing'}`
+    + (c.age != null ? `, at ${c.age}` : '') + '.';
+}
 function crashCopy(){
   const t = crashReportText();
   try{
@@ -176,9 +189,11 @@ function crashScreen(){
     <div class="phead"><span class="ptag">Something went wrong</span></div>
     <div class="ph">That was not supposed to happen</div>
     <div class="pb">The game hit a problem. Your save is untouched \u2014 it was written at the
-      start of the year and nothing since has been committed. You can carry on, and if it
-      keeps happening the report below is what a developer needs.</div>
-    <pre class="crashbox">${esc(crashReportText())}</pre>
+      start of the year and nothing since has been committed. You can carry on.</div>
+    <div class="pb">If it keeps happening, Copy the report and send it on. It describes the
+      shape of this life \u2014 age, country, what was on screen \u2014 and contains no names and
+      no save.</div>
+    <div class="crashsum">${esc(crashSummary())}</div>
     <div class="choices">
       <button class="choice" onclick="crashCopy()"><span>Copy the report</span><i>\u203a</i></button>
       <button class="choice ok" onclick="closePopup()"><span>Carry on</span><i>\u203a</i></button>

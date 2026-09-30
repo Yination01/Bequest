@@ -48,7 +48,7 @@ module.exports={
     get QUEUE(){return QUEUE},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
@@ -1472,6 +1472,26 @@ t('a report survives being written and read back', () => {
   if (JSON.stringify(again).indexOf('kept') < 0) return 'the report did not survive the round trip';
   G.crashClear();
   if (G.crashLog().length) return 'clearing did not clear';
+  return true;
+});
+
+t('the crash screen does not show the player a stack trace', () => {
+  // the house quality bar treats backend detail in a user-facing error as
+  // both a UX failure and a security one; the stack goes out via Copy only
+  const s = brokenLife();
+  G.recordCrash('error', 'game.js:1200', 'x is not a function',
+    'TypeError: x is not a function\n    at ageUp (game.js:1200:14)');
+  let html = '';
+  const realGet = global.document.getElementById;
+  global.document.getElementById = () => ({ set innerHTML(v){ html = v; }, get innerHTML(){ return html; },
+                                            set className(v){}, get className(){ return ''; } });
+  try { G.crashScreen(); } finally { global.document.getElementById = realGet; }
+  if (!html) return 'the screen rendered nothing';
+  if (/at ageUp|TypeError|game\.js:1200/.test(html)) return 'the stack trace is on screen';
+  if (html.indexOf('Copy the report') < 0) return 'no way to send it on';
+  // but the copyable report must still carry the detail
+  const full = G.crashReportText();
+  if (full.indexOf('at ageUp') < 0) return 'the copied report lost the stack';
   return true;
 });
 

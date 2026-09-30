@@ -196,6 +196,8 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 .subjline b.g{color:var(--g)}
 
 /* ---- problem reports ---- */
+.crashsum{background:#0b1220;border:1px solid #23324a;border-radius:10px;padding:10px 12px;
+  color:#9fb0c9;font-size:13px;line-height:1.5;margin:10px 0}
 .crashbox{background:#0b1220;border:1px solid #23324a;border-radius:10px;padding:10px 11px;
   font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#9fb0c9;
   white-space:pre-wrap;word-break:break-word;max-height:240px;overflow:auto;margin:10px 0}
