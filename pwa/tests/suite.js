@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','adminlink.js','a11y.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','adminlink.js','a11y.js','i18n.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -51,7 +51,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,i18nKey,T,setLocale,currentLocale,trackMissing,missingStrings,localiseData,pseudoLocale,variant,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1378,6 +1378,126 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- localisation ---- */
+t('the extractor and the game agree on how a string is keyed', () => {
+  // the catalogue is keyed by a hash of the English, and that hash is
+  // computed in two places: tools/extract-strings.js when the catalogue is
+  // written, and pwa/i18n.js when it is read. If they drift, every lookup
+  // misses and the game silently stays English forever.
+  const fs2 = require('fs'), p2 = require('path');
+  const tool = fs2.readFileSync(p2.join(DIR, '..', 'tools', 'extract-strings.js'), 'utf8');
+  const i = tool.indexOf('function hashKey');
+  if (i < 0) return 'the extractor no longer has hashKey()';
+  const toolHash = new Function(tool.slice(i, tool.indexOf('\n}', i) + 2) + '\nreturn hashKey;')();
+  const samples = ['Raised Voices', 'a', 'The estate came to $570,000.',
+                   '{child} and {child2} fell out', 'Zzyzx \u2014 dash and \u00e9accent', ''];
+  for (const s of samples) {
+    if (toolHash(s) !== G.i18nKey(s))
+      return `"${s.slice(0,24)}": extractor ${toolHash(s)}, game ${G.i18nKey(s)}`;
+  }
+  return true;
+});
+
+t('the shipped catalogue covers what the extractor finds', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  let cat;
+  try { cat = JSON.parse(fs2.readFileSync(p2.join(DIR, '..', 'locales', 'en.json'), 'utf8')); }
+  catch(e){ return 'locales/en.json is missing or unreadable; run tools/extract-strings.js --write'; }
+  const keys = Object.keys(cat);
+  if (keys.length < 2500) return 'the catalogue has only ' + keys.length + ' entries';
+  // every event string the game can show must be in it
+  const missing = [];
+  G.EVENTS.slice(0, 120).forEach(e => {
+    const strings = [e.t].concat(Array.isArray(e.x) ? e.x : [e.x]).concat(e.c.map(c => c.l));
+    strings.forEach(s => { if (typeof s === 'string' && s.trim() && !cat[G.i18nKey(s.trim())]) missing.push(s.slice(0,40)); });
+  });
+  if (missing.length) return missing.length + ' event strings are not in the catalogue, e.g. ' + missing[0];
+  // and the catalogue must map English to itself, not to an id
+  const first = keys[0];
+  if (G.i18nKey(cat[first]) !== first) return 'an entry does not hash back to its own key';
+  return true;
+});
+
+t('with no locale loaded, translation costs nothing and changes nothing', () => {
+  G.setLocale('en', null);
+  const s = 'The estate came to $570,000.';
+  if (G.T(s) !== s) return 'English was altered with no locale loaded';
+  if (G.T('') !== '') return 'the empty string was mangled';
+  if (G.T(null) !== null) return 'a non-string was not passed through';
+  return true;
+});
+
+t('a loaded locale reaches the event text, the titles and the choices', () => {
+  // the pseudo-locale exists to answer exactly this without a translator
+  const strings = [];
+  G.EVENTS.forEach(e => {
+    strings.push(e.t);
+    (Array.isArray(e.x) ? e.x : [e.x]).forEach(x => strings.push(x));
+    e.c.forEach(c => strings.push(c.l));
+  });
+  G.setLocale('qps', G.pseudoLocale(strings));
+  try {
+    const ev = G.EVENTS.find(e => e.c && e.c.length);
+    const title = G.tok(ev.t);
+    const body = G.variant(ev.x);
+    const label = G.tok(ev.c[0].l);
+    for (const [what, got] of [['title', title], ['text', body], ['choice', label]]) {
+      if (got.indexOf('\u27e6') !== 0) return `the ${what} did not go through the catalogue: ` + got.slice(0, 40);
+    }
+    // tokens must survive: a translator moves them, they do not get mangled
+    const withTok = G.EVENTS.find(e => /\{\w+\}/.test(Array.isArray(e.x) ? e.x[0] : e.x));
+    if (withTok) {
+      const out = G.variant(withTok.x);
+      if (/\{\w+\}/.test(out)) return 'a token survived substitution unreplaced: ' + out.slice(0, 50);
+    }
+  } finally { G.setLocale('en', null); }
+  return true;
+});
+
+t('a loaded locale reaches the data tables too', () => {
+  const before = G.DATA.crimes[0].n;
+  G.setLocale('qps', G.pseudoLocale([before]));
+  try {
+    if (G.DATA.crimes[0].n.indexOf('\u27e6') !== 0)
+      return 'a crime name was not localised: ' + G.DATA.crimes[0].n;
+    // and doing it twice must not double-wrap
+    G.localiseData();
+    const twice = G.DATA.crimes[0].n;
+    if ((twice.match(/\u27e6/g) || []).length > 1) return 'localising twice wrapped it twice';
+  } finally {
+    G.setLocale('en', null);
+    G.DATA.crimes[0].n = before;
+  }
+  return true;
+});
+
+t('a missing translation falls back to English rather than breaking', () => {
+  G.setLocale('qps', { 'nothing': 'in here' });
+  try {
+    const s = 'A sentence nobody has translated.';
+    if (G.T(s) !== s) return 'a missing entry did not fall back';
+    G.trackMissing(true);
+    G.T(s); G.T(s); G.T('Another one.');
+    const missing = G.missingStrings();
+    if (missing.length !== 2) return 'missing tracking reported ' + missing.length + ', expected 2';
+  } finally { G.trackMissing(false); G.setLocale('en', null); }
+  return true;
+});
+
+t('a longer language does not have to be a broken one', () => {
+  // the pseudo-locale pads every string, which is the cheap way to find a
+  // button that only fits because English is short
+  const s = 'Continue';
+  const map = G.pseudoLocale([s]);
+  G.setLocale('qps', map);
+  try {
+    const out = G.T(s);
+    if (out.length <= s.length) return 'the pseudo-locale is not longer than English';
+    if (out.indexOf('Cóntínúé') < 0) return 'the pseudo-locale is not legible as its source: ' + out;
+  } finally { G.setLocale('en', null); }
+  return true;
 });
 
 /* ---- the avatar shows more than a face ---- */

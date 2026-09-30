@@ -28,7 +28,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','adminlink.js','a11y.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','adminlink.js','a11y.js','i18n.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(PWA,f),'utf8')).join('\n') + `
 let FIRED=[], CHOICES=[], AUTOCHOICE=null, AUTOPLEA=null, AUTOCOUNSEL=null;
 showPopup=function(p){

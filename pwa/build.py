@@ -30,6 +30,7 @@ health= (d/'health.js').read_text()
 crash = (d/'crash.js').read_text()
 adminl= (d/'adminlink.js').read_text()
 a11y  = (d/'a11y.js').read_text()
+i18n  = (d/'i18n.js').read_text()
 game  = (d/'game.js').read_text()
 # Derive the inline icon from the committed PNG so the build has no hidden
 # dependency on a generated file. Falls back to the cache if it exists.
@@ -132,6 +133,7 @@ html = f"""<!doctype html>
 {crash}
 {adminl}
 {a11y}
+{i18n}
 </script>
 <script>
 {coach}

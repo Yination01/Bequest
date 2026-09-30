@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 340 tests, 25 modules, 754 KB, no known integrity
+Current state: 533 events, 347 tests, 26 modules, 760 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -575,11 +575,36 @@ Five tests, all mutation-tested: flattening the wealth tier, letting a
 managed condition still show, and freezing the shoulders were each killed
 by the right one.
 
+### What item 24 turned into
+
+Planned late: the item said "before the library reaches 500 events" and it
+reached 533 first. So the deliverable is the number.
+
+**3,197 strings, 19,443 words, and 91% of it is the event library.** About
+$1,900 a language at trade rates, $9,700 for five. `LOCALISATION.md` has
+the breakdown and `tools/extract-strings.js` re-runs it.
+
+The pipeline is built and no language has been bought. The catalogue is
+keyed by a hash of the English rather than by invented ids, so the content
+files were not touched at all: no 3,197 new ids, no calls threaded through
+prose, and no id left pointing at a translation of a sentence that has
+since been rewritten. A translator gets one JSON file of English to
+English and sends it back changed.
+
+Two lines do the work. `tok()` translates before it substitutes, which
+covers every title, phrasing and choice label at once, and `localiseData()`
+rewrites the data tables when a locale is set.
+
+Proved without a translator: `pseudoLocale()` accents and pads every string
+while leaving `{tokens}` alone, so an unaccented word on screen is one that
+bypassed the catalogue, and the padding finds any button that only fits
+because English is short. The game has been run in it.
+
 ## P4 — Later
 
 | # | Item | Why |
 |---|---|---|
-| 24 | **Localisation** | Your market is global and the game is 100% English text. Also the single biggest translation bill in the project — worth planning before the library reaches 500 events. |
+| 24 | ~~**Localisation**~~ — **pipeline built and measured; no language bought** | Your market is global and the game is 100% English text. Also the single biggest translation bill in the project — worth planning before the library reaches 500 events. |
 | 25 | **Leaderboards** | ReLife has them; they extend a game's life considerably. Needs accounts. |
 | 26 | ~~**An avatar that shows more**~~ — **done** | Clothing by wealth, visible ageing beyond the face, conditions. The renderer supports it. |
 | 27 | ~~**Accessibility pass**~~ — **done, and moved out of P4** | Screen-reader labels, contrast checks, larger tap targets. Text sizing is done. |

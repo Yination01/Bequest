@@ -543,6 +543,10 @@ function nameList(arr,max){
 }
 function tok(str){
   if(!str) return '';
+  /* Translate first, substitute second. The catalogue holds the English
+     with its {tokens} intact, so a translator moves them around inside
+     their own sentence and the substitution still lands. */
+  str = T(str);
   const c=CAST||makeCast();
   const p=c.parent, f=c.friend, ch=c.child, sib=c.sibling, pt=c.partner, col=c.colleague, any=c.any;
   const first=n=>n?n.name.split(' ')[0]:null;

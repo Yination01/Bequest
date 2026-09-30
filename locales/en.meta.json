@@ -1,0 +1,131 @@
+{
+ "generated": "2026-09-30",
+ "strings": 3197,
+ "words": 19443,
+ "sections": {
+  "event.title": {
+   "n": 528,
+   "w": 2008
+  },
+  "event.text": {
+   "n": 775,
+   "w": 10467
+  },
+  "event.choice": {
+   "n": 1298,
+   "w": 5295
+  },
+  "job": {
+   "n": 73,
+   "w": 113
+  },
+  "crime": {
+   "n": 14,
+   "w": 23
+  },
+  "item": {
+   "n": 59,
+   "w": 105
+  },
+  "item.desc": {
+   "n": 58,
+   "w": 226
+  },
+  "news": {
+   "n": 30,
+   "w": 151
+  },
+  "ribbon": {
+   "n": 30,
+   "w": 31
+  },
+  "skill": {
+   "n": 12,
+   "w": 12
+  },
+  "habit": {
+   "n": 10,
+   "w": 13
+  },
+  "education": {
+   "n": 5,
+   "w": 11
+  },
+  "stat": {
+   "n": 6,
+   "w": 6
+  },
+  "field": {
+   "n": 9,
+   "w": 12
+  },
+  "achievement": {
+   "n": 76,
+   "w": 159
+  },
+  "achievement.desc": {
+   "n": 79,
+   "w": 379
+  },
+  "challenge": {
+   "n": 14,
+   "w": 36
+  },
+  "challenge.desc": {
+   "n": 11,
+   "w": 57
+  },
+  "condition": {
+   "n": 15,
+   "w": 28
+  },
+  "personality": {
+   "n": 7,
+   "w": 7
+  },
+  "property": {
+   "n": 11,
+   "w": 32
+  },
+  "vehicle": {
+   "n": 12,
+   "w": 33
+  },
+  "business": {
+   "n": 13,
+   "w": 32
+  },
+  "degree": {
+   "n": 8,
+   "w": 12
+  },
+  "subject": {
+   "n": 8,
+   "w": 12
+  },
+  "asset": {
+   "n": 6,
+   "w": 13
+  },
+  "asset.desc": {
+   "n": 6,
+   "w": 52
+  },
+  "heirloom": {
+   "n": 10,
+   "w": 34
+  },
+  "counsel": {
+   "n": 3,
+   "w": 8
+  },
+  "counsel.desc": {
+   "n": 3,
+   "w": 30
+  },
+  "tip": {
+   "n": 8,
+   "w": 46
+  }
+ }
+}
