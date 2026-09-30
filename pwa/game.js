@@ -294,7 +294,7 @@ function newGame(opts){
   const tr=[]; while(tr.length<2){const t=pick(rollable); if(!tr.includes(t.id))tr.push(t.id);}
   /* Each life leans toward some kinds of story and away from others, so two
      lives never draw on the same slice of the content. */
-  const THEMES=['i','c','t','y','a','o','s','w','m','r','h','x','f','b'];
+  const THEMES=['i','c','t','y','a','o','s','w','m','r','h','x','f','b','g'];
   const shuffled=THEMES.slice().sort(()=>R()-0.5);
   const lean=shuffled.slice(0,4), away=shuffled.slice(4,7);
   const sk={}; Object.keys(DATA.skills).forEach(k=>sk[k]=0);
@@ -439,17 +439,48 @@ function partner(){ return S.npcs.find(n=>(n.rel==='partner'||n.rel==='spouse')&
 function anyOf(rel){ return S.npcs.filter(n=>n.rel===rel&&n.alive); }
 
 /* ---------------- text tokens & variants ---------------- */
+/* An event's title, its text, its choice labels and its outcome are four
+   separate tok() calls. Each used to re-roll every token, so with three
+   children the title and the outcome named a different one 62% of the time,
+   and no event could ever name two people at once. The cast is resolved once
+   when the event is drawn and reused for all four. */
+let CAST=null;
+function makeCast(){
+  const kids=anyOf('child'), sibs=anyOf('sibling');
+  const shuf=a=>a.slice().sort(()=>R()-0.5);
+  const k=shuf(kids), sb=shuf(sibs);
+  const household=[partner()].concat(k).filter(Boolean);
+  const origin=[findNPC('mother'),findNPC('father')].concat(sb).filter(Boolean);
+  return {
+    any:pick(S.npcs.filter(n=>n.alive)),
+    friend:pick(anyOf('friend'))||pick(anyOf('colleague')),
+    partner:partner(),
+    child:k[0], child2:k[1],
+    parent:findNPC('mother')||findNPC('father'),
+    sibling:sb[0], sibling2:sb[1],
+    colleague:pick(anyOf('colleague')),
+    kids:k, household, origin
+  };
+}
+function withCast(cast,fn){ const prev=CAST; CAST=cast; try{ return fn(); } finally { CAST=prev; } }
+/* "Margot, Tom and Claire" */
+function nameList(arr,max){
+  const f=(arr||[]).filter(Boolean).slice(0,max||4).map(n=>n.name.split(' ')[0]);
+  if(!f.length) return '';
+  if(f.length===1) return f[0];
+  return f.slice(0,-1).join(', ')+' and '+f[f.length-1];
+}
 function tok(str){
   if(!str) return '';
-  const p=findNPC('mother')||findNPC('father');
-  const f=pick(anyOf('friend'))||pick(anyOf('colleague'));
-  const ch=pick(anyOf('child'));
-  const sib=pick(anyOf('sibling'));
-  const pt=partner();
-  const col=pick(anyOf('colleague'));
-  const any=pick(S.npcs.filter(n=>n.alive));
+  const c=CAST||makeCast();
+  const p=c.parent, f=c.friend, ch=c.child, sib=c.sibling, pt=c.partner, col=c.colleague, any=c.any;
   const first=n=>n?n.name.split(' ')[0]:null;
   return str
+    .replace(/\{child2\}/g,  first(c.child2)||'your other child')
+    .replace(/\{sibling2\}/g,first(c.sibling2)||'your other sibling')
+    .replace(/\{kids\}/g,    nameList(c.kids)||'the children')
+    .replace(/\{family\}/g,  nameList(c.household.length?c.household:c.origin)||'the family')
+    .replace(/\{origin\}/g,  nameList(c.origin)||'your family')
     .replace(/\{npc\}/g,    first(any)||'someone')
     .replace(/\{friend\}/g, first(f)||'a friend')
     .replace(/\{partner\}/g,first(pt)||'your partner')
@@ -573,7 +604,8 @@ function ageUp(){
   if(notes.length) push({type:'YEAR',title:`Age ${S.age}`,notes:notes.slice()});
   offerDirectDebit();
   const n = S.jailLeft>0?0:(R()<0.3?2:1)+(R()<0.15?1:0);
-  pickEvents(n).forEach(ev=>push({type:'A',ev,text:variant(ev.x)}));
+  pickEvents(n).forEach(ev=>{ const cast=makeCast();
+    push({type:'A',ev,text:withCast(cast,()=>variant(ev.x)),cast}); });
   deathCheck();
   clampMinorMoney(); settleState();
   eggTick();
@@ -1338,6 +1370,9 @@ function reqOk(ev){
   if(q.nochild&&S.npcs.some(n=>n.rel==='child'))return false;
   if(q.sibling&&!anyOf('sibling').length)return false;
   if(q.maxSiblings!=null&&anyOf('sibling').length>q.maxSiblings)return false;
+  if(q.children2&&anyOf('child').length<2)return false;
+  if(q.siblings2&&anyOf('sibling').length<2)return false;
+  if(q.gathering&&(anyOf('child').length+anyOf('sibling').length+(partner()?1:0))<2)return false;
   if(q.teacher&&!anyOf('teacher').length)return false;
   if(q.condition&&!S.conditions.length)return false;
   if(q.record&&!S.record.length)return false;
@@ -2080,6 +2115,7 @@ function showPopup(p){
   popupCue(p);
   if(p.type==='A'){
     const ev=p.ev;
+    if(p.cast)CAST=p.cast;   /* title, labels and outcome all read the same cast */
     el.innerHTML=`<div class="sheet">
       <div class="phead"><span class="ptag">Event</span><button class="dicebtn" title="Let fate decide" onclick="fateChoice('${ev.id}')">${DICE}</button></div>
       <div class="ph">${esc(tok(ev.t))}</div>

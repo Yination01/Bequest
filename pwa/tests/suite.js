@@ -48,7 +48,7 @@ module.exports={
     get QUEUE(){return QUEUE},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
@@ -657,6 +657,9 @@ t('every gated event becomes reachable once its gate is met', () => {
       if (q.nochild) G.S.npcs.forEach(n => { if (n.rel==='child') n.rel='friend'; });
       if (q.friend && !G.anyOf('friend').length) assign('friend');
       if (q.sibling && !G.anyOf('sibling').length) assign('sibling');
+      while (q.children2 && G.anyOf('child').length < 2) assign('child');
+      while (q.siblings2 && G.anyOf('sibling').length < 2) assign('sibling');
+      if (q.gathering) { while (G.anyOf('child').length + G.anyOf('sibling').length < 2) assign('child'); }
       if (q.teacher && !G.anyOf('teacher').length) assign('teacher');
       if (q.property && !(G.S.properties||[]).length) G.S.properties = [{t:'flat',value:200000,mortgage:0,rented:false,cond:70,home:true}];
       if (q.noproperty) G.S.properties = [];
@@ -682,7 +685,8 @@ t('every gated event becomes reachable once its gate is met', () => {
 t('every event requirement key is understood by the engine', () => {
   const known = new Set(['flags','noflags','job','nojob','partner','nopartner','child','nochild',
     'friend','property','noproperty','item','poor','smart','rep','parentAlive','parentDead',
-    'anyBadHabit','habit','sibling','maxSiblings','teacher','condition','record','parole','followers','artskill']);
+    'anyBadHabit','habit','sibling','maxSiblings','teacher','condition','record','parole','followers',
+    'artskill','children2','siblings2','gathering']);
   const bad = new Set();
   G.EVENTS.forEach(e => Object.keys(e.req||{}).forEach(k => { if (!known.has(k)) bad.add(e.id+'.'+k); }));
   return bad.size ? [...bad].join(', ') : true;
@@ -1358,6 +1362,85 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- the event cast ---- */
+function familyOf(kids, sibs){
+  G.newGame({});
+  const s = G.S; s.age = 45;
+  s.npcs = s.npcs.filter(n => n.rel === 'mother' || n.rel === 'father');
+  const names = ['Margot','Tom','Claire','Rita','Paul','Ada','Joe'];
+  for (let i = 0; i < kids; i++)
+    s.npcs.push({ id:'k'+i, rel:'child', name:names[i]+' Vale', gender: i%2?'m':'f',
+                  alive:true, r:60, age:20-i, pers:'steady', mem:[], own:{} });
+  for (let i = 0; i < sibs; i++)
+    s.npcs.push({ id:'sb'+i, rel:'sibling', name:names[4+i%3]+' Vale', gender: i%2?'f':'m',
+                  alive:true, r:55, age:47+i, pers:'steady', mem:[], own:{} });
+  return s;
+}
+
+t('one event names the same person from its title to its outcome', () => {
+  // the title, the text, the labels and the outcome are four separate tok()
+  // calls; each used to re-roll, so with three children they disagreed about
+  // two thirds of the time
+  let disagreed = 0;
+  for (let i = 0; i < 200; i++) {
+    familyOf(3, 0);
+    const cast = G.makeCast();
+    const title   = G.withCast(cast, () => G.tok('{child} rang'));
+    const label   = G.withCast(cast, () => G.tok('Go and see {child}'));
+    const outcome = G.withCast(cast, () => G.tok('{child} was grateful'));
+    const who = t => t.match(/Margot|Tom|Claire/);
+    if (!who(title) || !who(label) || !who(outcome)) return 'a token did not resolve to anybody';
+    if (who(title)[0] !== who(label)[0] || who(label)[0] !== who(outcome)[0]) disagreed++;
+  }
+  return disagreed ? `the same event named different children ${disagreed}/200 times` : true;
+});
+
+t('an event can name two different children at once', () => {
+  for (let i = 0; i < 60; i++) {
+    familyOf(3, 0);
+    const cast = G.makeCast();
+    const line = G.withCast(cast, () => G.tok('{child} and {child2} fell out'));
+    const m = line.match(/(\w+) and (\w+) fell out/);
+    if (!m) return 'the line did not resolve: ' + line;
+    if (m[1] === m[2]) return 'both halves named the same child: ' + line;
+  }
+  return true;
+});
+
+t('a whole family can be named in one line', () => {
+  familyOf(3, 2);
+  const cast = G.makeCast();
+  const kids = G.withCast(cast, () => G.tok('{kids}'));
+  if (!/Margot/.test(kids) || !/and/.test(kids)) return 'the children were not listed: ' + kids;
+  const fam = G.withCast(cast, () => G.tok('{family}'));
+  if (fam.split(',').length < 2 && !/ and /.test(fam)) return 'the family was not listed: ' + fam;
+  if (/undefined|\[object/.test(kids + fam)) return 'a list leaked a raw value';
+  return true;
+});
+
+t('group tokens still read properly when there is nobody', () => {
+  G.newGame({});
+  G.S.npcs = [];
+  const out = ['{kids}','{family}','{child2}','{sibling2}','{origin}'].map(x => G.tok(x)).join(' | ');
+  if (/undefined|null|\[object|\{/.test(out)) return 'a group token broke with no family: ' + out;
+  return true;
+});
+
+t('a gathering event will not fire at somebody with no family', () => {
+  const gatherings = G.EVENTS.filter(e => e.req && (e.req.gathering || e.req.children2 || e.req.siblings2));
+  if (!gatherings.length) return 'there are no group events';
+  G.newGame({});
+  G.S.age = 40; G.S.npcs = [];
+  const fired = gatherings.filter(e => G.reqOk(e));
+  if (fired.length) return 'a family gathering fired with no family: ' + fired.map(e => e.id).join(', ');
+  // and they do become reachable once there is a family
+  familyOf(2, 2);
+  G.S.age = 40; G.S.seen = {}; G.S.cd = {};
+  const reachable = gatherings.filter(e => G.S.age >= e.min && G.S.age <= e.max && G.reqOk(e));
+  if (!reachable.length) return 'no gathering is reachable even with a full family';
+  return true;
 });
 
 /* ---- court ---- */
@@ -2680,8 +2763,9 @@ t('every market view renders', () => {
 section('4o. Event writing');
 
 t('every token in event text is one the engine substitutes', () => {
-  const known = ['npc','friend','partner','child','parent','sibling','colleague','boss',
-    'employer','school','paper','city','country','job','name','age','amt'];
+  const known = ['npc','friend','partner','child','child2','parent','sibling','sibling2',
+    'colleague','boss','employer','school','paper','city','country','job','name','age','amt',
+    'kids','family','origin'];
   const bad = new Set();
   G.EVENTS.forEach(e => {
     const texts = (Array.isArray(e.x) ? e.x : [e.x]).concat(e.c.map(c => c.l));
@@ -2782,7 +2866,7 @@ t('every requirement an event states can actually be met', () => {
   const fs2 = require('fs'), p2 = require('path');
   const game = fs2.readFileSync(p2.join(DIR,'game.js'),'utf8');
   const evsrc = fs2.readFileSync(p2.join(DIR,'events.js'),'utf8');
-  const reqKeys = new Set([...game.matchAll(/q\.([a-zA-Z]+)/g)].map(m => m[1]));
+  const reqKeys = new Set([...game.matchAll(/q\.([a-zA-Z0-9]+)/g)].map(m => m[1]));
   const setFlags = new Set([...evsrc.matchAll(/flag:'([a-zA-Z_]+)'/g)].map(m => m[1]));
   [...game.matchAll(/S\.flags\.([a-zA-Z_]+)\s*=/g)].forEach(m => setFlags.add(m[1]));
   const bad = [];
