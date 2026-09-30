@@ -3094,7 +3094,11 @@ function renderHeader(){
         <div class="sv">${Math.round(v)}</div>
         <div class="sbar"><i style="width:${v}%"></i></div></div>`;}).join('')}</div>`;
 }
-function setTab(t){ rememberScroll(); SCROLL[t]=0; app().dataset.tab=t;
+function setTab(t){
+  /* The game navigation is hidden on the title and create screens, but stale
+     taps can still arrive while a modal is closing. No life means no tab. */
+  if(!S)return;
+  rememberScroll(); SCROLL[t]=0; app().dataset.tab=t;
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   a11ySyncTabs(t);
   const m=document.getElementById('main'); if(m)m.classList.remove('in');
@@ -4065,7 +4069,7 @@ function gotoGroup(g){
   setTimeout(()=>{ const el=document.getElementById('grp-'+g);
     if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'}); },40);
 }
-function setMore(v){ S.moreView=v; renderTab('more'); }
+function setMore(v){ if(!S)return; S.moreView=v; renderTab('more'); }
 function viewMore(){
   const v=S.moreView||'stats';
   const seg=`<div class="seg">${[['stats','Stats'],['ach','Awards'],['goals','Goals'],['rec','Records'],['save','Saves'],['shop','Shop']]

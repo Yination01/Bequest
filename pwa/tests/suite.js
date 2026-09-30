@@ -589,6 +589,12 @@ t('every onclick handler in every screen actually exists', () => {
   G.setDiff('custom'); scan(G.renderCreate() || '');
   return missing.size ? 'missing: ' + [...missing].join(', ') : true;
 });
+t('navigation ignores taps before a life is loaded', () => {
+  G.S = null;
+  G.setTab('more');
+  G.setMore('plus');
+  return G.S === null ? true : 'navigation created or changed game state';
+});
 t('every activity id offered is actually runnable', () => {
   const broken = [];
   [3,8,12,16,20,30,45,60,75].forEach(age => {
