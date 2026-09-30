@@ -103,6 +103,7 @@ function migrate(){
   if(!S.cards)S.cards=[]; if(S.arrears==null)S.arrears=0; if(!S.finance)S.finance=[];
   if(S.overdue==null)S.overdue=0; if(!S.overdueItems)S.overdueItems=[];
   if(S.arrPaid==null)S.arrPaid=0; if(S.arrPlan===undefined)S.arrPlan=null;
+  if(!S.career)S.career=[];
   if(!S.properties)S.properties=[]; if(!S.vehicles)S.vehicles=[]; if(!S.businesses)S.businesses=[];
   if(S.property&&!S.properties.length){
     S.properties.push({t:'flat',value:S.property.value,mortgage:S.property.mortgage,
@@ -305,7 +306,7 @@ function newGame(opts){
     crypto:{units:0,price:100}, property:null, properties:[], vehicles:[], businesses:[], assets:[], business:null,
     items:[], job:null, jobYears:0, careerLvl:null, edu:0, inSchool:false, followers:0, totalWorked:0,
     lean, away, echoes:[], goals:[], perksUsed:[], track:null, home:'parents', food:'basic', subs:{}, cards:[], autopay:null, arrears:0, overdue:0, overdueItems:[], arrPaid:0, arrPlan:null, pets:[], orientation:null, outTo:false, npcs:[], flags:{}, log:[], news:[], seen:{}, cd:{}, moreView:'stats', employer:null, boss:null, school:null, paper:null, slot:(opts.slot||1),
-    jailLeft:0, yearsJailed:0, crimesCommitted:0, jobsHeld:0, firedCount:0,
+    jailLeft:0, yearsJailed:0, crimesCommitted:0, jobsHeld:0, firedCount:0, career:[],
     peakNet:0, peakIncome:0, marriedYears:0, childrenCount:0, donated:0, illness:null,
     banned:[], dependents:0, credsLost:false, actionsLeft:2, actLog:{}, logAll:false, conditions:[], record:[], credit:null, parole:0, perf:60, gpa:50, uniTier:null, disabled:false, loans:[],
     counters:{promotions:0,businesses:0,divorces:0,relapses:0,cryptoProfit:0,debtCleared:0,
@@ -1642,7 +1643,10 @@ function setJob(j){
   const degMatch=(()=>{ const d=DEGREE(S.degreeDone); return d&&d.fields.indexOf(j.field)>=0?1.12:1; })();
   S.employer=companyFor(j.field,country().reg);
   S.boss=nameFor(country().reg,pick(['m','f']))+' '+surFor(country().reg);
-  S.job={id:j.id,t:j.t,pay:Math.round(j.pay*country().sal*(ut&&j.edu>=3?ut.sal:1)*(S.credsLost?0.6:1)*degMatch),field:j.field,lvl:jobLvl(j),emp:S.employer}; S.jobYears=0; S.jobsHeld++; S.careerLvl=Math.max(S.careerLvl==null?-1:S.careerLvl,jobLvl(j)); }
+  S.job={id:j.id,t:j.t,pay:Math.round(j.pay*country().sal*(ut&&j.edu>=3?ut.sal:1)*(S.credsLost?0.6:1)*degMatch),field:j.field,lvl:jobLvl(j),emp:S.employer}; S.jobYears=0; S.jobsHeld++;
+  /* a working life, not just a count of jobs: the obituary needs to know
+     what someone actually did for thirty years */
+  S.career=S.career||[]; S.career.push({t:j.t,field:j.field,from:S.age,emp:S.employer}); S.careerLvl=Math.max(S.careerLvl==null?-1:S.careerLvl,jobLvl(j)); }
 /* How far above your proven level you may reach. Time served is one route in;
    being demonstrably good at the thing is another. */
 function reachAllowance(j){
@@ -1840,34 +1844,60 @@ function showDeath(){
     META.adsSeen++; saveMeta();
     push({type:'AD'}); drain();
   }
+  DEATH_STATS=false;
+  renderDeath();
+}
+function toggleDeathStats(){ DEATH_STATS=!DEATH_STATS; renderDeath(); }
+/* The obituary is the screen. The numbers are still all here, behind one
+   tap, because some people do want the spreadsheet - just not first. */
+function renderDeath(){
+  const worth=netWorth();
+  const o=eulogy(S,worth);
   const earned=DATA.ribs.filter(r=>{try{return r.f(S);}catch(e){return false;}});
-  const fam=S.npcs.filter(n=>['child','spouse','partner'].includes(n.rel));
   const lp=(S.achThisLife||[]).reduce((n,id)=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return n+(a?a.p:0);},0);
+  const moments=S.log.filter(l=>l.k==='good'||l.k==='bad').slice(-6);
   const el=document.getElementById('modal'); el.className='modal show';
   el.innerHTML=`<div class="sheet death">
-    <div class="dh">${esc(S.name)}</div>
-    <div class="dsub">Died at ${S.age} — ${esc(S.cause||'unknown')}</div>
-    <div class="lpline">+${lp} Legacy Points this life · ${META.lp} total</div>
-    <div class="grid2">
+    <div class="obit">
+      <div class="obitrule"></div>
+      <div class="dh">${esc(o.name)}</div>
+      <div class="dsub">${esc(o.strap)}</div>
+      <div class="obitrule"></div>
+      <div class="obitbody">
+        <p>${o.life.map(esc).join(' ')}</p>
+        ${o.people.length?`<p>${o.people.map(esc).join(' ')}</p>`:''}
+        ${o.estate.length?`<p>${o.estate.map(esc).join(' ')}</p>`:''}
+        <p class="obitclose">${esc(o.close)}</p>
+      </div>
+    </div>
+
+    ${moments.length?`<div class="sec">The years that turned it</div>
+      <div class="moments">${moments.map(l=>
+        `<div class="mline ${l.k}"><b>${l.a}</b> ${esc(l.t)}</div>`).join('')}</div>`:''}
+
+    ${earned.length?`<div class="sec">Remembered as</div>
+      <div class="awards">${earned.map(r=>`<span class="award">${esc(r.n)}</span>`).join('')}</div>`:''}
+
+    ${(S.eggsThisLife&&S.eggsThisLife.length)?`<div class="sec">Found</div>
+      <div class="awards">${S.eggsThisLife.map(id=>{const e=EGG(id);
+        return e?`<span class="award egg">${esc(EGG_EPITAPHS[id]||e.n)}</span>`:'';}).join('')}</div>`:''}
+
+    <div class="lpline">+${lp} Legacy Points this life \u00b7 ${META.lp} total</div>
+
+    <button class="statstoggle" onclick="toggleDeathStats()">
+      ${DEATH_STATS?'\u25BE Hide the numbers':'\u25B8 The numbers'}</button>
+    ${DEATH_STATS?`<div class="grid2">
       ${[['Years lived',S.age],['Peak net worth',money(S.peakNet)],['Peak income',money(S.peakIncome)],
-         ['Final net worth',money(netWorth())],['Jobs held',S.jobsHeld],['Children',S.childrenCount],
+         ['Final net worth',money(worth)],['Jobs held',S.jobsHeld],['Children',S.childrenCount],
          ['Crimes',S.crimesCommitted],['Years jailed',S.yearsJailed],['Countries lived in',(S.countriesLived||[]).length],
          ['Education',DATA.eduNames[S.edu]],
          ['Special path',S.track?(TRACK(S.track.id).n+': '+TRACK_RANK(S.track).n):'\u2014'],
          ['Difficulty',diffDef(S.diff).n+(S.assisted?' (assisted)':'')],
          ['Legacy Point rate','\u00d7'+lpMult().toFixed(2)]].map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('')}
-    </div>
-    <div class="sec">Epitaphs</div>
-    <div class="awards">${earned.length?earned.map(r=>`<span class="award">${r.n}</span>`).join(''):'<span class="muted">None earned.</span>'}</div>
-    ${(S.eggsThisLife&&S.eggsThisLife.length)?`<div class="sec">Found</div>
-      <div class="awards">${S.eggsThisLife.map(id=>{const e=EGG(id);
-        return e?`<span class="award egg">${esc(EGG_EPITAPHS[id]||e.n)}</span>`:'';}).join('')}</div>`:''}
-    <div class="sec">Achievements this life</div>
-    <div class="awards">${(S.achThisLife&&S.achThisLife.length)?S.achThisLife.map(id=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return a?`<span class="award t${a.t}">${esc(a.n)}</span>`:'';}).join(''):'<span class="muted">None unlocked this life.</span>'}</div>
-    <div class="sec">Defining moments</div>
-    <div class="moments">${S.log.filter(l=>l.k).slice(-8).map(l=>`<div><b>${l.a}</b> ${esc(l.t)}</div>`).join('')||'<span class="muted">A quiet life.</span>'}</div>
-    <div class="sec">Family</div>
-    <div class="moments">${fam.length?fam.map(n=>`<div>${esc(n.name)} — ${n.rel}${n.alive?'':' (deceased)'}</div>`).join(''):'<span class="muted">No family of your own.</span>'}</div>
+      </div>
+      <div class="sec">Achievements this life</div>
+      <div class="awards">${(S.achThisLife&&S.achThisLife.length)?S.achThisLife.map(id=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return a?`<span class="award t${a.t}">${esc(a.n)}</span>`:'';}).join(''):'<span class="muted">None unlocked this life.</span>'}</div>`:''}
+
     <div class="row">
       ${anyOf('child').length?'<button class="btn primary" onclick="continueAs(\'child\')">Continue as your child</button>':
         anyOf('sibling').length?'<button class="btn primary" onclick="continueAs(\'sibling\')">Continue as your sibling</button>':''}
@@ -1876,6 +1906,7 @@ function showDeath(){
       <button class="btn" onclick="toTitle()">New life</button>
     </div></div>`;
 }
+
 function secondChance(){
   if(S.usedSecondChance)return;
   S.usedSecondChance=true; S.alive=true; S.cause=null;
@@ -2717,6 +2748,7 @@ function setTab(t){ rememberScroll(); SCROLL[t]=0; app().dataset.tab=t;
   renderTab(t);
   if(m){ void m.offsetWidth; m.classList.add('in'); } }
 let SCROLL={};
+let DEATH_STATS=false;
 function renderTab(t,keepScroll){
   const m=document.getElementById('main');
   const prev=m?m.scrollTop:0;

@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,showDeath,renderDeath,toggleDeathStats,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1202,6 +1202,141 @@ t('housing and food change how you feel', () => {
   const crowded = G.livingEffect();
   return crowded.happy < comfy.happy ? true : 'overcrowding did not hurt';
 });
+/* ---- the obituary ---- */
+function deadLife(opts){
+  let tries = 0;
+  do { G.newGame(opts || {}); let g = 0; while (G.S.alive && g++ < 130) G.ageUp(); tries++; }
+  while (G.S.alive && tries < 20);
+  return G.S;
+}
+t('every life can be written up as an obituary', () => {
+  for (let i = 0; i < 40; i++) {
+    const s = deadLife({diff:['easy','normal','hard','brutal'][i % 4]});
+    const o = G.eulogy(s, G.netWorth());
+    if (!o.name || !o.strap) return 'life ' + i + ' has no headline';
+    if (!o.life.length) return 'life ' + i + ' has no story';
+    if (!o.people.length) return 'life ' + i + ' says nothing about anyone';
+    if (!o.close) return 'life ' + i + ' has no closing line';
+  }
+  return true;
+});
+t('an obituary never leaks a placeholder or a broken number', () => {
+  const bad = [];
+  for (let i = 0; i < 60; i++) {
+    const s = deadLife({diff:['easy','normal','hard','brutal'][i % 4]});
+    const o = G.eulogy(s, G.netWorth());
+    const text = [o.name, o.strap, o.close].concat(o.life, o.people, o.estate).join(' ');
+    if (/undefined|NaN|\[object|null/.test(text)) bad.push('placeholder: ' + text.match(/.{0,40}(undefined|NaN|\[object|null).{0,20}/)[0]);
+    if (/\s+[,.]/.test(text)) bad.push('space before punctuation');
+    if (/,,|\.\./.test(text)) bad.push('doubled punctuation');
+    if (/\s\s/.test(text)) bad.push('double space');
+    if (bad.length) break;
+  }
+  return bad.length ? bad[0] : true;
+});
+t('every sentence in an obituary is a sentence', () => {
+  for (let i = 0; i < 30; i++) {
+    const s = deadLife({});
+    const o = G.eulogy(s, G.netWorth());
+    const lines = o.life.concat(o.people, o.estate, [o.close]);
+    const bad = lines.filter(l => !/^[A-Z"']/.test(l) || !/[.!?"]$/.test(l));
+    if (bad.length) return 'not a sentence: ' + JSON.stringify(bad[0]);
+  }
+  return true;
+});
+t('the same life is always written up the same way', () => {
+  // the numbers toggle re-renders the screen; it must not rewrite the eulogy
+  const s = deadLife({});
+  const a = JSON.stringify(G.eulogy(s, G.netWorth()));
+  const b = JSON.stringify(G.eulogy(s, G.netWorth()));
+  const c = JSON.stringify(G.eulogy(s, G.netWorth()));
+  return (a === b && b === c) ? true : 'the obituary changed between renders';
+});
+t('an obituary uses the right pronouns throughout', () => {
+  for (let i = 0; i < 40; i++) {
+    const s = deadLife({});
+    if (s.age < 16) continue;
+    const o = G.eulogy(s, G.netWorth());
+    const text = o.life.concat(o.people, o.estate, [o.close]).join(' ');
+    const wrong = s.gender === 'f' ? /\b(he|him|his)\b/i : /\b(she|her|hers)\b/i;
+    // other people in the life are named, not pronouned, so any hit is a bug
+    const m = text.match(wrong);
+    if (m) return `${s.gender} life used "${m[0]}" — ${text.slice(Math.max(0, m.index - 40), m.index + 40)}`;
+  }
+  return true;
+});
+t('a child who dies does not get a career and an estate', () => {
+  const s = deadLife({});
+  s.age = 7; s.alive = false; s.cause = 'a sudden illness';
+  s.career = [{t:'Surgeon',field:'med',from:30}]; s.jobsHeld = 1; s.properties = [{value:9e5,mortgage:0}];
+  const o = G.eulogy(s, 900000);
+  const text = o.life.concat(o.estate).join(' ');
+  return (!/Surgeon|surgeon|estate/i.test(text) && !o.estate.length) ? true
+    : 'a seven-year-old was given a career or an estate: ' + text;
+});
+t('an obituary says what someone did for a living', () => {
+  const s = deadLife({});
+  s.age = 70; s.career = [{t:'Structural engineer',field:'eng',from:24}];
+  s.jobsHeld = 1; s.edu = 3;
+  const text = G.eulogy(s, 10000).life.join(' ');
+  return /structural engineer/i.test(text) ? true : 'the working life is missing: ' + text;
+});
+t('an obituary names who is left and what they get', () => {
+  const s = deadLife({});
+  s.age = 80; s.alive = false;
+  s.npcs = [{id:'a',rel:'child',name:'Margot Vance',gender:'f',alive:true,r:90,age:50},
+            {id:'b',rel:'child',name:'Tom Vance',gender:'m',alive:true,r:20,age:47},
+            {id:'c',rel:'spouse',name:'Ada Vance',gender:'f',alive:false,r:80,age:79}];
+  s.childrenCount = 2; s.properties = []; s.businesses = [];
+  const o = G.eulogy(s, 400000);
+  const people = o.people.join(' '), estate = o.estate.join(' ');
+  if (!/Margot/.test(people) || !/Tom/.test(people)) return 'the children are not named: ' + people;
+  if (!/Ada/.test(people)) return 'the dead spouse is not mentioned: ' + people;
+  if (!/Margot/.test(estate) || !/400,000/.test(estate)) return 'the estate does not say who gets it: ' + estate;
+  return true;
+});
+t('a debt is not passed to the children', () => {
+  const s = deadLife({});
+  s.age = 70; s.npcs = [{id:'a',rel:'child',name:'Ana Reyes',gender:'f',alive:true,r:70,age:40}];
+  const estate = G.eulogy(s, -50000).estate.join(' ');
+  return /owing/.test(estate) && /\$50,000/.test(estate) ? true : 'a debt was not reported: ' + estate;
+});
+t('obituaries do not all end the same way', () => {
+  const seen = {};
+  const N = 60;
+  for (let i = 0; i < N; i++) {
+    const s = deadLife({diff:['easy','normal','hard','brutal'][i % 4]});
+    const c = G.eulogy(s, G.netWorth()).close;
+    seen[c] = (seen[c] || 0) + 1;
+  }
+  const distinct = Object.keys(seen).length;
+  const commonest = Math.max.apply(null, Object.values(seen));
+  return (distinct >= 6 && commonest / N <= 0.4) ? true
+    : `${distinct} distinct endings, commonest used ${Math.round(commonest / N * 100)}% of the time`;
+});
+t('the death screen leads with the obituary and keeps the numbers', () => {
+  const s = deadLife({});
+  let html = '';
+  const realGet = global.document.getElementById;
+  global.document.getElementById = id => (id === 'modal')
+    ? { set innerHTML(v){ html = v; }, get innerHTML(){ return html; }, className:'' }
+    : realGet(id);
+  try {
+    G.renderDeath();
+    if (!/class="obit"/.test(html)) return 'no obituary on the death screen';
+    if (!/statstoggle/.test(html)) return 'no way to see the numbers';
+    if (/Peak net worth/.test(html)) return 'the numbers are shown before they are asked for';
+    G.toggleDeathStats();
+    const keys = ['Years lived','Peak net worth','Peak income','Final net worth','Jobs held',
+                  'Children','Crimes','Years jailed','Countries lived in','Education',
+                  'Special path','Difficulty','Legacy Point rate'];
+    const missing = keys.filter(k => html.indexOf(k) < 0);
+    if (missing.length) return 'the numbers toggle lost: ' + missing.join(', ');
+    G.toggleDeathStats();
+    return true;
+  } finally { global.document.getElementById = realGet; }
+});
+
 /* ---- sound and haptics ---- */
 t('every cue the code asks for actually exists', () => {
   const fs2 = require('fs'), p2 = require('path');

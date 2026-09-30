@@ -161,6 +161,21 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 /* death */
 .death .dh{font-size:24px;font-weight:750}
 .dsub{color:var(--mut);margin-bottom:6px}
+/* the obituary: set like a printed notice, not like the rest of the UI */
+.obit{margin:2px 0 4px}
+.obit .dh{font-size:27px;letter-spacing:.005em;line-height:1.16;margin:12px 0 3px}
+.obit .dsub{margin-bottom:12px;font-size:13px;letter-spacing:.02em}
+.obitrule{height:1px;background:linear-gradient(90deg,transparent,rgba(240,166,60,.42),transparent);margin:0}
+.obitbody{margin:16px 0 4px}
+.obitbody p{font-size:15px;line-height:1.66;color:#d5deef;margin:0 0 13px;text-wrap:pretty}
+.obitbody p.obitclose{color:var(--am);font-style:italic;border-left:2px solid rgba(240,166,60,.4);
+  padding-left:12px;margin-top:16px;line-height:1.6}
+.mline{display:flex;gap:2px}
+.mline.good b{color:var(--g)}
+.mline.bad b{color:var(--r)}
+.statstoggle{width:100%;margin-top:18px;padding:10px;background:transparent;border:1px solid var(--line);
+  border-radius:10px;color:var(--mut);font-size:12px;font-weight:600;letter-spacing:.04em;cursor:pointer}
+.statstoggle:hover{color:var(--t);border-color:rgba(240,166,60,.35)}
 .lpline{font-size:12.5px;color:var(--am);margin-bottom:14px;font-weight:600}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .sec{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--mut);margin:16px 0 8px;font-weight:700}

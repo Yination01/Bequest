@@ -21,6 +21,7 @@ avat  = (d/'avatar.js').read_text()
 egg   = (d/'easter.js').read_text()
 coach = (d/'coach.js').read_text()
 sound = (d/'sound.js').read_text()
+eulogy= (d/'eulogy.js').read_text()
 game  = (d/'game.js').read_text()
 # Derive the inline icon from the committed PNG so the build has no hidden
 # dependency on a generated file. Falls back to the cache if it exists.
@@ -111,6 +112,9 @@ html = f"""<!doctype html>
 </script>
 <script>
 {sound}
+</script>
+<script>
+{eulogy}
 </script>
 <script>
 {coach}

@@ -4,10 +4,10 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 326 events, 214 tests, 16 modules, 529 KB, no known integrity
+Current state: 326 events, 225 tests, 17 modules, 547 KB, no known integrity
 problems, a life simulates in 37 ms.
 
-**P0 is clear**, and the first P1 item with it. All are covered by tests.
+**P0 is clear**, and two P1 items with it. All are covered by tests.
 
 ---
 
@@ -75,9 +75,38 @@ The things that would most improve a session.
 |---|---|---|---|
 | 6 | ~~**Sound and haptics**~~ — **done** | Every tap is silent. A year turning, a promotion, a death — none of them land. This is the single biggest "feels like a real app" gap. *opinion* | M |
 | 7 | **Close the agency gap: 41% vs ReLife's 55%** — **measured** | More branching forks that change a life's direction rather than its statistics. This is the one metric where we still lose. | L |
-| 8 | **A proper death and legacy screen** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
+| 8 | ~~**A proper death and legacy screen**~~ — **done** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
 | 9 | **Year-summary pacing** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
 | 10 | **Notifications** | "Your character is waiting" brings people back. Needs the native layer, so it belongs after the APK. | S |
+
+### What item 8 turned into
+
+`eulogy.js`, a generator that writes the dead person's obituary from the save,
+and a rebuilt death screen that leads with it.
+
+Four or five paragraphs, assembled from what actually happened: where they were
+born and what that was worth, what they did for the years they worked, who is
+left and who went first, what the estate came to and who gets it, and a closing
+line. Then "the years that turned it" — the six log entries that mattered — the
+ribbons, and the eggs. **The thirteen stat cells are still there, behind a "The
+numbers" toggle.** Nothing was deleted; it was demoted.
+
+Three things this needed that were not obvious:
+
+- **The obituary has to be deterministic per save.** The screen re-renders every
+  time the stats toggle is pressed, so anything random would rewrite the dead
+  person's life mid-read. All variation is keyed off `s.seed`.
+- **Final happiness is a near-useless signal at death**, because it decays for
+  everyone. A bleak closing line drawn from it fired on three lives in four. It
+  now needs corroborating evidence: no one left, and a poor reputation.
+- **It needed a job history, which the save did not keep.** `S.career` was added
+  so the obituary can say "spent 34 years as a structural engineer" rather than
+  reporting the last job title held.
+
+Measured over 250 simulated lives: 8.6 sentences per obituary, 250 distinct
+opening lines, 61 distinct closing lines with the commonest at 16%. Eleven tests
+cover it, including one that renders the same life three times and requires the
+three obituaries to be identical.
 
 ### What item 6 turned into
 
@@ -155,11 +184,9 @@ the larger of the two once the arrears numbers were properly measured.
 
 ~~**Next:** sound and haptics (6)~~ — done.
 
-**Next: the death screen (8)**, because it is the moment the game is *about* and
-it currently reads like a spreadsheet. Onboarding taught people how to play;
-the death screen is what makes them want to play again.
+~~**Next:** the death screen (8)~~ — done.
 
-**Then:** the agency gap (7). It is the one metric where we still lose to
+**Next: the agency gap (7).** It is the one metric where we still lose to
 ReLife, and it is a long job, so it wants a clear run.
 
 **Only then** content volume (11) — it is the largest single job here and it is
