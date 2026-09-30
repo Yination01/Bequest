@@ -113,6 +113,8 @@ function migrate(){
   schoolMigrate(S);
   courtMigrate(S);
   investMigrate(S);
+  if(S.living===undefined)S.living=null;
+  if(S.thrift==null)S.thrift=0;
   healthMigrate(S);
   /* a case in progress when the game was closed has to come back, or the
      charge quietly disappears and S.legalCase blocks the next one */
@@ -415,6 +417,7 @@ function newGame(opts){
   willBirth(S);
   schoolBirth(S);
   investBirth(S);
+  S.living=null; S.thrift=0;
   SETTLEMENT=null;   /* the last life's estate must never leak into this one */
   S.bmonth=ri(1,12); S.bday=ri(1,28);
   if(R()<0.0007){ S.bmonth=2; S.bday=29; }
@@ -610,6 +613,10 @@ function applyEff(e){
       out.push(`${money(e.money)} (your family paid)`);
     } else {
       S.money+=e.money; out.push(`${e.money>0?'+':''}${money(e.money)}`);
+      /* Event money never reached the ledger, so the budget bar on the year
+         sheet was quietly wrong and nothing downstream could see it. */
+      ledger(e.money>0?'earn':'spend', e.money>0?'Something came in':'Something came up',
+             Math.abs(e.money));
     }
   }
   if(e.savings){ S.savings+=e.savings; out.push(`Savings +${money(e.savings)}`); }
@@ -761,6 +768,67 @@ function billsFor(){
       if(def&&def.fee)items.push({l:def.n+' fee',a:def.fee}); });
   }
   return items;
+}
+/* ---------------- how you live ----------------
+   Bills were housing, food and subscriptions, all fixed tiers, none of them
+   touching what you earn. So a good salary was banked rather than spent:
+   outgoings sat flat near $11,000 while income climbed past $50,000, and a
+   median life ended holding $1.77m in idle cash it had never decided to
+   accumulate.
+
+   The sink is the true one. You earn more and you spend more, mostly
+   without choosing to: a better flat, a car you did not need, the kind of
+   holiday you used to read about. It creeps up quickly and comes down
+   slowly and unwillingly, discipline slows it, and you can take a year to
+   deliberately pull it back at a cost to how the year feels.
+
+   It is charged against what you actually have rather than billed, because
+   nobody runs up arrears on a lifestyle: they quietly stop affording it. */
+function livingFloor(){ return Math.round(3800*country().col); }
+/* The share of what you earn that goes on living the way you live. It has
+   to be the TARGET that discipline and thrift move, not merely the speed of
+   getting there: over fifty years everybody arrives, so a lever on the
+   speed alone is a lever on nothing. */
+function livingRatio(s){
+  s = s || S;
+  const thrift = Math.max(0, Math.min(1, s.thrift || 0));
+  const disc = ((s.stats ? s.stats.discipline : 50) - 50) / 300;
+  return Math.max(0.30, Math.min(0.68, 0.60 - 0.18 * thrift - disc));
+}
+function livingTarget(income, s){
+  return Math.max(livingFloor(), Math.round(income * livingRatio(s)));
+}
+function tickLiving(out){
+  if(S.age<18) return;
+  if(S.living==null) S.living=livingFloor();
+  if(S.jailLeft>0){                     /* the state is housing you */
+    S.living=Math.max(livingFloor(), Math.round(S.living*0.85));
+    return;
+  }
+  /* thrift is a habit, and habits lapse */
+  if(S.thrift==null) S.thrift=0;
+  S.thrift=Math.max(0, S.thrift-0.045);
+
+  const income=ledgerTotal('income');
+  const target=livingTarget(income, S);
+  const gap=target-S.living;
+  S.living=Math.max(livingFloor(),
+    Math.round(S.living + (gap>0 ? gap*0.34 : gap*0.16)));
+
+  let cost=S.living;
+  if(cost>S.money){
+    /* you cannot spend what you have not got, so the life gets smaller */
+    const short=cost-Math.max(0,S.money);
+    cost=Math.max(0,S.money);
+    S.living=Math.max(livingFloor(), S.living-Math.round(short*0.6));
+    S.stats.happiness=clamp(S.stats.happiness-4);
+    out.push(`You could not keep living as you were. Something had to go.`);
+  }
+  if(cost>0){
+    S.money-=cost; ledger('spend','Living as you do',cost);
+    if(income>0 && cost>income*0.62 && R()<0.25)
+      out.push(`Almost everything you earned went on living the way you now live.`);
+  }
 }
 function tickProperty(out){
   (S.properties||[]).forEach(pr=>{
@@ -1064,7 +1132,7 @@ function tickFinance(){
     if(S.flags.retired||S.age>=67){ const p=Math.round((9000+S.peakIncome*0.12)*c.col*0.5*(S.flags.pension?1.8:1)); S.money+=p; ledger('earn','Pension',p); out.push(`Pension: ${money(p)}.`); }
   }
   tickProperty(out); tickVehicles(out); tickBusinesses(out);
-  tickBills(out); financeTick(out); tickCards(out); tickArrears(out);
+  tickBills(out); tickLiving(out); financeTick(out); tickCards(out); tickArrears(out);
   if(S.savings>0)S.savings+=Math.round(S.savings*0.025);
   /* loans */
   S.loans=(S.loans||[]).filter(l=>{
@@ -2370,6 +2438,18 @@ function ACTS(){
       A('rh_'+c.id,'Rehabilitation for '+c.n.toLowerCase(),'Health',
         `${k.rehab||0} year${(k.rehab||0)===1?'':'s'} done \u00b7 two brings the severity down`,()=>doRehab(c.id));
   });
+  if(S.age>=18&&S.living>livingFloor())A('cutback','Live below your means','Money',
+    `Costing ${money(S.living)} a year to live \u00b7 cut it back`,()=>{
+    const before=S.living;
+    /* cutting back is a decision to keep, not a one-year saving that creep
+       undoes by the spring */
+    S.thrift=Math.min(1, (S.thrift||0)+0.35);
+    S.living=Math.max(livingFloor(), Math.round(S.living*0.72));
+    applyEff({happiness:-7,discipline:5});
+    popupOK('Cutting back',
+      `You moved somewhere smaller, or stopped replacing things, or simply stopped.\n\n`
+      +`Living on ${money(S.living)} a year instead of ${money(before)}.`);
+  });
   if(S.age>=18)A('loan','Apply for a loan','Money',
     `Credit ${Math.round(S.credit==null?600:S.credit)} \u00b7 ${creditBand(S.credit==null?600:S.credit).n}`,()=>{
     const sc=S.credit==null?600:S.credit, b=creditBand(sc);
@@ -3344,6 +3424,17 @@ function moneyOverview(){
      ${L.income.map(x=>`<div class="lrow"><span>${esc(x.l)}</span><b class="bgood">+${money(x.a)}</b></div>`).join('')}
      ${L.spend.map(x=>`<div class="lrow"><span>${esc(x.l)}</span><b class="bbad">\u2212${money(x.a)}</b></div>`).join('')}
    </div>`:'<div class="hsub dim">Nothing recorded yet. Age up a year.</div>'}</div>
+   ${S.age>=18?`<div class="card"><div class="ctrow"><div class="ct">How you live</div>
+     <div class="hsub dim">${money(S.living||livingFloor())} a year</div></div>
+     <div class="hsub dim">${
+       (S.thrift||0)>0.3 ? 'You are deliberately living below what you earn.'
+       : inc>0 && (S.living||0) > inc*0.6 ? 'Almost everything you earn goes on living the way you live.'
+       : 'Your way of living creeps up with what you earn, unless you stop it.'}</div>
+     <div class="bt"><i class="${inc>0&&(S.living||0)>inc*0.6?'r':inc>0&&(S.living||0)>inc*0.45?'a':'g'}"
+       style="width:${Math.min(100,Math.round(inc>0?(S.living||0)/inc*100:20))}%"></i></div>
+     <div class="hsub dim">${inc>0?Math.round((S.living||0)/inc*100):0}% of what came in last year</div>
+     ${(S.living||0)>livingFloor()?`<div class="row mt"><button class="btn" onclick="gotoGroup('Money')">Live below your means</button></div>`:''}
+   </div>`:''}
    <div class="card"><div class="ct">Where you stand</div>
    ${[['Cash',money(S.money)],['Savings',money(S.savings)],
       ['Crypto',money(cryptoValue())],

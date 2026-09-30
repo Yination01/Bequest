@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 347 tests, 26 modules, 761 KB, no known integrity
+Current state: 533 events, 353 tests, 26 modules, 765 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -338,6 +338,53 @@ the engine implements, every id it names must exist, no two events may share an
 id, every stated requirement must be satisfiable, and a fifth is a ratchet on
 the share of events that fork. Between them they caught four dead hooks, three
 duplicate ids and two crashes waiting to happen.
+
+### The economy had no sink
+
+Found by chasing the wealth gap the corrected table exposed. A median life
+earned $78,000 at peak, worked 42 years, and died holding **$1,768,274 in
+cash**: not property, not investments, not a business, all of which were
+$0 at the median. Money that had piled up rather than been decided.
+
+The cause was that nothing scaled. Housing, food and subscriptions are
+fixed tiers, so outgoings sat flat near $11,000 while income climbed past
+$50,000:
+
+| band | income | spend | surplus | bills as share of income |
+|---|---|---|---|---|
+| 18-29 | $11,454 | $6,783 | $4,671 | 22% |
+| 45-59 | $51,931 | $11,947 | **$39,984** | **8%** |
+
+The sink is the true one. **You earn more and you spend more, mostly
+without choosing to.** A cost of living creeps towards a share of what you
+earn, quickly upwards and slowly down, and you can spend a year
+deliberately pulling it back. It is charged against what you actually have
+rather than billed, because nobody runs up arrears on a lifestyle: they
+quietly stop affording it.
+
+After: surplus at 45-59 fell from $39,984 to about $11,000, and spending
+now follows income instead of ignoring it.
+
+**Two things this turned up on the way.**
+
+`applyEff()` moved money without ever writing it to the ledger, so every
+pound an event gave or took was invisible. The budget bar on the year sheet
+was wrong, and nothing downstream could see the money at all. Once ledgered,
+event money turned out to be **more than half of all income before thirty**.
+
+The first version of the lever did nothing. Discipline changed only how
+*fast* living converged on its target, and over fifty years everybody
+arrives, so it was a lever on the speed of an inevitability. It now moves
+the target itself, and cutting back is a lasting intent that lapses rather
+than a one-year saving that creep undoes by the spring.
+
+**What is not fixed.** Median peak wealth is still well above the field.
+The structural fault is gone and is held by tests, but the absolute figure
+is dominated by windfalls, which a cost of living does not touch. Tuning
+further ran into noise: raising the share of income spent made the median
+*rise*, which is a sampling artefact of a heavy-tailed distribution rather
+than a result. That wants a decision about what Bequest wants a life to be
+worth, not more tuning against a noisy number.
 
 ### The mid-game sag was not real
 

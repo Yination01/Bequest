@@ -51,7 +51,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,i18nKey,T,setLocale,currentLocale,trackMissing,missingStrings,localiseData,pseudoLocale,variant,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,livingFloor,livingRatio,livingTarget,tickLiving,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,i18nKey,T,setLocale,currentLocale,trackMissing,missingStrings,localiseData,pseudoLocale,variant,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1386,6 +1386,116 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- the cost of living as you live ---- */
+t('what you spend follows what you earn', () => {
+  // the whole point: outgoings used to sit flat near $11,000 while income
+  // climbed past $50,000, so a salary was banked rather than spent
+  atAge(40);
+  const at = income => {
+    G.S.living = G.livingFloor(); G.S.thrift = 0; G.S.money = 5000000;
+    G.S.stats.discipline = 50;
+    for (let y = 0; y < 25; y++) {
+      G.S.ledger = { income: [{ l:'x', a:income }], spend: [] };
+      G.tickLiving([]);
+    }
+    return G.S.living;
+  };
+  const poor = at(15000), rich = at(120000);
+  if (!(rich > poor * 3)) return `living costs ${poor} on 15k and ${rich} on 120k`;
+  if (rich >= 120000) return 'living costs more than the whole income';
+  return true;
+});
+
+t('how you choose to live moves the target, not merely the speed', () => {
+  // a lever on the rate of convergence is a lever on nothing: over fifty
+  // years everybody arrives at the same place anyway
+  const r = (disc, thrift) => G.livingRatio({ stats:{discipline:disc}, thrift });
+  if (!(r(85,0) < r(50,0))) return 'discipline does not lower the target';
+  if (!(r(20,0) > r(50,0))) return 'being undisciplined does not raise it';
+  if (!(r(50,1) < r(50,0) - 0.1)) return 'thrift barely moves the target';
+  const all = [r(0,0), r(100,1), r(100,0), r(0,1), r(50,0.5)];
+  if (all.some(x => x < 0.3 || x > 0.68)) return 'the ratio escaped its clamp: ' + all.join(', ');
+  return true;
+});
+
+t('cutting back is a decision that lasts, but lapses', () => {
+  atAge(40);
+  G.S.money = 500000; G.S.living = 60000; G.S.thrift = 0;
+  G.S.actionsLeft = 3;
+  const acts = G.ACTS();
+  if (!acts.some(a => a.id === 'cutback')) return 'no way to cut back when living high';
+  G.doAct('cutback');
+  if (!(G.S.living < 60000)) return 'cutting back did not reduce the cost of living';
+  if (!(G.S.thrift > 0)) return 'cutting back left no lasting intent';
+  const kept = G.S.thrift;
+  for (let y = 0; y < 3; y++) { G.S.ledger = { income:[{l:'x',a:50000}], spend:[] }; G.tickLiving([]); }
+  if (!(G.S.thrift < kept)) return 'thrift never lapses, so the decision is free forever';
+  if (G.S.thrift < 0) return 'thrift went negative';
+  return true;
+});
+
+t('you are never charged more than you have', () => {
+  atAge(40);
+  G.S.living = 90000; G.S.money = 1200; G.S.savings = 0; G.S.thrift = 0;
+  G.S.ledger = { income: [], spend: [] };
+  const out = [];
+  G.tickLiving(out);
+  if (G.S.money < 0) return 'living costs pushed money negative: ' + G.S.money;
+  if (!(G.S.living < 90000)) return 'an unaffordable life did not get smaller';
+  if (!out.length) return 'nothing was said about having to give something up';
+  // and it never falls through the floor
+  for (let y = 0; y < 30; y++) { G.S.money = 0; G.tickLiving([]); }
+  if (G.S.living < G.livingFloor()) return 'living fell below the floor: ' + G.S.living;
+  return true;
+});
+
+t('prison does not charge you rent', () => {
+  atAge(40);
+  G.S.living = 40000; G.S.money = 100000; G.S.jailLeft = 3;
+  const before = G.S.money;
+  G.S.ledger = { income: [], spend: [] };
+  G.tickLiving([]);
+  if (G.S.money !== before) return 'you paid for a life you were not living';
+  if (!(G.S.living < 40000)) return 'the outside life did not wind down while inside';
+  G.S.jailLeft = 0;
+  return true;
+});
+
+t('a whole life no longer banks its salary by default', () => {
+  // the original fault, asserted end to end: surplus used to quadruple
+  // between the twenties and the fifties
+  const band = {};
+  for (let i = 0; i < 14; i++) {
+    G.newGame({}); let g = 0;
+    while (G.S.alive && g++ < 140) {
+      G.ageUp(); if (!G.S.alive) break;
+      let b = 0;
+      while (G.S.actionsLeft > 0 && b++ < 6) {
+        const acts = G.ACTS().filter(a => a.grp !== 'Crime');
+        if (!acts.length) break;
+        G.doAct(acts[Math.floor(Math.random()*acts.length)].id);
+      }
+      if (G.S.age >= 18 && !G.S.job && !G.S.flags.retired && !G.S.flags.inCollege) {
+        const p = G.DATA.jobs.filter(G.jobEligible);
+        if (p.length) { G.applyJob(p[p.length-1]); G.drain(); }
+      }
+      if (G.S.age < 25 || G.S.age > 60) continue;
+      const k = G.S.age < 40 ? 'young' : 'older';
+      band[k] = band[k] || { y:0, inc:0, sp:0 };
+      band[k].y++; band[k].inc += G.ledgerTotal('income'); band[k].sp += G.ledgerTotal('spend');
+    }
+  }
+  if (!band.young || !band.older || band.young.y < 40 || band.older.y < 40)
+    return 'not enough years sampled to say anything';
+  const share = k => band[k].inc ? band[k].sp / band[k].inc : 0;
+  const youngShare = share('young'), olderShare = share('older');
+  if (olderShare < youngShare * 0.5)
+    return `spending collapses as a share of income: ${(youngShare*100).toFixed(0)}% young, ${(olderShare*100).toFixed(0)}% older`;
+  if (olderShare < 0.25)
+    return `older earners spend only ${(olderShare*100).toFixed(0)}% of what they earn`;
+  return true;
 });
 
 /* ---- localisation ---- */
