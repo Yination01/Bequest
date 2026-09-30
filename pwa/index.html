@@ -8414,7 +8414,14 @@ function applyEff(e){
 /* ---------------- popup queue ---------------- */
 let QUEUE=[];
 function push(p){ QUEUE.push(p); }
-function drain(){ if(!QUEUE.length){ renderAll(); save(); return; } showPopup(QUEUE.shift()); }
+function drain(){
+  if(!QUEUE.length){
+    const el=document.getElementById('modal');
+    if(el&&el.className.indexOf('show')>=0){ el.className='modal'; a11yDialogClose(); }
+    renderAll(); save(); return;
+  }
+  showPopup(QUEUE.shift());
+}
 
 /* ---------------- AGE UP ---------------- */
 function ageUp(){
@@ -8444,7 +8451,7 @@ function ageUp(){
     if(S.jailLeft===0){ S.stats.reputation=clamp(S.stats.reputation-5); S.parole=3;
       notes.push('You are on parole for three years. Any further conviction will be treated harshly.'); }
   }
-  push({type:'B',title:`You turned ${S.age}`,text:birthdayText(),sub:stage()});
+  const yearIntro=birthdayText(), yearStage=stage();
   notes.push(...tickHabits());
   notes.push(...tickFinance());
   tickInvest(S,notes);
@@ -8452,7 +8459,10 @@ function ageUp(){
   notes.push(...tickConditions());
   notes.push(...tickAging());
   tickNPCs(notes); tickPets(notes); tickTrack(notes); tickSchool(notes); tickNews(notes);
-  if(notes.length) push({type:'YEAR',title:`Age ${S.age}`,notes:notes.slice()});
+  /* One sheet a year. The birthday used to be its own dismissal before the
+     news was even shown, which made a quiet year cost two taps and a busy
+     one cost three. */
+  push({type:'YEAR',title:`You turned ${S.age}`,sub:yearStage,intro:yearIntro,notes:notes.slice()});
   offerDirectDebit();
   takeForced().forEach(ev=>{ const cast=makeCast();
     push({type:'A',ev,text:withCast(cast,()=>variant(ev.x)),cast}); });
@@ -9956,7 +9966,7 @@ function popupCue(p){
   if(p.type==='ACH')      return cue('ach','medium');
   if(p.type==='EGG')      return cue('egg','medium');
   if(p.type==='D'||p.type==='CHOOSE'||p.type==='YEAR') return sfx('open');
-  if(p.type==='B')        return;                 // the year cue already played
+  if(p.type==='B'||p.type==='YEAR') return;       // the year cue already played
   const res=p.res||[];
   const neg=res.filter(r=>/^-|\s-/.test(r)).length, pos=res.length-neg;
   if(res.length&&neg>pos)  return cue('bad','medium');
@@ -10033,7 +10043,9 @@ function showPopup(p){
       `<div class="ysec"><div class="ylabel">${ic[k]} ${k}</div>
         ${buckets[k].map(n=>`<div class="yline">${esc(n)}</div>`).join('')}</div>`).join('');
     const inc=ledgerTotal('income'), sp=ledgerTotal('spend');
-    el.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">${esc(p.title)}</span></div>
+    el.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">${esc(p.sub||'Notice')}</span></div>
+      <div class="ph">${esc(p.title)}</div>
+      ${p.intro?`<div class="pb">${esc(p.intro)}</div>`:''}
       ${(inc||sp)?`<div class="budgetbar">
         <div><div class="hlbl">In</div><div class="bgood">${money(inc)}</div></div>
         <div><div class="hlbl">Out</div><div class="bbad">${money(sp)}</div></div>
@@ -10091,7 +10103,13 @@ function pickFrom(i){
   CHOOSER=null; save(); renderAll();
 }
 function cdo(y){ const p=CONFIRM; document.getElementById('modal').className='modal'; if(y&&p.yes)p.yes(); if(!y&&p.no)p.no(); drain(); }
-function pickChoice(id,i){ document.getElementById('modal').className='modal'; resolveChoice(EVENTS.find(e=>e.id===id),i); }
+function pickChoice(id,i){
+  /* deliberately NOT hiding the modal first: the outcome swaps into the
+     same open sheet, so choosing and reading what it did is one moment
+     rather than a close and a reopen. drain() closes it if there is
+     nothing to show. */
+  resolveChoice(EVENTS.find(e=>e.id===id),i);
+}
 function fateChoice(id){ const ev=EVENTS.find(e=>e.id===id); pickChoice(id,Math.floor(R()*ev.c.length)); }
 function closePopup(){ document.getElementById('modal').className='modal'; a11yDialogClose(); drain(); }
 

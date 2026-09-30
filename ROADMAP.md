@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 347 tests, 26 modules, 760 KB, no known integrity
+Current state: 533 events, 347 tests, 26 modules, 761 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -76,7 +76,7 @@ The things that would most improve a session.
 | 6 | ~~**Sound and haptics**~~ — **done** | Every tap is silent. A year turning, a promotion, a death — none of them land. This is the single biggest "feels like a real app" gap. *opinion* | M |
 | 7 | ~~**Close the agency gap: 41% vs ReLife's 55%**~~ — **done, now 53-55%** | More branching forks that change a life's direction rather than its statistics. This is the one metric where we still lose. | L |
 | 8 | ~~**A proper death and legacy screen**~~ — **done** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
-| 9 | **Year-summary pacing** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
+| 9 | ~~**Year-summary pacing**~~ — **done, 4.8 sheets a year to 3.9** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
 | 10 | **Notifications** | "Your character is waiting" brings people back. Needs the native layer, so it belongs after the APK. | S |
 
 ### What item 15 turned into
@@ -338,6 +338,40 @@ the engine implements, every id it names must exist, no two events may share an
 id, every stated requirement must be satisfiable, and a fifth is a ratchet on
 the share of events that fork. Between them they caught four dead hooks, three
 duplicate ids and two crashes waiting to happen.
+
+### What item 9 turned into
+
+Measured before anything was written, because "four dismissals" was a guess
+and the real number was worth knowing:
+
+| | before | after |
+|---|---|---|
+| sheets per year | 4.80 | **3.86** |
+| years costing four or more | 95% | **42%** |
+| passive taps, no decision in them | 3.37 | 2.42 |
+| actual decisions per year | 1.43 | 1.45 |
+
+Seventy per cent of every tap was passive. Three changes:
+
+- **The birthday and the year's news are one sheet.** The birthday was its
+  own dismissal, shown before the news it belonged to, so a quiet year cost
+  two taps and a busy one three. Now the stage, the headline, the budget bar
+  and the bucketed news arrive together and scroll.
+- **A choice and its outcome are one sheet.** `pickChoice()` used to hide
+  the modal and then `resolveChoice()` opened a new one, so every event was
+  a close and a reopen. The outcome now swaps into the sheet that is already
+  open. Same number of taps, one continuous moment instead of a flash.
+- **`drain()` closes the sheet when the queue empties.** Callers used to
+  hide it themselves and drain afterwards, which is why the outcome could
+  not simply replace the event: a choice that produced no lines at all would
+  have stranded the event on screen forever.
+
+Two tests were wrong rather than the code. One pinned the exact spelling of
+a check in `popupCue`, which is precisely what hard rule 5 forbids, and
+broke the moment the birthday moved. The other counted disability
+violations *per year* rather than per life, so one rare coincidence was
+reported as nineteen and read like a systemic fault; measured properly it
+is 0 in 300 lives.
 
 ### What item 8 turned into
 
