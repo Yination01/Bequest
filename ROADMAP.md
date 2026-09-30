@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 506 events, 263 tests, 19 modules, 680 KB, no known integrity
+Current state: 506 events, 274 tests, 20 modules, 690 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -78,6 +78,48 @@ The things that would most improve a session.
 | 8 | ~~**A proper death and legacy screen**~~ — **done** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
 | 9 | **Year-summary pacing** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
 | 10 | **Notifications** | "Your character is waiting" brings people back. Needs the native layer, so it belongs after the APK. | S |
+
+### What item 14 turned into
+
+`court.js`. Being caught was one line of arithmetic: a roll decided whether
+you were caught and a second decided how many years. Now it is
+
+    charged -> how do you plead -> who represents you -> verdict -> appeal
+
+and the decisions trade against each other. Pleading guilty takes 45% off and
+gives up any chance of walking. Fighting costs money and, if you lose, costs
+you the discount too. Counsel runs from the duty solicitor (free) to a silk
+(£26,000), and it is expensive exactly when you can least afford it.
+
+Measured over 400 cases at a six-year starting point:
+
+| | strong evidence | thin evidence |
+|---|---|---|
+| plead guilty, duty solicitor | **3.0 years** | 3.0 years |
+| fight it, duty solicitor | 5.0 years, 17% walk | **2.8 years, 54% walk** |
+| fight it, a silk | 2.6 years, 48% walk | 1.0 years, 80% walk |
+
+So the plea is a real decision that flips on the evidence and on what you can
+pay, which is the point.
+
+Three things worth recording:
+
+- **The whole flow is queued, never `confirmDo()`.** A case can open from
+  inside `ageUp()`, and draining the queue from in there re-enters the year.
+- **A case interrupted by closing the game is re-queued on load**, and dying
+  discontinues it. An unresolved `S.legalCase` would otherwise block the next
+  charge forever.
+- **The headless harness plays cases out** rather than dropping them. Without
+  that, nobody in a simulated life would ever go to prison, and every balance
+  and agency measurement in the repo would have quietly drifted.
+
+Four bugs found on the way, three of them in tests that had never really been
+exercised: the plea screen kept its own copy of the sentencing discount and
+advertised four years where the court gave three; a negative balance would
+have *paid* you to hire a solicitor; `a relevant degree helps you get hired`
+compared two independently drawn sets of random lives and so measured mostly
+noise (held steady, it is 94% against 75%); and `rare events are rare` sampled
+25 lives against a ceiling it crossed one run in nineteen by chance.
 
 ### What item 12 turned into
 
@@ -318,7 +360,7 @@ a cue name is otherwise silent in the most literal way.
 | 11 | ~~**324 → 500 events**~~ — **done, 506** | At ~100 events a life, a committed player exhausts the library in five or six runs. Content is the genre's fuel. | L |
 | 12 | ~~**School subjects**~~ — **done** | Education is one grade number. Subjects that feed degrees and careers would make ages 11–18 matter as much as adulthood. | M |
 | 13 | **Investments beyond crypto** | Shares, funds, bonds, gold — a real portfolio with risk profiles. ReLife's players rate this highly. | M |
-| 14 | **Court and legal process** | Arrests jump straight to a sentence. A plea, a lawyer, a trial and an appeal would make crime a system rather than a dice roll. | M |
+| 14 | ~~**Court and legal process**~~ — **done** | Arrests jump straight to a sentence. A plea, a lawyer, a trial and an appeal would make crime a system rather than a dice roll. | M |
 | 15 | **Health depth** | Specialists, surgery, waiting lists, rehabilitation, and country-by-country healthcare differences that already exist in the data but barely surface. | M |
 | 16 | **Group and family events** | Everything is one-to-one. Christmases, funerals, weddings, family arguments with three people in them. | M |
 
@@ -365,10 +407,12 @@ the larger of the two once the arrears numbers were properly measured.
 
 ~~**Next:** school subjects (12)~~ — done.
 
-**What is left** is P2 items 13-16, P3 and P4. Of those, **court and legal
-process (14)** is the one that would repay the effort soonest: arrests still
-jump straight to a sentence, and crime is now a much larger part of the
-content than it was.
+~~**Next:** court and legal process (14)~~ — done.
+
+**What is left** is P2 items 13, 15 and 16, plus P3 and P4. **Group and family
+events (16)** is probably next: everything is still one-to-one, and the will
+and the obituary both now depend on a family the events never treat as a
+group.
 
 ~~**Only then** content volume (11)~~ — done, and it was right to do it last:
 it would have been wasted before the first five minutes worked.

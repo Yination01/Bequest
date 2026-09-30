@@ -28,14 +28,25 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(PWA,f),'utf8')).join('\n') + `
-let FIRED=[], CHOICES=[], AUTOCHOICE=null;
+let FIRED=[], CHOICES=[], AUTOCHOICE=null, AUTOPLEA=null, AUTOCOUNSEL=null;
 showPopup=function(p){
   if(p.type==='A'){ FIRED.push(p.ev.id);
     const i = AUTOCHOICE!=null ? Math.min(AUTOCHOICE,p.ev.c.length-1) : Math.floor(Math.random()*p.ev.c.length);
     CHOICES.push(p.ev.id+'#'+i); resolveChoice(p.ev,i); }
   else if(p.type==='D'){ if(p.yes&&Math.random()<0.6)p.yes(); drain(); }
+  else if(p.type==='COURT'){
+    /* headless: play the case out rather than dropping it, or nobody in a
+       simulated life ever goes to prison */
+    if(AUTOPLEA!==undefined&&AUTOPLEA!==null) courtPlead(AUTOPLEA);
+    else courtPlead(Math.random()<0.5?'guilty':'notguilty');
+    const aff=COUNSEL.filter(c=>counselCost(c)===0||(S.money+S.savings)>=counselCost(c));
+    courtCounsel((AUTOCOUNSEL||aff[Math.floor(Math.random()*aff.length)].id));
+    if(S.legalCase&&S.legalCase.outcome==='convicted'&&S.legalCase.sentence>0
+       &&Math.random()<0.25&&!S.legalCase.appealed) courtAppeal();
+    courtFinish();
+  }
   else drain();
 };
 showDeath=function(){ finalChallenges(); };

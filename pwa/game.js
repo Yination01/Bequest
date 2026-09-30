@@ -106,6 +106,10 @@ function migrate(){
   if(!S.career)S.career=[];
   willMigrate(S);
   schoolMigrate(S);
+  courtMigrate(S);
+  /* a case in progress when the game was closed has to come back, or the
+     charge quietly disappears and S.legalCase blocks the next one */
+  if(S.legalCase&&S.alive){ QUEUE.push({type:'COURT'}); }
   if(!S.properties)S.properties=[]; if(!S.vehicles)S.vehicles=[]; if(!S.businesses)S.businesses=[];
   if(S.property&&!S.properties.length){
     S.properties.push({t:'flat',value:S.property.value,mortgage:S.property.mortgage,
@@ -1308,6 +1312,9 @@ function deathCause(){
 }
 function die(cause){
   S.alive=false; S.cause=cause;
+  /* a prosecution does not outlive the defendant, and a case left open would
+     be re-queued for a dead character on the next load */
+  if(S.legalCase){ logLine('The case against you was discontinued.','neutral'); S.legalCase=null; }
   logLine(`You died at ${S.age} of ${cause}.`,'bad');
   if(hasItem('lifeins'))S.money+=120000;
   QUEUE=[]; save();
@@ -1630,7 +1637,7 @@ function resolveChoice(ev,ci){
   if(ch.cryptoSell!=null){ const u=S.crypto.units*ch.cryptoSell, v=Math.round(u*S.crypto.price); S.crypto.units-=u; S.money+=v; S.counters.cryptoProfit+=v; if(S.crypto.units<=0.0001)S.flags.holds_crypto=false; add(`Sold for ${money(v)}.`); }
   if(ch.cryptoBuy){ const sp=Math.round(S.money*ch.cryptoBuy); if(sp>0){S.money-=sp;S.crypto.units+=sp/S.crypto.price;S.counters.cryptoProfit-=sp;add(`Bought ${money(sp)} more.`);} }
   if(ch.auditRoll){ if(R()<0.45){applyEff({money:-30000,reputation:-10});add('They found it. Penalties and a public record.');} else add('You got away with it.'); }
-  if(ch.courtRoll){ if(R()<0.5){applyEff({money:60000});add('You won.');} else {applyEff({money:-20000,happiness:-10});add('You lost the case.');} }
+  if(ch.courtRoll){ add(openCase(ch.courtRoll===true?'fraud':ch.courtRoll, ri(1,4))); }
   if(ch.fraudRoll){ if(R()<0.6)add('The bank refunded you eventually.'); else {applyEff({money:-7000});add('The bank refused.');} }
   if(ch.scamLoss){ const l=Math.min(S.money+S.savings,ri(3000,40000)); S.money-=l; add(`They took ${money(l)}.`); applyEff({happiness:-14}); }
   if(ch.exRisk){ if(partner()&&R()<0.5){applyEff({rel:{partner:-25}});S.flags.cheated=true;add('Your partner found out.');} else add('You talked for hours. Nothing came of it.'); }
@@ -1813,12 +1820,14 @@ function doCrime(id,ret){
     if(hasItem('fakeid')&&R()<0.4)out.push('Caught, but your fake ID got you released.');
     else if(sent===0){ S.money-=ri(200,2000); S.stats.reputation=clamp(S.stats.reputation-6);
       S.record.push({crime:cr.n,age:S.age,sev:1,spent:false});
-      out.push('Caught. Fined and released with a caution. It goes on your record.'); }
-    else{ S.jailLeft=sent; S.stats.reputation=clamp(S.stats.reputation-15);
-      S.record.push({crime:cr.n,age:S.age,sev:sent>=6?3:sent>=2?2:1,spent:false});
-      if(S.job){out.push(`You lost your job as ${S.job.t}.`);S.job=null;}
-      out.push(`Caught and sentenced to ${sent} year${sent>1?'s':''} in prison.`); }
-    logLine(`${cr.n}: caught.`,'bad');
+      out.push('Caught. Fined and released with a caution. It goes on your record.');
+      logLine(`${cr.n}: cautioned.`,'bad'); }
+    else{
+      /* anything that carries a real sentence goes through a court, where the
+         decisions are yours. courtFinish() applies whatever comes out. */
+      out.push(openCase(cr.id,sent));
+    }
+    if(sent===0||hasItem('fakeid'))logLine(`${cr.n}: caught.`,'bad');
   }
   clampMinorMoney(); settleState();
   checkAch(); checkGoals();
@@ -2142,6 +2151,8 @@ function showPopup(p){
       </div>`:''}
       <div class="ybody">${sections}</div>
       <div class="choices"><button class="choice ok" onclick="closePopup()"><span>Continue</span><i>\u203a</i></button></div></div>`;
+  } else if(p.type==='COURT'){
+    el.innerHTML=courtSheet();
   } else if(p.type==='CHOOSE'){
     el.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">Choose</span></div>
       <div class="ph">${esc(p.title)}</div>

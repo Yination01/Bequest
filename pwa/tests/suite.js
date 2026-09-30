@@ -18,32 +18,45 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
-let LASTPOP=null, FIRED=[], AUTOCHOICE=null, AUTOCONFIRM=null;
+let LASTPOP=null, FIRED=[], AUTOCHOICE=null, AUTOCONFIRM=null, AUTOPLEA=null, AUTOCOUNSEL=null;
 showPopup=function(p){
   LASTPOP=p;
   if(p.type==='A'){ FIRED.push(p.ev.id);
     const i=AUTOCHOICE!=null?Math.min(AUTOCHOICE,p.ev.c.length-1):Math.floor(Math.random()*p.ev.c.length);
     resolveChoice(p.ev,i); }
   else if(p.type==='D'){ if(p.yes&&(AUTOCONFIRM===true||(AUTOCONFIRM===null&&Math.random()<0.6)))p.yes(); drain(); }
+  else if(p.type==='COURT'){
+    /* headless: play the case out rather than dropping it, or nobody in a
+       simulated life ever goes to prison */
+    if(AUTOPLEA!==undefined&&AUTOPLEA!==null) courtPlead(AUTOPLEA);
+    else courtPlead(Math.random()<0.5?'guilty':'notguilty');
+    const aff=COUNSEL.filter(c=>counselCost(c)===0||(S.money+S.savings)>=counselCost(c));
+    courtCounsel((AUTOCOUNSEL||aff[Math.floor(Math.random()*aff.length)].id));
+    if(S.legalCase&&S.legalCase.outcome==='convicted'&&S.legalCase.sentence>0
+       &&Math.random()<0.25&&!S.legalCase.appealed) courtAppeal();
+    courtFinish();
+  }
   else drain();
 };
 showDeath=function(){ finalChallenges(); };
 module.exports={
   api:{ get S(){return S}, set S(v){S=v}, get META(){return META},
+    get QUEUE(){return QUEUE},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
-    checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
-    set AUTOCHOICE(v){AUTOCHOICE=v}, set AUTOCONFIRM(v){AUTOCONFIRM=v} }
+    set AUTOCHOICE(v){AUTOCHOICE=v}, set AUTOCONFIRM(v){AUTOCONFIRM=v},
+    set AUTOPLEA(v){AUTOPLEA=v}, set AUTOCOUNSEL(v){AUTOCOUNSEL=v} }
 };`;
 
 const tmp = path.join(require('os').tmpdir(), 'bequest-test-bundle.js');
@@ -1347,6 +1360,184 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
   } finally { global.document.getElementById = realGet; }
 });
 
+/* ---- court ---- */
+function aCase(opts){
+  opts = opts || {};
+  G.newGame({});
+  const s = G.S;
+  s.age = 30; s.alive = true;
+  s.money = opts.money == null ? 200000 : opts.money;
+  s.savings = opts.savings == null ? 0 : opts.savings;
+  s.skills.charisma = 40; s.stats.reputation = 50; s.job = null;
+  s.legalCase = { crime:'burglary', name:'Burglary', base: opts.base == null ? 6 : opts.base,
+    evidence: opts.evidence == null ? 60 : opts.evidence, stage:'plea', plea:null, counsel:null,
+    spent:0, outcome:null, sentence:0, appealed:false, note:null };
+  return s;
+}
+function runCase(opts, plea, counsel){
+  const s = aCase(opts);
+  G.courtPlead(plea); G.courtCounsel(counsel);
+  return s.legalCase;
+}
+
+t('a crime with a real sentence goes to court instead of straight to prison', () => {
+  G.newGame({});
+  G.S.age = 30; G.S.alive = true; G.S.legalCase = null;
+  const line = G.openCase('burglary', 5);
+  if (!G.S.legalCase) return 'no case was opened';
+  if (G.S.legalCase.stage !== 'plea') return 'the case did not start at the plea';
+  if (G.S.jailLeft > 0) return 'sentenced before any hearing';
+  if (!/charged/i.test(line)) return 'nothing was said about being charged';
+  return true;
+});
+
+t('pleading guilty is the right call on strong evidence and the wrong one on thin', () => {
+  // tested at the extremes, not at the crossover: near the middle the two are
+  // meant to be close, and a 300-life sample cannot resolve a tenth of a year
+  const N = 400;
+  const mean = (ev, plea) => {
+    let tot = 0;
+    for (let i = 0; i < N; i++) tot += runCase({ evidence: ev, base: 6 }, plea, 'duty').sentence;
+    return tot / N;
+  };
+  const strongGuilty = mean(90, 'guilty'), strongFight = mean(90, 'notguilty');
+  const thinGuilty   = mean(10, 'guilty'), thinFight   = mean(10, 'notguilty');
+  if (!(strongGuilty < strongFight))
+    return `with strong evidence, fighting (${strongFight.toFixed(1)}y) beats pleading (${strongGuilty.toFixed(1)}y)`;
+  if (!(thinFight < thinGuilty))
+    return `with thin evidence, pleading (${thinGuilty.toFixed(1)}y) beats fighting (${thinFight.toFixed(1)}y)`;
+  return true;
+});
+
+t('better representation buys better odds and costs real money', () => {
+  const rate = id => {
+    let acq = 0, spent = 0;
+    for (let i = 0; i < 250; i++) {
+      const c = runCase({ evidence: 60, base: 6 }, 'notguilty', id);
+      if (c.outcome === 'acquitted') acq++;
+      spent += c.spent;
+    }
+    return { acq: acq / 250, spent: spent / 250 };
+  };
+  const duty = rate('duty'), silk = rate('barrister');
+  if (!(silk.acq > duty.acq + 0.1)) return `a silk acquits ${(silk.acq*100).toFixed(0)}% vs duty ${(duty.acq*100).toFixed(0)}%`;
+  if (!(silk.spent > duty.spent)) return 'the silk was free';
+  return true;
+});
+
+t('you cannot hire counsel you cannot afford, and it does not take the money', () => {
+  const s = aCase({ money: 100, savings: 0 });
+  G.courtPlead('notguilty');
+  G.courtCounsel('barrister');
+  if (s.legalCase.counsel === 'barrister') return 'hired a silk with $100';
+  if (s.money < 0) return 'money went negative: ' + s.money;
+  if (s.legalCase.stage !== 'counsel') return 'the case moved on regardless';
+  if (!s.legalCase.note) return 'nothing explained why';
+  // a negative balance must not pay you to hire someone
+  const s2 = aCase({ money: -5000, savings: 0 });
+  const before = s2.money;
+  G.courtPlead('guilty'); G.courtCounsel('duty');
+  if (s2.money > before) return 'being overdrawn earned money';
+  return true;
+});
+
+t('an appeal costs money and can cut or quash the sentence', () => {
+  let cut = 0, quashed = 0, refused = 0, paid = 0;
+  for (let i = 0; i < 300; i++) {
+    const s = aCase({ evidence: 35, base: 8, money: 500000 });
+    G.courtPlead('guilty'); G.courtCounsel('duty');
+    const before = s.legalCase.sentence, cash = s.money;
+    G.courtAppeal();
+    if (s.money >= cash) { paid++; continue; }
+    if (s.legalCase.outcome === 'quashed') quashed++;
+    else if (s.legalCase.sentence < before) cut++;
+    else refused++;
+  }
+  if (paid) return 'an appeal was free ' + paid + ' times';
+  if (!quashed && !cut) return 'no appeal ever changed anything';
+  if (!refused) return 'every appeal succeeded';
+  return true;
+});
+
+t('a conviction is only applied when the case finishes', () => {
+  const s = aCase({ evidence: 95, base: 5 });
+  s.job = { id:'x', t:'Clerk', pay:30000, field:'corp', lvl:1 };
+  G.courtPlead('guilty'); G.courtCounsel('duty');
+  if (s.jailLeft > 0) return 'jailed before the verdict was accepted';
+  const sentence = s.legalCase.sentence;
+  G.courtFinish();
+  if (s.legalCase) return 'the case was not cleared';
+  if (sentence > 0) {
+    if (s.jailLeft !== sentence) return `sentenced to ${sentence} but serving ${s.jailLeft}`;
+    if (!s.record.length) return 'prison left no record';
+    if (s.job) return 'kept the job while in prison';
+  }
+  return true;
+});
+
+t('an acquittal leaves no record and no sentence', () => {
+  let found = null;
+  for (let i = 0; i < 400 && !found; i++) {
+    const s = aCase({ evidence: 12, base: 4 });
+    G.courtPlead('notguilty'); G.courtCounsel('duty');
+    if (s.legalCase.outcome === 'acquitted') found = s;
+  }
+  if (!found) return 'never acquitted in 400 tries on the thinnest evidence';
+  const before = found.record.length;
+  G.courtFinish();
+  if (found.jailLeft > 0) return 'jailed after an acquittal';
+  if (found.record.length > before) return 'acquittal still left a criminal record';
+  return true;
+});
+
+t('a case interrupted by closing the game comes back', () => {
+  const s = aCase({});
+  G.save();
+  G.QUEUE.length = 0;
+  G.load();
+  if (!G.S.legalCase) return 'the case vanished';
+  if (!G.QUEUE.some(p => p.type === 'COURT')) return 'the case was never re-queued, so it can never resolve';
+  return true;
+});
+
+t('dying ends the prosecution', () => {
+  const s = aCase({});
+  s.alive = true;
+  G.die('a heart attack');
+  if (s.legalCase) return 'a case survived the defendant';
+  return true;
+});
+
+t('the sentence the plea screen promises is the one handed down', () => {
+  // the screen had its own copy of the discount and kept the old constant
+  // after the sentencing was retuned, so it advertised four years and gave three
+  for (const base of [1,2,3,4,6,8,10,14]) {
+    const s = aCase({ base, evidence: 60, money: 1000000 });
+    const m = G.courtSheet().match(/about (\d+) year/);
+    if (!m) return 'the plea screen does not say what pleading guilty costs';
+    G.courtPlead('guilty'); G.courtCounsel('duty');
+    if (+m[1] !== s.legalCase.sentence)
+      return `at ${base}y the screen promised ${m[1]} and the court gave ${s.legalCase.sentence}`;
+  }
+  return true;
+});
+
+t('the court sheet renders at every stage without leaking a raw value', () => {
+  const s = aCase({});
+  const seen = [];
+  seen.push(G.courtSheet());
+  G.courtPlead('notguilty'); seen.push(G.courtSheet());
+  G.courtCounsel('duty');    seen.push(G.courtSheet());
+  const all = seen.join(' ');
+  if (/undefined|NaN|\[object/.test(all)) return 'the sheet leaked a raw value';
+  if (seen[0].indexOf('Plead guilty') < 0) return 'no plea offered';
+  if (seen[1].indexOf('duty solicitor') < 0) return 'no counsel offered';
+  if (!/Not guilty|year|fine/i.test(seen[2])) return 'no verdict shown';
+  s.legalCase = null;
+  if (/undefined|NaN/.test(G.courtSheet())) return 'the empty sheet leaks';
+  return true;
+});
+
 /* ---- school subjects ---- */
 function toAge(n){
   G.newGame({});
@@ -1457,17 +1648,22 @@ t('going to university always means reading something', () => {
 });
 
 t('a degree finished actually awards its skills and its field', () => {
-  const s = toAge(18);
-  if (s.age < 18) return true;
   const deg = G.DEGREE('compsci');
-  s.flags.inCollege = true; s.inSchool = true;
-  s.degree = 'compsci'; s.degreeYears = deg.years; s.collegeYears = 0;
-  const before = s.skills.tech;
-  for (let i = 0; i < deg.years + 1 && s.alive; i++) G.ageUp();
-  if (s.skills.tech <= before) return 'studying computer science taught no tech';
-  if (s.degreeDone !== 'compsci') return 'the degree was never recorded as finished';
-  if (s.edu < 3) return 'education level did not reach a degree';
-  return true;
+  // a student can die mid-course; try until one of them graduates
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const s = toAge(18);
+    if (s.age < 18) continue;
+    s.flags.inCollege = true; s.inSchool = true;
+    s.degree = 'compsci'; s.degreeYears = deg.years; s.collegeYears = 0;
+    const before = s.skills.tech;
+    for (let i = 0; i < deg.years + 1 && s.alive; i++) G.ageUp();
+    if (!s.alive) continue;
+    if (s.skills.tech <= before) return 'studying computer science taught no tech';
+    if (s.degreeDone !== 'compsci') return 'the degree was never recorded as finished';
+    if (s.edu < 3) return 'education level did not reach a degree';
+    return true;
+  }
+  return 'no student survived long enough to graduate in eight attempts';
 });
 
 t('the subjects card renders without leaking a raw value', () => {
@@ -2246,18 +2442,26 @@ t('a degree actually teaches you its subject', () => {
     : `tech ${before} -> ${G.S.skills.tech}, degree ${G.S.degreeDone}`;
 });
 t('a relevant degree helps you get hired', () => {
-  const rel=[], irr=[];
-  for(let i=0;i<60;i++){
-    atAge(25); G.S.edu=3; G.S.skills.tech=70; G.S.stats.smarts=70; G.S.credit=700;
-    G.S.degreeDone='compsci'; G.S.job=null;
-    const j=G.DATA.jobs.find(x=>x.id==='swe');
-    if(G.jobEligible(j)){ G.applyJob(j); rel.push(!!G.S.job); }
-    atAge(25); G.S.edu=3; G.S.skills.tech=70; G.S.stats.smarts=70; G.S.credit=700;
-    G.S.degreeDone='arts'; G.S.job=null;
-    if(G.jobEligible(j)){ G.applyJob(j); irr.push(!!G.S.job); }
-  }
-  const a=rel.filter(Boolean).length, b=irr.filter(Boolean).length;
-  return a>=b ? true : `relevant ${a} vs irrelevant ${b}`;
+  // This compared two independently drawn sets of random lives and counted
+  // raw hires, so charisma, reputation and time spent in prison all leaked
+  // into the result. Hold everything except the degree fixed.
+  const j = G.DATA.jobs.find(x => x.id === 'swe');
+  const rate = deg => {
+    let tries = 0, hired = 0;
+    for (let i = 0; i < 200; i++) {
+      G.newGame({});
+      G.S.age = 25; G.S.edu = 3; G.S.skills.tech = 70; G.S.stats.smarts = 70;
+      G.S.skills.charisma = 50; G.S.stats.reputation = 50; G.S.credit = 700;
+      G.S.yearsJailed = 0; G.S.jailLeft = 0; G.S.job = null; G.S.degreeDone = deg;
+      if (!G.jobEligible(j)) continue;
+      tries++; G.applyJob(j); if (G.S.job) hired++;
+    }
+    return tries ? hired / tries : 0;
+  };
+  const rel = rate('compsci'), irr = rate('arts');
+  if (!(rel > irr + 0.05))
+    return `a computer science degree hired ${(rel*100).toFixed(0)}% vs fine art ${(irr*100).toFixed(0)}%`;
+  return true;
 });
 
 /* ================= 4m. SHOP, GOALS AND THE TUNING FIXES ================= */
@@ -2343,14 +2547,18 @@ t('an action reports the numbers it actually applied', () => {
     : `reported +${m[1]} but applied +${realGain.toFixed(1)}`;
 });
 t('rare events are rare in a first life', () => {
+  // 25 lives was too small to measure this: the true rate is about 0.63 and a
+  // 25-life draw crossed the 0.85 ceiling roughly one run in nineteen. The
+  // ceiling is unchanged; the sample is now big enough to mean something.
   let total = 0;
-  for (let i=0;i<25;i++){
+  const RUNS = 90;
+  for (let i=0;i<RUNS;i++){
     Object.keys(G.META.eggs).forEach(k => delete G.META.eggs[k]);
     G.newGame({}); let g=0;
     while (G.S.alive && g++<130) G.ageUp();
     total += (G.S.eggsThisLife||[]).length;
   }
-  const per = total/25;
+  const per = total/RUNS;
   // aim for roughly one every other life, so finding one still feels like something
   return per <= 0.85 ? true : per.toFixed(2) + ' rare events per first life';
 });
