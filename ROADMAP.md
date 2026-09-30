@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 506 events, 254 tests, 18 modules, 666 KB, no known integrity
+Current state: 506 events, 263 tests, 19 modules, 680 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -78,6 +78,43 @@ The things that would most improve a session.
 | 8 | ~~**A proper death and legacy screen**~~ — **done** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
 | 9 | **Year-summary pacing** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
 | 10 | **Notifications** | "Your character is waiting" brings people back. Needs the native layer, so it belongs after the APK. | S |
+
+### What item 12 turned into
+
+`school.js`. Ages eleven to eighteen resolved to one number, `S.gpa`, which
+drifted up from smarts and discipline and decided exactly one thing: whether a
+university would take you.
+
+Twelve subjects now have their own grades, driven by an aptitude rolled at
+birth, by discipline, and by whether you kept the subject at fourteen. `S.gpa`
+survives — the rest of the game reads it — but it is now the average of what
+you are actually studying rather than a number of its own.
+
+**The find: every degree in the game was unreachable.** `S.degree` was read in
+six places and assigned in none. Enrolling at university bought you three
+smarts a year and an education level; the twelve degrees in `social.js`, their
+skill packages, and the 12% pay premium for working in your degree's field
+were all dead code. You now choose what to read when you enrol, and your
+subjects decide what is on the list. There is a test whose only job is to stop
+that regressing.
+
+What makes eleven to eighteen matter now:
+
+- **A degree needs a subject you carried past fourteen**, at 60 or better.
+  Drop science and medicine, psychology and sports science close behind you,
+  however clever you turn out to be later.
+- **Leaving school converts grades into skills** — a 90 in Design and
+  Technology is worth real handiness — so the subjects feed careers directly
+  even if you never go to university.
+- **Studying is aimed at a subject** rather than at a general grade.
+
+One thing that needed rethinking. The first model added a little to each
+subject every year; over seven years everybody became a straight-A student in
+everything and no degree was ever closed to anyone. Grades now converge on a
+ceiling set by ability and effort, so time stops being the deciding factor.
+Measured over 300 lives with no deliberate study: core grades run 53 at the
+tenth percentile to 82 at the ninetieth, and a quarter of them fall below the
+bar.
 
 ### What item 11 turned into
 
@@ -279,7 +316,7 @@ a cue name is otherwise silent in the most literal way.
 | # | Item | Why | Effort |
 |---|---|---|---|
 | 11 | ~~**324 → 500 events**~~ — **done, 506** | At ~100 events a life, a committed player exhausts the library in five or six runs. Content is the genre's fuel. | L |
-| 12 | **School subjects** | Education is one grade number. Subjects that feed degrees and careers would make ages 11–18 matter as much as adulthood. | M |
+| 12 | ~~**School subjects**~~ — **done** | Education is one grade number. Subjects that feed degrees and careers would make ages 11–18 matter as much as adulthood. | M |
 | 13 | **Investments beyond crypto** | Shares, funds, bonds, gold — a real portfolio with risk profiles. ReLife's players rate this highly. | M |
 | 14 | **Court and legal process** | Arrests jump straight to a sentence. A plea, a lawyer, a trial and an appeal would make crime a system rather than a dice roll. | M |
 | 15 | **Health depth** | Specialists, surgery, waiting lists, rehabilitation, and country-by-country healthcare differences that already exist in the data but barely surface. | M |
@@ -326,9 +363,12 @@ the larger of the two once the arrears numbers were properly measured.
 
 ~~**Next:** content volume (11)~~ — done.
 
-**What is left** is P2 items 12-16, P3 and P4. The largest single piece of
-remaining value is probably **school subjects (12)**, because ages 11-18 are a
-third of the events and still resolve to one grade number.
+~~**Next:** school subjects (12)~~ — done.
+
+**What is left** is P2 items 13-16, P3 and P4. Of those, **court and legal
+process (14)** is the one that would repay the effort soonest: arrests still
+jump straight to a sentence, and crime is now a much larger part of the
+content than it was.
 
 ~~**Only then** content volume (11)~~ — done, and it was right to do it last:
 it would have been wasted before the first five minutes worked.

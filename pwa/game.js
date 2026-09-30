@@ -105,6 +105,7 @@ function migrate(){
   if(S.arrPaid==null)S.arrPaid=0; if(S.arrPlan===undefined)S.arrPlan=null;
   if(!S.career)S.career=[];
   willMigrate(S);
+  schoolMigrate(S);
   if(!S.properties)S.properties=[]; if(!S.vehicles)S.vehicles=[]; if(!S.businesses)S.businesses=[];
   if(S.property&&!S.properties.length){
     S.properties.push({t:'flat',value:S.property.value,mortgage:S.property.mortgage,
@@ -338,6 +339,7 @@ function newGame(opts){
       acc+=w; if(roll<=acc){o=x;break;} }
     S.orientation=o.id; }
   willBirth(S);
+  schoolBirth(S);
   SETTLEMENT=null;   /* the last life's estate must never leak into this one */
   S.bmonth=ri(1,12); S.bday=ri(1,28);
   if(R()<0.0007){ S.bmonth=2; S.bday=29; }
@@ -1085,9 +1087,17 @@ function tickAging(){
   if(a>28)S.stats.looks=clamp(S.stats.looks-(a>55?1.4:0.7)*M('decay')*(S.traits.includes('beautiful')?0.75:1));
   if(S.inSchool){
     S.stats.smarts=clamp(S.stats.smarts+(S.traits.includes('gifted')?3:2));
-    const dg=Math.round((S.stats.smarts-50)/10)+Math.round(S.stats.discipline/25)
-      -(S.habits.doomscroll>45?3:0)-(S.stats.happiness<30?3:0)+ri(-3,3);
-    S.gpa=clamp((S.gpa==null?50:S.gpa)+dg);
+    if(a>=SCHOOL_START&&a<=SCHOOL_END){
+      /* the options event may never fire; nobody should reach sixteen
+         without having chosen */
+      if(a>=OPTIONS_AGE+1&&!S.options) chooseOptions('best');
+      tickSubjects(S,out);
+    }
+    else {
+      const dg=Math.round((S.stats.smarts-50)/10)+Math.round(S.stats.discipline/25)
+        -(S.habits.doomscroll>45?3:0)-(S.stats.happiness<30?3:0)+ri(-3,3);
+      S.gpa=clamp((S.gpa==null?50:S.gpa)+dg);
+    }
   }
   if(S.habits.sleep<25){ S.stats.health=clamp(S.stats.health-1); S.stats.smarts=clamp(S.stats.smarts-1); }
   if(S.stats.health<25)out.push('Your health is failing.');
@@ -1198,9 +1208,13 @@ function tickSchool(notes){
     S.inSchool=false;
     if(S.stats.smarts>=35){ S.edu=Math.max(S.edu,1); notes.push('You graduated high school.'); }
     else notes.push('You left school without qualifications.');
+    schoolLeavingSkills(S,notes);
   }
   if(S.flags.inCollege){
     S.collegeYears=(S.collegeYears||0)+1; S.stats.smarts=clamp(S.stats.smarts+3);
+    /* the subject chooser can be dismissed, and an unset S.degree is exactly
+       how this whole system was dead in the first place */
+    if(!S.degree){ const d0=degreesOpenTo(S)[0]; if(d0){ S.degree=d0.id; S.degreeYears=d0.years; } }
     const deg=DEGREE(S.degree), need=S.degreeYears||4;
     if(deg){ for(const k in deg.skills){ const per=Math.round(deg.skills[k]/need);
       if(S.skills[k]!=null)S.skills[k]=clamp(S.skills[k]+per); else S.stats[k]=clamp(S.stats[k]+per); } }
@@ -1528,6 +1542,7 @@ function resolveChoice(ev,ci){
   if(ch.sibling){ const s=addNPC('sibling',null,0,70); add(`${s.name} joined the family.`); }
   if(ch.friend){ const f=addNPC('friend',null,S.age,ri(55,80)); add(`${f.name} is now your friend.`); }
   if(ch.setEdu){ S.edu=Math.max(S.edu,ch.setEdu); add(`You now hold: ${DATA.eduNames[S.edu]}.`); }
+  if(ch.options){ const kept=chooseOptions(ch.options); add(`You kept ${kept.join(', ')}.`); }
   if(ch.debtPay){ S.debt=Math.max(0,S.debt-ch.debtPay); S.counters.debtCleared+=ch.debtPay; }
   if(ch.debtAdd){ S.debt+=ch.debtAdd; add(`Debt increased by ${money(ch.debtAdd)}.`); }
   if(ch.romance!=null){
@@ -1559,7 +1574,16 @@ function resolveChoice(ev,ci){
     const fee=Math.round(24000*country().edu*tier.cost*(S.flags.scholarship?0.2:1));
     if(ok){ add(`You were accepted by ${tier.n}. Tuition is ${money(fee)} per year.`);
       QUEUE.unshift({type:'D',title:'Accept the place?',text:'Four years of study. You will need a loan unless you can pay.',
-        yes:()=>{S.flags.inCollege=true;S.inSchool=true;S.debt+=fee*4;S.flags.student_loan=true;S.school=uniFor(country().reg);S.stats.reputation=clamp(S.stats.reputation+tier.rep);logLine(`You enrolled at ${S.school}.`);},
+        yes:()=>{S.flags.inCollege=true;S.inSchool=true;S.debt+=fee*4;S.flags.student_loan=true;S.school=uniFor(country().reg);S.stats.reputation=clamp(S.stats.reputation+tier.rep);logLine(`You enrolled at ${S.school}.`);
+          /* S.degree was read in six places and set in none, so every degree
+             in the game was unreachable. You pick one, and your subjects
+             decide which ones are on the table. */
+          const open=degreesOpenTo(S);
+          chooseFrom('What will you read?',open.map(d=>[`${d.n} \u00b7 ${d.years} years`,0,d.id]),(label,id)=>{
+            const d=DEGREE(id); if(!d)return;
+            S.degree=id; S.degreeYears=d.years; S.collegeYears=0;
+            logLine(`You started a degree in ${d.n}.`);
+          });},
         no:()=>logLine('You declined the university place.')});
     } else { applyEff({happiness:-10}); add('You were rejected.'); }
   }
@@ -2382,11 +2406,14 @@ function ACTS(){
     A('story','Ask for a story','Childhood','',()=>{applyEff({smarts:4,rel:{parents:3}});popupOK('Story time','Smarts +4.');});
   }
   if(S.inSchool&&a>=6&&a<=21){
-    A('study','Study harder','School',`Grade ${Math.round(S.gpa==null?50:S.gpa)}/100`,()=>{
-      applyEff({smarts:5,happiness:-3,discipline:3});
-      const before=S.gpa==null?50:S.gpa;
-      S.gpa=clamp(before+ri(3,8));
-      popupOK('Study',`Smarts +5, Discipline +3.\nYour grade moved from ${Math.round(before)} to ${Math.round(S.gpa)} (${gradeBand(S.gpa).n}).`);});
+    A('study','Study harder','School',
+      subjectsActive(S).length?`Pick a subject \u00b7 average ${Math.round(S.gpa==null?50:S.gpa)}`:`Grade ${Math.round(S.gpa==null?50:S.gpa)}/100`,
+      ()=>{
+        if(subjectsActive(S).length) return studyPick();
+        applyEff({smarts:5,happiness:-3,discipline:3});
+        const before=S.gpa==null?50:S.gpa;
+        S.gpa=clamp(before+ri(3,8));
+        popupOK('Study',`Smarts +5, Discipline +3.\nYour grade moved from ${Math.round(before)} to ${Math.round(S.gpa)} (${gradeBand(S.gpa).n}).`);});
     A('slack','Slack off','School','Costs you grades',()=>{
       applyEff({smarts:-3,happiness:6,discipline:-3});
       const before=S.gpa==null?50:S.gpa; S.gpa=clamp(before-ri(3,8));
@@ -2905,6 +2932,7 @@ function viewLife(){
      three slots, most urgent first, so this page cannot silt up again. */
   const slots=[];
   const add=(pri,html)=>slots.push({pri,html});
+  if(S.inSchool&&S.age>=SCHOOL_START&&S.age<=SCHOOL_END){ const sc=subjectsCard(); if(sc)add(4,sc); }
 
   if(S.billsDue>0||S.overdue>0||S.arrears>0)add(1,`<div class="card" style="border-color:rgba(224,86,91,.5)">
       <div class="ct" style="color:var(--r)">Needs dealing with</div>

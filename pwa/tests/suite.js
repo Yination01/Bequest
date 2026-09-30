@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -36,7 +36,7 @@ module.exports={
   api:{ get S(){return S}, set S(v){S=v}, get META(){return META},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
@@ -1112,17 +1112,27 @@ t('the new-baby event is rare, and family size varies', () => {
   return fired/120 < 0.2 ? true : Math.round(fired/120*100) + '% still got the new-baby event';
 });
 t('studying moves your grade, not just your smarts', () => {
-  let ok = false;
+  // studying is now aimed at a subject, so it takes two steps: the action
+  // offers the subjects you are taking, and the pick is what moves the grade
+  let ok = false, picked = false;
   for (let i=0;i<25 && !ok;i++){
     G.newGame({}); let g=0;
-    while (G.S.alive && G.S.age<12 && g++<20) G.ageUp();
+    while (G.S.alive && G.S.age<13 && g++<20) G.ageUp();
     if (!G.S.alive || !G.S.inSchool) continue;
-    G.S.gpa = 50; G.S.actionsLeft = 5;
+    G.S.actionsLeft = 5;
     if (!G.ACTS().some(a=>a.id==='study')) continue;
+    const active = G.subjectsActive(G.S);
+    if (!active.length) continue;
+    const before = active.map(id => G.subjectGrade(G.S, id));
+    const gpaBefore = G.gpaFrom(G.S);
     G.doAct('study');
-    if (G.S.gpa > 50) ok = true;
+    G.pickFrom(0);                        // choose the first subject offered
+    picked = true;
+    const after = active.map(id => G.subjectGrade(G.S, id));
+    if (after.some((v,j) => v > before[j]) && G.S.gpa >= gpaBefore) ok = true;
   }
-  return ok ? true : 'study never changed the grade';
+  if (!picked) return 'the study action never offered a subject';
+  return ok ? true : 'studying a subject never changed the grade';
 });
 t('clubs and sports offer a real choice', () => {
   let ok = false;
@@ -1335,6 +1345,141 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- school subjects ---- */
+function toAge(n){
+  G.newGame({});
+  let g = 0;
+  while (G.S.alive && G.S.age < n && g++ < 120) G.ageUp();
+  return G.S;
+}
+
+t('a new life is born with subjects and an aptitude for them', () => {
+  G.newGame({});
+  if (!G.S.aptitude) return 'no aptitudes';
+  const vals = G.SUBJECTS.map(s => G.S.aptitude[s.id]);
+  if (vals.some(v => v == null)) return 'a subject has no aptitude';
+  if (new Set(vals).size < 3) return 'every subject has the same aptitude';
+  return true;
+});
+
+t('school grades separate people instead of maxing out', () => {
+  const all = [], tops = [];
+  for (let i = 0; i < 40; i++) {
+    const s = toAge(18);
+    if (s.age < 18) continue;
+    const taken = G.subjectsTaken(s).map(id => G.subjectGrade(s, id));
+    all.push(...taken);
+    if (taken.length) tops.push(Math.max(...taken));
+  }
+  if (all.length < 40) return 'not enough lives reached eighteen';
+  const maxed = all.filter(g => g >= 99).length / all.length;
+  if (maxed > 0.15) return `${(maxed*100).toFixed(0)}% of all grades are pinned at 100`;
+  const sorted = all.slice().sort((a,b) => a-b);
+  const spread = sorted[Math.floor(sorted.length*0.9)] - sorted[Math.floor(sorted.length*0.1)];
+  if (spread < 15) return 'grades barely vary between subjects or people: spread ' + spread;
+  return true;
+});
+
+t('nobody gets past sixteen without choosing their options', () => {
+  for (let i = 0; i < 12; i++) {
+    const s = toAge(17);
+    if (s.age < 17) continue;
+    if (!s.options || !s.options.length) return 'reached ' + s.age + ' with no options chosen';
+    if (s.options.length > 4) return 'kept too many subjects: ' + s.options.length;
+    const core = G.SUBJECTS.filter(x => x.core).map(x => x.id);
+    if (s.options.some(id => core.indexOf(id) >= 0)) return 'a core subject was offered as an option';
+  }
+  return true;
+});
+
+t('dropping a subject at fourteen closes the degrees it fed', () => {
+  const s = toAge(15);
+  if (s.age < 15) return true;
+  G.chooseOptions('best');
+  const dropped = G.SUBJECTS.filter(x => !x.core && s.options.indexOf(x.id) < 0);
+  if (!dropped.length) return 'nothing was dropped';
+  // a degree fed ONLY by dropped subjects must be closed, however good you are
+  const onlyFedByDropped = G.DEGREES.filter(d => {
+    const feeders = G.SUBJECTS.filter(x => x.degrees.indexOf(d.id) >= 0);
+    return feeders.length && feeders.every(f => dropped.some(x => x.id === f.id));
+  });
+  dropped.forEach(x => { s.subjects[x.id] = 100; });   // brilliant at what you dropped
+  const stillOpen = onlyFedByDropped.filter(d => G.degreeOpen(s, d.id));
+  if (stillOpen.length) return 'dropped subjects still open ' + stillOpen.map(d => d.n).join(', ');
+  return true;
+});
+
+t('what you were good at follows you out of school as skills', () => {
+  const s = toAge(16);
+  if (s.age < 16) return true;
+  s.flags.schoolSkillsGiven = false;
+  G.SUBJECTS.forEach(x => { s.subjects[x.id] = 90; });
+  const before = JSON.parse(JSON.stringify(s.skills));
+  const notes = [];
+  G.schoolLeavingSkills(s, notes);
+  const moved = Object.keys(s.skills).filter(k => s.skills[k] > (before[k] || 0));
+  if (!moved.length) return 'straight top grades produced no skills at all';
+  if (!notes.length) return 'nothing was said about it';
+  // and it must not fire twice
+  const mid = JSON.parse(JSON.stringify(s.skills));
+  G.schoolLeavingSkills(s, []);
+  if (Object.keys(s.skills).some(k => s.skills[k] !== mid[k])) return 'leaving skills were awarded twice';
+  return true;
+});
+
+t('the headline grade is the average of what is actually being studied', () => {
+  const s = toAge(15);
+  if (s.age < 15) return true;
+  G.subjectsActive(s).forEach(id => { s.subjects[id] = 70; });
+  const g = G.gpaFrom(s);
+  if (Math.abs(g - 70) > 2) return 'all subjects at 70 gave an average of ' + Math.round(g);
+  return true;
+});
+
+t('going to university always means reading something', () => {
+  // S.degree was read in six places and assigned in none, so every degree in
+  // the game was unreachable and the field pay bonus never applied. This is
+  // the guard against that coming back.
+  for (let i = 0; i < 25; i++) {
+    G.newGame({});
+    let g = 0;
+    while (G.S.alive && G.S.age < 18 && g++ < 40) G.ageUp();
+    if (G.S.age < 18) continue;
+    G.S.flags.inCollege = true; G.S.inSchool = true;
+    G.S.degree = null; G.S.degreeYears = null; G.S.collegeYears = 0;
+    G.ageUp();
+    if (!G.S.degree) return 'enrolled with no subject';
+    if (!G.DEGREE(G.S.degree)) return 'assigned a degree that does not exist: ' + G.S.degree;
+  }
+  return true;
+});
+
+t('a degree finished actually awards its skills and its field', () => {
+  const s = toAge(18);
+  if (s.age < 18) return true;
+  const deg = G.DEGREE('compsci');
+  s.flags.inCollege = true; s.inSchool = true;
+  s.degree = 'compsci'; s.degreeYears = deg.years; s.collegeYears = 0;
+  const before = s.skills.tech;
+  for (let i = 0; i < deg.years + 1 && s.alive; i++) G.ageUp();
+  if (s.skills.tech <= before) return 'studying computer science taught no tech';
+  if (s.degreeDone !== 'compsci') return 'the degree was never recorded as finished';
+  if (s.edu < 3) return 'education level did not reach a degree';
+  return true;
+});
+
+t('the subjects card renders without leaking a raw value', () => {
+  const s = toAge(13);
+  if (s.age < 13) return true;
+  const html = G.subjectsCard();
+  if (!html) return 'no card at thirteen';
+  if (html.indexOf('Mathematics') < 0) return 'subjects are not listed';
+  if (/undefined|NaN|\[object/.test(html)) return 'the card leaked a raw value';
+  s.age = 40;
+  if (G.subjectsCard() !== '') return 'the card is still showing at forty';
+  return true;
 });
 
 /* ---- the will ---- */
