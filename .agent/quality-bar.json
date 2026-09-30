@@ -1,0 +1,281 @@
+{
+  "meta": {
+    "owner": "Yination",
+    "list_version": "40.0",
+    "videos_processed": 38,
+    "image_batches_processed": 4,
+    "total_items": 181,
+    "resume_protocol": "Reply with 'Resume' plus a video link/file or picture batch to append to this master list."
+  },
+  "how_agents_use_this": [
+    "Quality bar, not a backlog. Apply the item that fits the current task.",
+    "CLAUDE.md wins on secrets, a11y, budget zero, and never starting an APK unless the user names the build.",
+    "Skip stack_exclusions unless the user asks.",
+    "When shipping UI, check ui_ux_and_branding + accessibility_and_semantics + DESIGN.md.",
+    "When shipping API, check security_and_trust. Trim payloads. No secrets in logs or responses."
+  ],
+  "categories": {
+    "security_and_trust": [
+      "Hide source maps in production: Never ship .map files publicly; they expose full source code and internal logic.",
+      "Clean production console: No uncaught errors or stack traces visible to users.",
+      "Explicit payment confirmation: Show charged amount, masked card details, and receipt options after transactions.",
+      "Prevent double-submissions: Morph buttons into a disabled Processing spinner during async operations.",
+      "Document security decisions: Record auth and protection choices (JWT, rate limiting) in your tech doc.",
+      "Enforce server-side authorization (IDOR prevention): Authentication (who are you) is not authorization (what may you do); the server must pass every policy rule and deny by default on every request (OWASP Broken Access Control / CWE-639).",
+      "Complete logout checklist: Clear session token, cookies, localStorage, sessionStorage AND invalidate the token server-side.",
+      "Adversarial smoke tests: Paste a user URL into another browser; replay the URL after logout; confirm no data leaks.",
+      "AI-assisted security review pre-ship: Run /security-review (or equivalent) before deploying; it flags vulns with severity and exact fixes.",
+      "Never hardcode secrets client-side: API keys live server-side (environment variables), are rotated, and short-lived; frontend calls your own endpoint.",
+      "Frontend gets public limited keys only: Admin/full-access keys and admin consoles stay server-side/behind auth.",
+      "Sanitize untrusted input (XSS prevention): Output-escaping in all templates; textContent/DOMPurify over innerHTML; never store raw user input for later rendering.",
+      "Rate limit all public endpoints: Sliding-window request budgets per user + per app (e.g., 100 req/min), sensible defaults, graceful 429 retry-later responses.",
+      "Strict server-side input validation: Schema-based validation, type checks, length limits, reject unexpected fields.",
+      "Parameterize every database query: Prepared statements so form input is treated as data, not code (SQLi prevention).",
+      "Validate uploads + store outside web root: Check file type/size on every upload; store where files can never execute.",
+      "Verify webhook signatures: Reject unsigned/unverified payment events.",
+      "Give AI agents standing security rules: Persist security requirements in project-level rule files (e.g., CLAUDE.md).",
+      "Define an access control matrix: Document role x resource permissions explicitly.",
+      "Enforce HTTPS everywhere: Redirect HTTP to HTTPS at the proxy; no plaintext traffic.",
+      "Hash passwords properly: Salted, memory-hard KDF (scrypt/bcrypt/argon2); never store plaintext.",
+      "Bot protection on public forms: CAPTCHA (or equivalent) on signups and anonymous submission forms.",
+      "Enforce expiry: Session tokens expire server-side; password reset links are short-lived and single-use.",
+      "CSRF protection: Anti-CSRF tokens/defenses on all state-changing requests.",
+      "Least-privilege DB credentials: The app connects with a limited database user, never the master key.",
+      "No secrets in logs: Scrub passwords, card numbers, and tokens from application logs.",
+      "Billing/usage alerts: Alert on anomalous usage/cost so attacks are noticed immediately.",
+      "Automated backups: Scheduled, verified, restorable backups committed to up front.",
+      "Publish privacy policy & T&Cs: Missing legal pages are an instant trust/compliance red flag.",
+      "No fabricated social proof: Display real customer reviews; fake reviews/counters/metrics destroy credibility.",
+      "Checkout trust microcopy: Secure checkout / Encrypted reassurance beneath the pay button.",
+      "Treat deceptive UX as compliance risk: FTC Click-to-Cancel + California AB 2863; Amazon paid $2.5B over Prime tricks.",
+      "Entropy-based password strength policy: Score by entropy bits/crack-time, not character-class rules; length beats symbols; encourage passphrases.",
+      "Allow paste + reveal in password fields: Never block paste; provide show/hide toggle; password managers paste stronger unique passwords.",
+      "Offer suggested/generated passwords at signup: Use the OS/browser suggested-password pattern (generated, unique, saved to keychain); zero typing, weak choices, or reuse.",
+      "No backend details in user-facing errors: Friendly message client-side; full details (stack traces, connection strings, internal hosts) logged server-side only; exposure is a UX fail and a security vulnerability.",
+      "Purge secrets from Git history: Remove committed secrets from history (not just the working tree) and rotate them; .env + gitignore going forward.",
+      "Enable row-level security: DB-level RLS policies as defense-in-depth so a compromised app layer can't read every row.",
+      "Encrypt sensitive data at rest: Encrypt PII/payment/sensitive fields at rest; keys managed outside the database.",
+      "Secure session cookies: HttpOnly + Secure + SameSite flags on session cookies.",
+      "Trim API responses: Return only the fields the UI needs (least-privilege payloads); no accidental data leakage.",
+      "Add security headers: CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy on every response.",
+      "Scan dependencies: Automated dependency scanning (Dependabot/npm audit or equivalent) for known-vulnerable packages pre-launch and in CI."
+    ],
+    "technical_seo_and_metadata": [
+      "Custom page titles: Unique, descriptive titles per route; no default framework titles.",
+      "Meta descriptions: Custom snippets so search engines don't auto-generate poor ones.",
+      "Social previews: og:image tags for proper link previews.",
+      "Structured data: JSON-LD schema for rich results, including LocalBusiness schema for local SEO.",
+      "Canonical tags: rel=canonical to prevent duplicate content.",
+      "Sitemaps: Generate an XML sitemap and submit it in Google Search Console (Indexing > Sitemaps) so Google grabs every page at once.",
+      "Multi-page information architecture: Avoid single-page sites for substantive products.",
+      "Indexing spot-check: Query site:yourdomain.com; zero results means you are invisible in search.",
+      "Register with Google Search Console: Add the property (free) and monitor the Pages report (indexed vs not-indexed).",
+      "Internal linking: Contextual internal links between related pages for navigation + SEO.",
+      "Breadcrumbs: Navigational breadcrumbs on nested pages for orientation + crawlability.",
+      "FAQ section (~5 questions): Answer the most common objections/questions on-page.",
+      "Maps + directions (local): Embed map/directions on local-business sites for trust + local SEO."
+    ],
+    "accessibility_and_semantics": [
+      "Single H1 rule: Exactly one h1 per page.",
+      "Language attribute: Always set html lang.",
+      "Image alt text: Descriptive alt text on all images.",
+      "Full keyboard support for menus/dropdowns: Arrows navigate, Enter selects, Esc closes, every user, every time.",
+      "Full keyboard support for tabs: Arrows navigate, Home/End jump first/last, Tab exits the tablist; focus ring never looks the same as active state.",
+      "Accessible switches: Space toggles, visible focus ring, aria-checked state announced to screen readers.",
+      "Treat accessibility as a compliance requirement: Non-compliance is a legal liability; AI tools don't ship accessible output by default, so explicitly prompt for accessibility standards."
+    ],
+    "performance_and_build": [
+      "Avoid empty source shells: Use SSR/SSG so the server builds the page, not the browser; complete HTML paints fast (~0.3s vs ~3.4s CSR), works on slow connections, and crawlers/social previews read real markup.",
+      "Optimize bundle size: Code-splitting and tree-shaking.",
+      "Document performance decisions: Record architecture choices (SSR, serverless, caching) in your tech doc.",
+      "Cache expensive results: Cache-first, database-second via Redis hot data (~1ms hit vs ~40ms DB); the hard part is freshness, so invalidate stale entries on write.",
+      "Async job queues for heavy tasks: Enqueue (email, invoice, inventory, warehouse) instead of making users wait on the sync path; independent workers (Kafka/RabbitMQ/SQS/Azure Service Bus) process jobs.",
+      "Index the database: Indexes turn million-row scans into ~20 comparisons; trade-off is write cost (+~35%) and storage for key copies, so index targeted queries.",
+      "Load test before launch: Stress-test with k6 (or equivalent) before real users arrive.",
+      "Horizontal scaling: Multiple stateless backend instances (session state in a shared store) behind a load balancer with health checks that route around failed instances (AWS ECS / Kubernetes).",
+      "Choose rendering strategy by content type: SSR for content-heavy public sites (blogs, news, storefronts, docs); CSR acceptable for highly interactive apps; trade-off is server load per request.",
+      "REST semantics: HTTP methods describe the action (GET retrieve, POST create, PUT replace, PATCH update-part, DELETE remove); status codes tell the result (200/400/401/403/500).",
+      "Atomic transactions: Multi-step writes commit all-or-nothing; any failure reverses the whole transaction; never leave partial state.",
+      "Serialize critical decisions (race conditions): Locks + unique constraints + atomic transactions yield one winner; no double-sold inventory.",
+      "Idempotency keys for safe retries: Same key returns the stored original response instead of re-executing; a retry must not charge twice.",
+      "Instrument analytics pre-launch: GA4 (or equivalent) installed before launch so behavior is measurable from day one."
+    ],
+    "ui_ux_and_branding": [
+      "Custom domains: Own domain instead of default hosting subdomains.",
+      "Custom 404 pages: Branded, helpful error pages.",
+      "Favicons: Custom favicon for tab/bookmark recognition.",
+      "Mandatory action feedback: Every interaction gets immediate visual feedback; the silent failure (submit clicked, nothing changes) is the worst error state; explicitly instruct AI tools to prevent it.",
+      "Micro-interactions: Subtle animations for small actions (heart fill + count tick).",
+      "No silent high-stakes buttons: Confirm/Pay always need loading/success states.",
+      "Reserved celebrations: Confetti/full-page animations only for milestones.",
+      "Intuitive status indicators: Strikethroughs on done tasks, double-checks on read messages.",
+      "State-as-confirmation: Let the UI change itself replace toast pop-ups.",
+      "Map app flows pre-build: Diagram onboarding, journeys, button actions, success/error paths.",
+      "Write a design brief (DESIGN.md): Lock palette, typography, components, screen styles; save as a reusable skill/file your agent loads.",
+      "Avoid AI-default purple gradients: Applies to backgrounds and gradient hero headline text.",
+      "Replace AI-slop imagery: Use authentic photography, including a real team photo, instead of generic AI-generated visuals.",
+      "QA all CTAs: No broken or dead buttons at ship time.",
+      "Purposeful motion only: Skip gratuitous scroll-triggered animations on every section.",
+      "Real logo mark: Pair the wordmark with an icon; text-only logos read as unfinished.",
+      "SVG icon sets, not emoji: Emoji as feature icons is an instant tell.",
+      "Concrete hero value prop: State what the product does; avoid vague buzzword heroes.",
+      "Scrub AI tics pre-ship: Remove builder badges, cursive accent fonts, and em-dash-heavy copy.",
+      "Follow Jakob's Law (predictability over novelty): Keep standard components in conventional positions.",
+      "Avoid dark patterns (Roach Motel): Cancellation as easy as sign-up; no obstacle courses or guilt-trip copy.",
+      "Design all four screen states: Loading, success, error, and empty states on every screen.",
+      "Skeleton screens for content loads: Grey placeholder outlines pre-render layout before data arrives.",
+      "Match loader type to context: Skeletons / spinners / progress bars are not interchangeable.",
+      "Two-threshold swipe gestures: Reveal = menu; commit = decision.",
+      "Rubber-band resistance + haptic tick: Resistance is feedback; dies at commit with a haptic tick.",
+      "Consistent swipe direction semantics: Right = safe; Left = destructive. Never swap.",
+      "Teach gestures once: First-launch peek hint only.",
+      "Undo instead of confirm dialogs: Act immediately + timed Undo toast for destructive swipes.",
+      "Optimistic UI for reversible actions: Like/Follow/Save update instantly; under ~400ms reads as instant, waiting on the server reads as broken.",
+      "Rollback + error toast on optimistic failure: If the background sync fails, revert the state and explain; for async toggles, flip first with a spinner in the knob, then roll back on failure.",
+      "Show truth for irreversible actions: Pay/Transfer/Delete never render optimistically; display the real processing state.",
+      "Dropdown clickability: 48px+ touch target, visible-contrast border, clear caret icon, hover-state feedback.",
+      "Dropdown edge-flip: Detect viewport/container edges and flip the menu up instead of clipping it.",
+      "Comboboxes allow typing AND scrolling: 10+ options get a live filter input; filter beats scroll, but both paths stay available.",
+      "~150ms dropdown animation: Fast to feel instant, smooth to feel real.",
+      "Graceful degradation (per-section fault isolation): Each section owns its own fetch/loading/error+retry; one failure never crashes the page.",
+      "Validation timing (blur-first, then live): Validate on blur, dump remaining errors on submit, go live after the first error.",
+      "Confirm valid inputs: Show positive success affordances on valid fields; confirm right, not only wrong.",
+      "Star-rating hover preview: Hover previews the tentative rating; on mouse-leave, snap back to the committed value.",
+      "Honest aggregate ratings: Stop rounding up; render partial-star fill and summarize with a score ring + histogram.",
+      "Staggered star-fill animation: ~30ms left-to-right stagger; all-at-once reads flat.",
+      "Drag-and-drop feedback: Dropzone answers back on drag-over (border + glow + copy swap).",
+      "Honest upload progress: Show %, bar, time-left, and speed instead of an indeterminate spinner.",
+      "Resumable uploads with inline retry: On failure keep the file loaded; one-tap Retry resumes from the failed %.",
+      "Upload preview cards: Thumbnail, type, size, dimensions, uploaded-just-now proof, Replace/Remove actions.",
+      "Independent per-file upload queue: One lane per file; one failure never blocks the others.",
+      "Hold-to-confirm destructive actions: ~300ms progress ring replaces the Are-you-sure dialog; release early, nothing fires.",
+      "Verb-specific danger labels: Delete project / Keep project instead of Yes/No; the verb is the warning.",
+      "Keep destructive actions off the happy path: Never place destructive buttons in the primary click spot.",
+      "Red is a budget: Spend red on destruction/warnings only, and destructive CTAs (Delete account, etc.) must wear red per color psychology, never the brand primary.",
+      "Danger zone at the bottom: Group destructive settings in a bordered, labeled section last on the page.",
+      "Cooldown for irreversible actions: Schedule deletions with a grace period (e.g., 14 days) + Cancel escape hatch.",
+      "Sliding tab indicator: Underline slides (~280ms spring, ease-out) with ~180ms content fade; never a 0ms hard cut.",
+      "Tab overflow without wrapping: Never wrap to two lines; horizontal scroll + edge fades + chevrons on desktop.",
+      "Mobile tab strategy: <5 tabs segmented control; >5 tabs bottom-sheet section list; never shrink desktop tab bars; touch targets 44px+, thumb-zone first.",
+      "Tab content transitions: Fade-out 80ms, 80ms pause, fade-in 80ms; interpolate container height to avoid layout shift.",
+      "Toggle anatomy + morph transition: Rail width = 2x knob, padding = knob radius; morph rail color, knob slide, knob shadow, and OFF-to-ON label at ~250ms ease-out; never snap.",
+      "Live password-requirements checklist: Show rules before submit; chips turn green as satisfied while typing; never reveal red rules only after submit.",
+      "Strength meter coaches while typing: Segmented growing bar (Weak/Fair/Almost/Strong) gives progressive feedback; meters coach, errors punish after the fact.",
+      "Minimize time-to-dopamine: Front-load the first value moment (onboarding delight or core value) as fast as possible; attention spans are shorter than ever.",
+      "Emulate validated top-app patterns: Borrow onboarding/UX patterns from leading products that already A/B-tested them; don't reinvent the wheel.",
+      "Build a coherent brand world: Ads through settings menu share one coherent feel and messaging; be intentional about the world and the customer's role in it.",
+      "Cut the fluff (simplicity wins): Delete unused, non-core features; every extra feature distracts from the 80/20 value; world-class products are simple.",
+      "Be opinionated: With commoditized software, a clear point of view on how your product should work repels some but creates super-fans.",
+      "Smooth gradients only: Use analogous, smooth gradient stops; avoid clashing high-saturation hue pairs that read as noise.",
+      "Skip option in onboarding: Onboarding screens must offer Skip alongside Next; never force the tour.",
+      "Descriptive input placeholders: Hint what to type (Artists, Albums, Songs...); never a bare Search.",
+      "Top-aligned form labels (single axis): Labels above inputs on one left edge; side-by-side labels cause zig-zag scanning.",
+      "Split long forms into steps + progress: Wizard with progress indicator and Skip/Next; never one endless scroll.",
+      "Avoid pure #000000 / #FFFFFF: Use off-black (~#242424) and off-white (~#E7E9EB) to soften contrast.",
+      "Inline, specific errors (where + why): Flag the exact field and failed rule inline; never a generic Error-found banner.",
+      "Match input shape to data shape: Segmented one-char-per-box fields for OTP/verification codes, not a single free-text input.",
+      "Input masks for formatted data: Auto-formatting masks (MM/DD/YYYY, (+___) __ ___ ___) guide entry for dates/phones.",
+      "Correct choice controls: Radio buttons for single-choice, checkboxes for multi-choice; never swapped.",
+      "Touch-native pickers on mobile: Scroll-wheel/bottom-sheet pickers for time/date on touch devices, not desktop dropdowns.",
+      "Group related elements together: Keep similar/related items contiguous (Gestalt proximity); never interleave unrelated items between them.",
+      "Human-like microcopy: Conversational button copy (Looks Good, Take a new photo) over system jargon (Confirm and continue, Retake Photo).",
+      "Boxed inputs over underlines: Bordered form fields; underline-only fields have weak affordance.",
+      "One dominant primary action: The key CTA gets filled/highlighted treatment; equal-weight CTAs hide the happy path.",
+      "Show all options for 2-3 choices: Visible radios/segmented controls, not a dropdown, for tiny choice sets.",
+      "Simple readable fonts: Clean UI typefaces (Inter/Poppins/Manrope); decorative display fonts (Italiana/Reggae One/Aclonica) hurt readability.",
+      "Error messages do three things: What happened, why it happened, and a clear next action; neither raw stack dumps nor vague Something-went-wrong.",
+      "Semantic color system: Consistent info/success/warning/danger scales (lightest-to-darkest) instead of ad-hoc colors; users know the conventions daily.",
+      "Strip AI-added clutter: Delete gratuitous descriptive paragraphs, explanatory text, and decorative elements AI adds; if an element isn't useful, remove it.",
+      "CTA above the fold: Primary call-to-action visible without scrolling on every key page.",
+      "Thank-you/confirmation page after enquiry: Post-submission page confirming receipt and setting next steps.",
+      "Response-time promise: State a concrete reply SLA (e.g., we answer within 24h) as trust copy.",
+      "Sticky mobile CTA: Persistent bottom-fixed call-to-action on mobile.",
+      "Case-studies section: Proof-of-work content showing real outcomes.",
+      "Never gate essential actions behind hover: Touch has no hover; the first tap is spent becoming a fake sticky :hover. Hover reveals extras only; primary action always visible, with a touch home (in-card buttons, swipe layer, bottom sheet).",
+      "Pointer-based media queries: Branch on @media (hover: hover) / (pointer: coarse), never user-agent sniffing; one query covers laptop+mouse, phone, tablet+mouse.",
+      "Pad the hit area, not the icon: Icon stays ~20px; pad the tappable box to 44px+ (HIG 44pt / Material 48dp)."
+    ],
+    "ai_discoverability": [
+      "LLM context files: Ship an llms.txt for AI agents.",
+      "AI crawler permissions: Don't blanket-block AI crawlers in robots.txt."
+    ],
+    "pre_build_documentation_and_planning": [
+      "PRD: Define idea overview, core features, and what you're building before coding.",
+      "TDD: The bible of tech decisions; stack, tools, APIs, architecture.",
+      "Backend schema: Map tables, fields, data types, and relationships upfront.",
+      "Engineering plan: Small tasks, strict build order, dependencies, and acceptance criteria.",
+      "Steer AI with curated design references: Copy full prompts/style/layout specs or component blocks (Neuform, Superdesign, Efferd) into your agent.",
+      "Connect your agent via MCP servers: Secure, permission-enforced access to external tools, databases, and data sources.",
+      "Chrome DevTools MCP for live debugging: Let the agent control/inspect a live browser (console, network, performance).",
+      "Figma Context MCP for design-to-code: Feed simplified Figma layout/styling data to the agent.",
+      "Install a curated agent stack: Plugins (role-specialist toolkits), skills (one-line workflow shortcuts), and MCP servers (Slack/Notion/Zapier/Perplexity/agent-browser, etc.) turn the AI from a chat window into an operations layer."
+    ]
+  },
+  "stack_exclusions": {
+    "why": "Items the 181-item bar contains that Zero-Lag cannot satisfy on Expo + Vercel Hobby at budget zero, with no live host yet. Not failures. Do not open work for them unless the user asks.",
+    "items": [
+      {
+        "item": "Cache expensive results",
+        "reason": "No Redis. Budget zero."
+      },
+      {
+        "item": "Async job queues for heavy tasks",
+        "reason": "No broker. Vercel Hobby has no long-running workers."
+      },
+      {
+        "item": "Horizontal scaling",
+        "reason": "Vercel serverless handles this when a backend exists. Nothing to configure now."
+      },
+      {
+        "item": "Index the database",
+        "reason": "No database has been named yet. Do not invent Redis, Kafka, or a paid DB."
+      },
+      {
+        "item": "Enable row-level security",
+        "reason": "No Postgres. If Firestore is added, authorisation is server-side. If Postgres is added, RLS becomes open work."
+      },
+      {
+        "item": "Parameterize every database query",
+        "reason": "Applies only if raw SQL is ever added."
+      },
+      {
+        "item": "Load test before launch",
+        "reason": "Pre-launch, single maintainer. Revisit at real traffic."
+      },
+      {
+        "item": "Maps + directions (local)",
+        "reason": "Zero-Lag is not a local business."
+      },
+      {
+        "item": "Structured data",
+        "reason": "No public site yet. JSON-LD applies when public pages exist. LocalBusiness does not.",
+        "partial": true
+      },
+      {
+        "item": "Bot protection on public forms",
+        "reason": "Rate limiting is the budget-zero control. Add it when a public endpoint exists."
+      },
+      {
+        "item": "Encrypt sensitive data at rest",
+        "reason": "No datastore named yet. Provider-at-rest encryption is enough until the user asks otherwise."
+      },
+      {
+        "item": "Automated backups",
+        "reason": "Budget zero. No Blaze plan."
+      },
+      {
+        "item": "Custom domains",
+        "reason": "Domain purchase costs money. No live host has been named."
+      },
+      {
+        "item": "Figma Context MCP for design-to-code",
+        "reason": "No Figma file and no MCP server."
+      },
+      {
+        "item": "Connect your agent via MCP servers",
+        "reason": "Optional. Nothing in the repo depends on MCP."
+      }
+    ]
+  },
+  "mobile_note": "Many ui_ux_and_branding items assume a web DOM. On React Native apply the intent, not the literal CSS. They apply literally to any later public HTML."
+}

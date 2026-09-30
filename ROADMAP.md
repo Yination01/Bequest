@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 306 tests, 23 modules, 733 KB, no known integrity
+Current state: 533 events, 315 tests, 23 modules, 737 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -460,7 +460,7 @@ Required before it goes on a store, in rough order.
 | 17 | **A stable signing key** | Without it no build can upgrade another. Five minutes of work, documented in `BUILD-APK.md`. |
 | 18 | **Google Play Billing** | The purchase flow is simulated. The Plus gates already exist and are enforced by a test. |
 | 19 | **Firebase cloud saves** | Decided, not built. The prototype syncs to a sandbox server that will not exist. |
-| 20 | **Privacy policy and data declaration** | Play requires both. We collect nothing, which makes this easy and worth saying loudly. |
+| 20 | ~~**Privacy policy and data declaration**~~ — **drafted** | Play requires both. We collect nothing, which makes this easy and worth saying loudly. |
 | 21 | **Content rating** | Crime, alcohol, drugs, gambling. Expect 16+. Declare honestly. |
 | 22 | **Store listing** | Screenshots, description, and a name search against the registers one final time. |
 | 23 | **Crash reporting** — *capture built, destination deliberately open* | Currently blind to anything that happens on a real device. |

@@ -48,7 +48,7 @@ module.exports={
     get QUEUE(){return QUEUE},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
@@ -1362,6 +1362,150 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- the privacy policy has to stay true ---- */
+t('the app talks to nobody except the sync server the player chose', () => {
+  // PRIVACY.md claims no analytics, no ad networks, no third-party SDKs and
+  // no first-party server. A policy that is not enforced drifts.
+  const fs2 = require('fs'), p2 = require('path');
+  const bad = [];
+  FILES.forEach(f => {
+    const src = fs2.readFileSync(p2.join(DIR, f), 'utf8');
+    // strip comments so prose about fetch does not trip this
+    const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const calls = (code.match(/\bfetch\s*\(|XMLHttpRequest|sendBeacon|new\s+WebSocket|new\s+EventSource/g) || []);
+    calls.forEach(c => {
+      // the only permitted callers are the two cloud functions
+      if (f === 'game.js' && /fetch\s*\(/.test(c)) return;
+      bad.push(f + ': ' + c);
+    });
+    if (/googletagmanager|google-analytics|firebase|sentry\.io|crashlytics|facebook\.net|doubleclick|admob/i.test(code))
+      bad.push(f + ': a third-party service is referenced');
+  });
+  if (bad.length) return bad.join(' | ');
+  // and the two permitted ones must be the cloud pair, nothing else
+  const game = fs2.readFileSync(p2.join(DIR, 'game.js'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  const fetches = game.match(/fetch\s*\([^)]*/g) || [];
+  const offCloud = fetches.filter(x => x.indexOf('CLOUD.url') < 0);
+  if (offCloud.length) return 'a fetch that is not the cloud sync: ' + offCloud[0].slice(0, 60);
+  return true;
+});
+
+t('the privacy policy lists every key the game writes', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const policy = fs2.readFileSync(p2.join(DIR, '..', 'PRIVACY.md'), 'utf8');
+  const keys = new Set();
+  FILES.forEach(f => {
+    const src = fs2.readFileSync(p2.join(DIR, f), 'utf8');
+    (src.match(/localStorage\.setItem\(\s*'([^']+)'/g) || [])
+      .forEach(m => keys.add(m.replace(/.*'([^']+)'.*/, '$1')));
+    // the constants, resolved by name
+    if (/localStorage\.setItem\(\s*META_KEY/.test(src))  keys.add('META_KEY');
+    if (/localStorage\.setItem\(\s*SAVE_KEY/.test(src))  keys.add('SAVE_KEY');
+    if (/localStorage\.setItem\(\s*CRASH_KEY/.test(src)) keys.add('CRASH_KEY');
+    if (/localStorage\.setItem\(\s*slotKey/.test(src))   keys.add('slot');
+  });
+  const documented = {
+    'bequest.cloud':'bequest.cloud', 'bequest.lastslot':'bequest.lastslot',
+    'bequest.migrated':'bequest.migrated',
+    'META_KEY':'bequest.meta', 'SAVE_KEY':'bequest.save',
+    'CRASH_KEY':'bequest.crashlog', 'slot':'bequest.slot'
+  };
+  const missing = [...keys].filter(k => {
+    const shown = documented[k] || k;
+    return policy.indexOf(shown) < 0;
+  });
+  if (missing.length) return 'written but not documented in PRIVACY.md: ' + missing.join(', ');
+  return true;
+});
+
+t('the policy does not promise something the code has stopped doing', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const policy = fs2.readFileSync(p2.join(DIR, '..', 'PRIVACY.md'), 'utf8');
+  const crash = fs2.readFileSync(p2.join(DIR, 'crash.js'), 'utf8');
+  // it claims reports are never transmitted in this version
+  if (policy.indexOf('not sent anywhere') < 0 && policy.indexOf('not sent') < 0)
+    return 'the policy no longer says reports are not sent';
+  const sink = crash.match(/function crashSink\([^)]*\)\s*\{([^}]*)\}/);
+  if (!sink) return 'crashSink is gone; the policy needs rewriting';
+  if (!/return\s+false/.test(sink[1]))
+    return 'crashSink now does something, so PRIVACY.md section 5 is out of date';
+  // and it claims Plus is never restored from a sync
+  const game = fs2.readFileSync(p2.join(DIR, 'game.js'), 'utf8');
+  const merge = game.match(/function cloudMergeMeta[\s\S]*?\n\}/);
+  if (!merge) return 'cloudMergeMeta is gone';
+  if (/premium/.test(merge[0].replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')))
+    return 'cloudMergeMeta touches premium, contradicting the policy and TERMS.md section 5';
+  return true;
+});
+
+/* ---- cloud sync trusts nothing ---- */
+t('a cloud restore can never grant Bequest Plus', () => {
+  // CLOUD.url is typed by the player, so the reply is a message from a
+  // stranger. Plus is bought with money and must never come off the wire.
+  G.newGame({});
+  G.META.premium = { plus:false, lifetime:false, since:null };
+  const hostile = [
+    { premium: { plus:true, lifetime:true, since:1 } },
+    { premium: { lifetime:true } },
+    { lp: 999999, premium: { plus:true } }
+  ];
+  for (let i = 0; i < hostile.length; i++) {
+    G.cloudMergeMeta(hostile[i]);
+    if (G.META.premium.plus || G.META.premium.lifetime)
+      return 'payload ' + i + ' bought the paid tier for nothing';
+  }
+  return true;
+});
+
+t('a malformed reply cannot wipe progress that is already there', () => {
+  G.newGame({});
+  G.META.lp = 5000; G.META.lives = 40;
+  G.META.ach = { earned_one: true, earned_two: true };
+  const junk = [null, 'nonsense', [], { lp: 0, lives: 0, ach: {} }, { lp: -9, ach: null }];
+  junk.forEach(j => G.cloudMergeMeta(j));
+  if (G.META.lp !== 5000) return 'Legacy Points went from 5000 to ' + G.META.lp;
+  if (G.META.lives !== 40) return 'lives were reset';
+  if (!G.META.ach.earned_one || !G.META.ach.earned_two) return 'achievements were erased';
+  return true;
+});
+
+t('a cloud restore adds progress rather than replacing it', () => {
+  G.newGame({});
+  G.META.lp = 100; G.META.ach = { local_only: true };
+  G.cloudMergeMeta({ lp: 900, ach: { from_cloud: true } });
+  if (G.META.lp !== 900) return 'the higher total was not taken: ' + G.META.lp;
+  if (!G.META.ach.local_only) return 'a local achievement was lost in the merge';
+  if (!G.META.ach.from_cloud) return 'the cloud achievement did not arrive';
+  return true;
+});
+
+t('only things shaped like a save are written to a slot', () => {
+  const good = { name:'Ada Vale', age:34, npcs:[], stats:{} };
+  if (!G.validSlot(good)) return 'a real save was refused';
+  const bad = [null, 'x', 42, [], {}, { name:'x' }, { age:34 },
+               { name:'x', age:-5 }, { name:'x', age:9999 },
+               { name:'x', age:20, npcs:'not an array' },
+               { name:'x'.repeat(200), age:20 }];
+  for (let i = 0; i < bad.length; i++)
+    if (G.validSlot(bad[i])) return 'junk payload ' + i + ' was accepted as a save';
+  return true;
+});
+
+t('the merge cannot be used to stuff unbounded data into storage', () => {
+  G.newGame({});
+  const huge = { ach: {} };
+  for (let i = 0; i < 9000; i++) huge.ach['k' + i] = true;
+  huge.ach['x'.repeat(500)] = true;
+  G.cloudMergeMeta(huge);
+  if (Object.keys(G.META.ach).length > 2100) return 'took ' + Object.keys(G.META.ach).length + ' keys';
+  if (Object.keys(G.META.ach).some(k => k.length > 60)) return 'accepted an absurd key';
+  const long = { deathAges: new Array(500).fill(70) };
+  G.cloudMergeMeta(long);
+  if (G.META.deathAges.length > 12) return 'deathAges grew to ' + G.META.deathAges.length;
+  return true;
 });
 
 /* ---- problem reports ---- */

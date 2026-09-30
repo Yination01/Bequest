@@ -7510,6 +7510,56 @@ function cloudPayload(){
   for(let i=1;i<=SLOTS;i++){ const r=localStorage.getItem(slotKey(i)); if(r)payload.slots[i]=JSON.parse(r); }
   return payload;
 }
+/* ---------------- cloud sync: trusting nothing that comes back ----------
+   CLOUD.url is typed by the player, so a response is a message from a
+   stranger. Two different things need protecting and they need different
+   treatment:
+
+     the entitlement   Plus is bought with money. It is never, under any
+                       circumstances, read from the network. A save restored
+                       from a server you control cannot make you a paying
+                       customer.
+
+     the progress      Achievements, points and records are single-player
+                       state that anyone determined could edit in
+                       localStorage anyway, so the threat is not cheating,
+                       it is a malformed reply wiping a legitimate player.
+                       Merged by taking the better of the two, never by
+                       overwriting.                                        */
+function validSlot(x){
+  if(!x || typeof x !== 'object' || Array.isArray(x)) return false;
+  if(typeof x.name !== 'string' || x.name.length > 80) return false;
+  if(typeof x.age !== 'number' || !isFinite(x.age) || x.age < 0 || x.age > 130) return false;
+  if(x.npcs && !Array.isArray(x.npcs)) return false;
+  if(x.stats && typeof x.stats !== 'object') return false;
+  return true;
+}
+function cloudMergeMeta(remote){
+  if(!remote || typeof remote !== 'object' || Array.isArray(remote)) return 0;
+  let took = 0;
+  const num = k => {
+    const v = remote[k];
+    if(typeof v === 'number' && isFinite(v) && v >= 0 && v > (META[k] || 0)){ META[k] = v; took++; }
+  };
+  const mapOf = k => {
+    const v = remote[k];
+    if(!v || typeof v !== 'object' || Array.isArray(v)) return;
+    if(!META[k] || typeof META[k] !== 'object') META[k] = {};
+    Object.keys(v).slice(0, 2000).forEach(id => {
+      if(typeof id !== 'string' || id.length > 60) return;
+      const rv = v[id];
+      if(typeof rv === 'number'){ if(!(META[k][id] > rv)){ META[k][id] = rv; took++; } }
+      else if(rv === true && !META[k][id]){ META[k][id] = true; took++; }
+    });
+  };
+  num('lp'); num('lives'); num('taps'); num('adsSeen');
+  ['ach','rec','eggs','done','countriesPlayed','perks'].forEach(mapOf);
+  if(Array.isArray(remote.deathAges))
+    META.deathAges = remote.deathAges.filter(n => typeof n === 'number' && n >= 0 && n <= 130).slice(-12);
+  /* META.premium is deliberately absent from this function. */
+  return took;
+}
+
 function cloudPush(quiet){
   if(!quiet&&!requirePlus('cloud sync'))return;
   if(!CLOUD.code)return quiet?null:popupOK('No sync code','Set a sync code first.');
@@ -7525,11 +7575,24 @@ function cloudPull(){
   if(!CLOUD.code)return popupOK('No sync code','Set a sync code first.');
   fetch((CLOUD.url||'')+'/cloud/'+encodeURIComponent(CLOUD.code))
    .then(r=>r.ok?r.json():Promise.reject())
-   .then(d=>{ if(!d.slots)throw 0;
-     Object.keys(d.slots).forEach(k=>localStorage.setItem(slotKey(k),JSON.stringify(d.slots[k])));
-     if(d.meta){META=d.meta;saveMeta();}
+   .then(d=>{
+     if(!d || typeof d!=='object' || !d.slots || typeof d.slots!=='object') throw 0;
+     let wrote=0, refused=0;
+     Object.keys(d.slots).slice(0,SLOTS).forEach(k=>{
+       const n=parseInt(k,10);
+       if(!(n>=1&&n<=SLOTS)){ refused++; return; }
+       if(!validSlot(d.slots[k])){ refused++; return; }
+       localStorage.setItem(slotKey(n),JSON.stringify(d.slots[k])); wrote++;
+     });
+     const took = d.meta ? cloudMergeMeta(d.meta) : 0;
+     if(took) saveMeta();
+     if(!wrote && !took) throw 0;
      CLOUD.status='pulled '+new Date().toLocaleTimeString(); cloudSaveCfg();
-     popupOK('Downloaded','Your cloud progress has been restored to this device.'); renderAll(); })
+     popupOK('Downloaded',
+       `${wrote} save${wrote===1?'':'s'} restored to this device.`
+       + (refused?`\n\n${refused} did not look like a Bequest save and ${refused===1?'was':'were'} refused.`:'')
+       + '\n\nBequest Plus is tied to your purchase, not to the sync, so it is never restored this way.');
+     renderAll(); })
    .catch(()=>popupOK('Nothing found','No cloud save for that code, or the server is unreachable.'));
 }
 function setCloud(k,v){ CLOUD[k]=v; cloudSaveCfg(); }
@@ -11374,6 +11437,9 @@ function viewSaves(){
     <div class="hsub dim mb">Enter the same sync code on another device to carry your progress across. Status: <b>${esc(CLOUD.status)}</b></div>
     <label class="cl">Sync code<input value="${esc(CLOUD.code)}" placeholder="choose any phrase" oninput="setCloud('code',this.value)"></label>
     <label class="cl">Server<input value="${esc(CLOUD.url)}" placeholder="leave blank to use this server" oninput="setCloud('url',this.value)"></label>
+    <div class="hsub dim">Your saves are sent to whatever server you name here, so only
+      name one you trust. Saves coming back are checked before they are written, and
+      Bequest Plus is never restored from a sync \u2014 it belongs to your purchase.</div>
     <label class="clrow"><input type="checkbox" ${CLOUD.on?'checked':''} onchange="setCloud('on',this.checked)"> Upload automatically after every save</label>
     <div class="grid3 mt"><button class="mini" onclick="cloudPush()">Upload now</button>
       <button class="mini" onclick="cloudPull()">Download</button></div></div>`;

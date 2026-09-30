@@ -1,0 +1,384 @@
+{
+  "id": "yination-agent-pack",
+  "version": "1.0.0",
+  "sourced_from": "Yination01/Zero-Lag, 2026-09-30",
+  "for": "Standing law for any AI working in Yination01/Bequest.",
+  "what_this_is": [
+    "This is standing law for any AI working in this repo, not a suggestion list.",
+    "It exists because rules that lived only in chat were violated and cost real debugging time.",
+    "Installed into Bequest on 2026-09-30, long after the game was built. Everything under bequest_specific is this product. Everything else is the house method and is unchanged."
+  ],
+  "first_thing_the_ai_does": [
+    "Read this file end to end before editing anything.",
+    "Then read skills.json and quality-bar.json in this same folder.",
+    "If these files are not yet inside the target repo, follow how_to_store.install before writing feature code.",
+    "If they are already installed, follow priority and start the turn.",
+    "Do not invent Redis, Kafka, Figma MCP, or paid infra unless the project law for that repo says so."
+  ],
+  "priority": [
+    {
+      "rank": 1,
+      "name": "user_instruction_this_turn",
+      "rule": "The user's message this turn wins."
+    },
+    {
+      "rank": 2,
+      "name": "project_law",
+      "rule": "CLAUDE.md in the target repo is project law. If a skill or quality-bar item fights it, CLAUDE.md wins."
+    },
+    {
+      "rank": 3,
+      "name": "this_pack",
+      "rule": "This file plus skills.json plus quality-bar.json is how you work."
+    },
+    {
+      "rank": 4,
+      "name": "design",
+      "rule": "DESIGN.md is the locked palette, type, and chrome. Do not invent tokens."
+    },
+    {
+      "rank": 5,
+      "name": "map",
+      "rule": "SITEMAP.md (or the repo map named in project law) is where things live. Check it before guessing a path."
+    }
+  ],
+  "how_to_use": {
+    "every_turn": [
+      "Be concise. Use the domain's words.",
+      "If you are unsure, ask. Uncertainty is its own trigger, not only ambiguity in the request. Do not guess and proceed.",
+      "Ask as a questionnaire: discrete options, never an open essay. Every question has an explicit RECOMMENDED option and the reasoning.",
+      "Send a follow-up questionnaire when an answer is unclear or raises a new question.",
+      "Only invoke a skill if it directly fits. Check applies_to_project first.",
+      "Invoke a yes skill when the trigger fits. No permission needed.",
+      "When an on-request skill's trigger fits, recommend it in the questionnaire with reasoning and wait for yes. Do not invoke silently. Do not wait for the user to name the skill.",
+      "Never invoke an n-a-this-stack skill.",
+      "No em-dash and no en-dash anywhere: code, copy, comments, docs. Use a comma, a colon, or a full stop.",
+      "Cross-check against previous errors listed in the target repo.",
+      "No completion claim without fresh verification. Run the repo's full test command and read the exit code in the same turn. Name what stayed unverified.",
+      "Double-check search-replace actually landed. It has dropped bodies before."
+    ],
+    "new_feature": [
+      "Confirm the approach first.",
+      "Skill path: brainstorming, then writing-plans, then test-driven-development, then implement.",
+      "Questionnaire before code."
+    ],
+    "bugfix": [
+      "Skill path: systematic-debugging, then bugfix. Escalate to structured-debugging if it is hard or flaky.",
+      "Root cause before the fix. Three failed fixes means stop and question the architecture.",
+      "Never fix a bug without a check that proves the bug is gone."
+    ],
+    "any_implementation": [
+      "Write the failing check first. Watch it fail by the right name. Then the minimum that makes it pass.",
+      "Mutation-test every new check: break the real code, confirm the failure names the right thing, restore from a copied backup (never git checkout), then diff to prove the restore was exact.",
+      "Assert the guarantee, never one spelling of a user-facing string."
+    ],
+    "skill_routing": [
+      {
+        "when": "Phone bug, test failure, unexpected behaviour",
+        "skill": "systematic-debugging then bugfix"
+      },
+      {
+        "when": "Hard or flaky bug",
+        "skill": "structured-debugging"
+      },
+      {
+        "when": "New feature",
+        "skill": "brainstorming then writing-plans then test-driven-development"
+      },
+      {
+        "when": "UI copy",
+        "skill": "ux-writing"
+      },
+      {
+        "when": "Public site or marketing page",
+        "skill": "design-taste-frontend plus SEO items in the quality bar"
+      },
+      {
+        "when": "Security change",
+        "skill": "vercel-security-audit plus security_and_trust in the quality bar"
+      },
+      {
+        "when": "Passing a thread to another agent",
+        "skill": "handoff. No secrets. No tokens."
+      },
+      {
+        "when": "Any implementation code",
+        "skill": "test-driven-development"
+      },
+      {
+        "when": "Editing this pack or .agent files",
+        "skill": "writing-skills, then run the agent-docs check"
+      },
+      {
+        "when": "Before claiming done",
+        "skill": "verification-before-completion"
+      },
+      {
+        "when": "Large feature, still fuzzy",
+        "skill": "grill-me",
+        "flag": "on-request"
+      },
+      {
+        "when": "New module boundary",
+        "skill": "design-an-interface",
+        "flag": "on-request"
+      },
+      {
+        "when": "Need a throwaway answer first",
+        "skill": "prototype",
+        "flag": "on-request"
+      },
+      {
+        "when": "Hard leak, no profiler yet",
+        "skill": "memory-leak-debug",
+        "flag": "on-request"
+      },
+      {
+        "when": "Large refactor, need a map",
+        "skill": "codegraph",
+        "flag": "on-request"
+      },
+      {
+        "when": "Existing e2e cannot reproduce",
+        "skill": "agent-reproduce-feature or agent-browser",
+        "flag": "on-request"
+      },
+      {
+        "when": "Conversion on a landing page",
+        "skill": "page-cro",
+        "flag": "on-request"
+      },
+      {
+        "when": "Launch copy or organic posts",
+        "skill": "social or marketing-ideas",
+        "flag": "on-request"
+      },
+      {
+        "when": "After a major feature, before merge",
+        "skill": "requesting-code-review",
+        "flag": "on-request"
+      },
+      {
+        "when": "Independent failures, no shared state",
+        "skill": "dispatching-parallel-agents",
+        "flag": "on-request"
+      },
+      {
+        "when": "User asked for a Word, PDF or sheet",
+        "skill": "docx / pdf / xlsx",
+        "flag": "on-request"
+      }
+    ],
+    "applies_to_project_legend": {
+      "yes": "Use whenever the trigger fits. No permission needed.",
+      "on-request": "Fits the stack but is not routine. Do not invoke silently. When the trigger fits, recommend it in the questionnaire with reasoning, and wait for yes. Do not wait for the user to name the skill.",
+      "n-a-this-stack": "Cannot run on this stack at budget zero, or is unrelated. Do not invoke."
+    }
+  },
+  "hard_rules": [
+    {
+      "id": 1,
+      "title": "Never start a release the user did not name",
+      "general": "A release, APK, store build, or production deploy must be named in the user's own message this turn. Not implied by fix it. Not carried over from a previous turn. If work is ready and no number or name was given, say so and wait.",
+      "mirror": "Work that lands after a release is not in anyone's hands. Say so in the same message, and say whether it changes the binary or only the docs.",
+      "poise_specific": "The named thing is an APK build number. Update .build-state.json at dispatch. npm run test:all prints the pending list.",
+      "incident": "Build 26 was dispatched with no number in the user's message, on authorisation carried over from an earlier turn."
+    },
+    {
+      "id": 2,
+      "title": "Ask as a questionnaire, and recommend on every question",
+      "general": "Discrete options, never an open essay. Every question carries an explicit RECOMMENDED option and the reasoning. If you are unsure, ask. Do not guess and proceed.",
+      "poise_specific": "Use ask_user when the runtime has it.",
+      "incident": "A wrong assumption reached main and cost a build."
+    },
+    {
+      "id": 3,
+      "title": "Failing check first, then the fix",
+      "general": "For any implementation code: write the failing check first, watch it fail by the right name, then write the minimum that makes it pass. Fixing first and back-filling a test is the wrong order."
+    },
+    {
+      "id": 4,
+      "title": "Mutation-test every new check",
+      "general": "A passing test proves nothing until a mutant kills it. Break the real code, confirm the failure names the right thing, restore it, confirm green. Never restore with git checkout. Copy to a backup path first, restore from that, then diff to prove the restore was exact."
+    },
+    {
+      "id": 5,
+      "title": "Assert the guarantee, never one spelling of it",
+      "general": "An audit that pins an exact user-facing string fails a correct change and passes a broken one. Strip comments before scanning source for a forbidden string. Pair every negative check with a positive one.",
+      "incident": "Three audits pinned Invite friends to unlock. All three failed when the CTA was corrected, and none noticed the button had never matched its label."
+    },
+    {
+      "id": 6,
+      "title": "Never claim done without fresh verification",
+      "general": "Run the full test command and read the exit code in the same turn as the claim. State plainly what was not verified: anything that needs a real device, live data, or a cold-start race is unproven until it runs there."
+    },
+    {
+      "id": 7,
+      "title": "Copy, do not paraphrase, the fixed values",
+      "general": "Commit identity, brand words, and banned punctuation are copied exactly. They are not cosmetic.",
+      "defaults_to_copy": {
+        "git_user_name": "Yination01",
+        "git_user_email": "johnpaulonovo@gmail.com",
+        "brand_place": "Nigeria, never Built in Lagos, except a jurisdiction clause that is deliberate",
+        "viewer_word": "Admin, never superuser",
+        "dash_ban": "No em-dash (U+2014) and no en-dash (U+2013)"
+      },
+      "incident": "Authoring as Yination <admin.poise@gmail.com> produced five Vercel Hobby deploys marked Blocked, GitHub user not found. The support address is not a GitHub account."
+    },
+    {
+      "id": 8,
+      "title": "A rule that lives only in conversation memory is not enforced and will be violated",
+      "general": "If a decision is worth keeping, it lands in project law and in a check on the same day it is made. Gates fail closed. Absent config means shut.",
+      "poise_specific": "Beta is admin-granted only. Being a tester is an identity, not an entitlement. Never by signup date. No migration sweep.",
+      "incident": "The beta rule lived only in a chat. Seven layers later the server was still stamping betaUser true on every account that opened the app."
+    }
+  ],
+  "how_to_store": {
+    "why": "Thin stubs in every agent runtime, one source of truth, a check that fails if they drift. That is the whole storage design.",
+    "install": {
+      "copy_these_files_into_the_target_repo": [
+        {
+          "from": "agent-pack.json",
+          "to": ".agent/agent-pack.json"
+        },
+        {
+          "from": "skills.json",
+          "to": ".agent/master-skills.json"
+        },
+        {
+          "from": "quality-bar.json",
+          "to": ".agent/quality-bar.json"
+        }
+      ],
+      "then_write_these_in_the_target_repo": [
+        {
+          "path": "AGENTS.md",
+          "role": "How to work. Codex, Amp, Jules, Cursor load this. Must point at CLAUDE.md, .agent/master-skills.json, .agent/quality-bar.json, and this pack."
+        },
+        {
+          "path": "CLAUDE.md",
+          "role": "Project law. Hard rules in full, secrets, a11y, colour, budget, platform facts. This file wins ties."
+        },
+        {
+          "path": "GEMINI.md",
+          "role": "Stub under 60 lines. Points at AGENTS.md and CLAUDE.md. Adds nothing of its own."
+        },
+        {
+          "path": ".cursorrules",
+          "role": "Same stub."
+        },
+        {
+          "path": ".clinerules",
+          "role": "Same stub."
+        },
+        {
+          "path": ".windsurfrules",
+          "role": "Same stub."
+        },
+        {
+          "path": ".github/copilot-instructions.md",
+          "role": "Same stub."
+        },
+        {
+          "path": "llms.txt",
+          "role": "Short pointer for AI crawlers. Names the same files."
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "role": "Humans read this. Same rules, same test command."
+        },
+        {
+          "path": "DESIGN.md",
+          "role": "Locked palette, type, chrome. Write it once tokens exist. Do not invent."
+        },
+        {
+          "path": "SITEMAP.md",
+          "role": "Directory map plus history. Update when a layer lands."
+        }
+      ],
+      "stub_contract": "Every stub says: read AGENTS.md then CLAUDE.md before editing. Both bind. This file adds nothing of its own. If a skill fights CLAUDE.md, CLAUDE.md wins. Stay under 60 lines.",
+      "first_run_in_a_new_repo": [
+        "Copy the three JSON files into .agent/.",
+        "Ask the user, as a questionnaire, for: stack, test command, git identity if not Yination01, budget, live host, and any product gates that must fail closed.",
+        "Write CLAUDE.md from hard_rules plus those answers. Drop poise_specific lines that do not apply. Keep the general form of rule 8.",
+        "Write AGENTS.md from priority, how_to_use, and skill_routing. Rename applies_to_poise to applies_to_project in prose.",
+        "Retag every skill in .agent/master-skills.json: yes, on-request, or n-a-this-stack for THIS stack. Every skill needs a poise_note replaced by a project_note that explains the flag.",
+        "Fill quality-bar.json stack_exclusions for this stack. Items the stack cannot satisfy are not open work.",
+        "Write the thin stubs so every runtime loads the same law.",
+        "Add a check (copy the idea of Poise .audit/agent-docs.cjs) that: the JSON files parse, skill counts match metadata, every stub points at AGENTS.md and CLAUDE.md, no em-dash in agent-facing files, the newest commit is not authored by a support address.",
+        "Add a check (copy the idea of Poise .audit/agent-rules.cjs) that the eight hard rules stay stated in CLAUDE.md and AGENTS.md.",
+        "Do not start feature work until those two checks exist and pass."
+      ]
+    },
+    "day_to_day": [
+      "A decision worth keeping lands in CLAUDE.md and in a check the same day.",
+      "Docs that describe code land in the same commit as the code.",
+      "Never write a secret into a file, a commit, or .git/config.",
+      "Push via GIT_ASKPASS or an ephemeral credential helper. Never put a token in the remote URL.",
+      "Recreate git user.name and user.email each turn if the workspace drops .git/config.",
+      "After committing, check: git log -1 --format='%an <%ae>'",
+      "When editing .agent/*.json or rule files, run the agent-docs check."
+    ],
+    "do_not_store": [
+      "Secrets, tokens, service account JSON, live payment keys.",
+      "A second copy of the hard rules inside a stub. Stubs delegate. They do not duplicate.",
+      "A rule only in a chat transcript."
+    ]
+  },
+  "git": {
+    "user_name": "Yination01",
+    "user_email": "johnpaulonovo@gmail.com",
+    "note": "Copy exactly unless the user names a different GitHub account for that repo. The support address is not a GitHub account. Vercel Hobby blocks commits it cannot attribute."
+  },
+  "security_non_negotiable": [
+    "No secrets client-side. A public SDK key that is an identifier may stay in client config. Everything else is server env.",
+    "Every public endpoint gets a rate limit. Unauthenticated writes are the highest risk.",
+    "Authentication is not authorisation. Knowing an id is not permission to read that record (CWE-639).",
+    "Validate with a schema and reject unknown fields.",
+    "Never interpolate a value into innerHTML. Use textContent or build DOM nodes.",
+    "Never return internals in an error. Log the stack server-side. Return one plain sentence.",
+    "Parameterised queries only.",
+    "Verify webhook signatures before trusting any payment event."
+  ],
+  "quality_bar_how_to_use": [
+    "Quality bar, not a backlog. Apply the item that fits the current task.",
+    "Source file: quality-bar.json in this folder, list v40.0, 181 items.",
+    "When shipping UI: ui_ux_and_branding, accessibility_and_semantics, DESIGN.md.",
+    "When shipping API: security_and_trust. Trim payloads. No secrets in logs or responses.",
+    "Skip stack_exclusions unless the user asks."
+  ],
+  "skills_how_to_use": [
+    "Source file: skills.json in this folder, catalog v1.3.0, 60 skills.",
+    "In the Poise copy the flag is still named applies_to_poise. When you install, rename it to applies_to_project and retag.",
+    "Counts in Poise: 22 yes, 23 on-request, 15 n-a-this-stack. Recount after retagging.",
+    "n-a examples that are usually still n-a: figma-use, tailwind-design-system, sleek-design-mobile-apps, ads, ad-creative, notion-research-documentation, resume-ats-optimizer, interview-prep-generator, desktop-pet, qwen-code-claw, openwork-desktop-sync, just-scrape, arena-ai-agents, internal-comms, extract-design-system."
+  ],
+  "resume_protocol": "User says Resume plus a video link, file, or picture batch to append lessons to the quality bar. Bump total_items. Do not leave the count stale.",
+  "what_not_to_copy_blindly": [
+    "Zero-Lag and Poise live hosts. Bequest has no host and no accounts.",
+    "Expo. Bequest is a Capacitor WebView over a single inlined HTML bundle.",
+    "Firebase and Paystack. Bequest takes no payments yet and stores nothing off device.",
+    "Supabase edge functions belong to Football-Legend. Bequest borrows the validate-then-store pattern, not the deployment.",
+    "Beta badges and admin grants. Bequest has no admin surface.",
+    "Anything implying a backend. There is not one."
+  ],
+  "installed_in": "Yination01/Zero-Lag",
+  "bequest_specific": {
+    "what_it_is": "An offline, single-player, text-based life simulator. Capacitor WebView, appId app.bequest.game.",
+    "build": "python3 pwa/build.py writes pwa/index.html only. Bequest.html and pwa/Bequest.html are the same file minus the manifest and apple-touch-icon lines and must be regenerated in the same pass.",
+    "tests": "cd pwa && node tests/suite.js. One command, runs everything, prints a pass or fail count. Nothing ships without three consecutive clean runs.",
+    "module_registration": "A new pwa/*.js must be added in FIVE places: pwa/build.py, pwa/tests/suite.js FILES, research/audit.js, research/compare.js, research/final-audit.js. Missing one fails only in that tool.",
+    "no_backend": "No server, no accounts, no analytics. Cloud sync posts to a URL the player types and trusts nothing that comes back. META.premium is never read from the network.",
+    "content_rules": [
+      "Event text: no phrasing under 70 characters may open on It, They, He, She or This. Every variant, not just the first.",
+      "Choice labels are readable instructions, at least four characters, never a bare Yes, No, OK or Do it.",
+      "Every hook a choice uses must be implemented in resolveChoice, and every id it names must exist. The suite checks both.",
+      "The share of events containing a real fork is a ratchet, currently 20 percent. Content volume must not dilute agency."
+    ],
+    "known_divergence": {
+      "no_dash_rule": "The house rule forbids em and en dashes everywhere. Bequest predates this pack and contains about 791 of them, 6 of which are in its first commit. They are NOT yet cleaned up. Decide before treating this rule as enforced here.",
+      "git_email": "This pack names johnpaulonovo@gmail.com. Commits in this repo have used 186976136+Yination01@users.noreply.github.com. Confirm which is wanted.",
+      "tdd": "hard_rules item 3 wants the failing check first. Most of the 312 tests in this repo were written after the code they cover."
+    }
+  }
+}
