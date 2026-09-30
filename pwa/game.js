@@ -101,6 +101,8 @@ function migrate(){
   if(!S.cd)S.cd={}; if(!S.echoes)S.echoes=[]; if(!S.goals)S.goals=[]; if(!S.perksUsed)S.perksUsed=[]; if(!S.ledger)S.ledger={income:[],spend:[]};
   if(!S.home)S.home='parents'; if(!S.food)S.food='basic'; if(!S.subs)S.subs={};
   if(!S.cards)S.cards=[]; if(S.arrears==null)S.arrears=0; if(!S.finance)S.finance=[];
+  if(S.overdue==null)S.overdue=0; if(!S.overdueItems)S.overdueItems=[];
+  if(S.arrPaid==null)S.arrPaid=0; if(S.arrPlan===undefined)S.arrPlan=null;
   if(!S.properties)S.properties=[]; if(!S.vehicles)S.vehicles=[]; if(!S.businesses)S.businesses=[];
   if(S.property&&!S.properties.length){
     S.properties.push({t:'flat',value:S.property.value,mortgage:S.property.mortgage,
@@ -213,13 +215,19 @@ function hasEgg(id){ return !!META.eggs[id]; }
 function eggRoll(tier){ const m=(S&&S.traits&&S.traits.indexOf('marked')>=0)?2.5:1; return R() < (EGG_TIERS[tier]||0)*m; }
 function unlockedTraits(){ return Object.keys(EGG_UNLOCKS)
   .filter(k=>hasEgg(k)&&EGG_UNLOCKS[k].kind==='trait').map(k=>EGG_UNLOCKS[k].id); }
-/* On the presets, difficulty decides. On Custom you choose it yourself,
-   and the choice is reflected in the LifePoint multiplier. */
-function autopayAllowed(){
-  if(S.diff==='custom') return S.mods && S.mods.autopay !== 0;
+/* A direct debit is something you arrange, not something a difficulty hands
+   you. Below Hard the bank sets one up for you and quietly covers a short
+   balance. On Hard and Brutal you can still arrange one, but it starts off,
+   and it bounces if the money is not there on the day. The skill being
+   tested is keeping a balance, not remembering to tap a button every year. */
+function autopayAllowed(){ return true; }
+/* Free = arranged for you by default, and it cannot bounce. */
+function autopayFree(){
+  if(S.diff==='custom') return !!(S.mods && S.mods.autopay !== 0);
   return diffRank()<2;
 }
-function autopayOn(){ return autopayAllowed() && S.autopay!==false; }
+function autopayOn(){ return S.autopay==null ? autopayFree() : !!S.autopay; }
+function autopayBounces(){ return !autopayFree(); }
 function isPlus(){ return !!(META.premium&&(META.premium.plus||META.premium.lifetime)); }
 function requirePlus(what){
   if(isPlus())return true;
@@ -233,7 +241,7 @@ function propertyEquity(){ return (S.properties||[]).reduce((n,p)=>n+p.value-p.m
 function vehicleValue(){ return (S.vehicles||[]).reduce((n,v)=>n+v.value,0); }
 function businessValue(){ return (S.businesses||[]).reduce((n,b)=>n+b.value,0); }
 function netWorth(){ return S.money+S.savings+cryptoValue()+assetValue()+propertyEquity()
-  +vehicleValue()+businessValue()-S.debt-(S.cards||[]).reduce((n,c)=>n+c.bal,0)-(S.arrears||0); }
+  +vehicleValue()+businessValue()-S.debt-(S.cards||[]).reduce((n,c)=>n+c.bal,0)-(S.arrears||0)-(S.overdue||0); }
 function cryptoValue(){ return S.crypto.units*S.crypto.price; }
 function assetValue(){ return (S.assets||[]).reduce((n,a)=>n+a.value,0); }
 function hasSub(tag){ return Object.keys(S.subs||{}).some(id=>S.subs[id]&&SUB(id)&&SUB(id).tag===tag); }
@@ -296,7 +304,7 @@ function newGame(opts){
     money:0, savings:0, debt:0, familyMoney:Math.round(ri(tier.money[0],tier.money[1])*mods.start*((META.perks&&META.perks.bornlucky)?1.6:1)),
     crypto:{units:0,price:100}, property:null, properties:[], vehicles:[], businesses:[], assets:[], business:null,
     items:[], job:null, jobYears:0, careerLvl:null, edu:0, inSchool:false, followers:0, totalWorked:0,
-    lean, away, echoes:[], goals:[], perksUsed:[], track:null, home:'parents', food:'basic', subs:{}, cards:[], autopay:null, arrears:0, pets:[], orientation:null, outTo:false, npcs:[], flags:{}, log:[], news:[], seen:{}, cd:{}, moreView:'stats', employer:null, boss:null, school:null, paper:null, slot:(opts.slot||1),
+    lean, away, echoes:[], goals:[], perksUsed:[], track:null, home:'parents', food:'basic', subs:{}, cards:[], autopay:null, arrears:0, overdue:0, overdueItems:[], arrPaid:0, arrPlan:null, pets:[], orientation:null, outTo:false, npcs:[], flags:{}, log:[], news:[], seen:{}, cd:{}, moreView:'stats', employer:null, boss:null, school:null, paper:null, slot:(opts.slot||1),
     jailLeft:0, yearsJailed:0, crimesCommitted:0, jobsHeld:0, firedCount:0,
     peakNet:0, peakIncome:0, marriedYears:0, childrenCount:0, donated:0, illness:null,
     banned:[], dependents:0, credsLost:false, actionsLeft:2, actLog:{}, logAll:false, conditions:[], record:[], credit:null, parole:0, perf:60, gpa:50, uniTier:null, disabled:false, loans:[],
@@ -547,6 +555,7 @@ function ageUp(){
   notes.push(...tickAging());
   tickNPCs(notes); tickPets(notes); tickTrack(notes); tickSchool(notes); tickNews(notes);
   if(notes.length) push({type:'YEAR',title:`Age ${S.age}`,notes:notes.slice()});
+  offerDirectDebit();
   const n = S.jailLeft>0?0:(R()<0.3?2:1)+(R()<0.15?1:0);
   pickEvents(n).forEach(ev=>push({type:'A',ev,text:variant(ev.x)}));
   deathCheck();
@@ -682,11 +691,22 @@ function tickBusinesses(out){
 }
 function tickBills(out){
   if(S.age<18)return;
-  /* last year's bills, if you never paid them, do not simply disappear */
-  if(S.billsDue>0){
-    S.arrears+=S.billsDue;
+  /* Unpaid bills do not become a debt overnight. A creditor sends a final
+     notice first, and you get a full year to settle it. Only bills you have
+     ignored through two turns of the year go to collection as arrears. This
+     is the difference between being careless once and being unable to pay. */
+  if(S.overdue>0){
+    S.arrears+=S.overdue;
     S.credit=Math.max(300,(S.credit==null?600:S.credit)-30);
-    out.push(`You never paid last year\u2019s ${money(S.billsDue)} of bills. It is now arrears.`);
+    out.push(`The final notice expired. ${money(S.overdue)} of unpaid bills has gone to collection as arrears.`);
+    logLine('Unpaid bills went to collection.','bad');
+    S.overdue=0; S.overdueItems=[];
+  }
+  if(S.billsDue>0){
+    const fee=Math.round(28*country().col)+Math.round(S.billsDue*0.05);
+    S.overdue=S.billsDue+fee; S.overdueItems=S.billItems||[];
+    S.credit=Math.max(300,(S.credit==null?600:S.credit)-12);
+    out.push(`Final notice: last year\u2019s ${money(S.billsDue)} of bills went unpaid, plus ${money(fee)} in late fees. Settle ${money(S.overdue)} this year or it goes to collection.`);
     S.billsDue=0; S.billItems=[];
   }
   const items=billsFor();
@@ -702,35 +722,150 @@ function tickBills(out){
 function payBills(out,auto){
   const total=S.billsDue||0;
   if(total<=0)return false;
-  const use=Math.min(S.money,total);
+  /* A direct debit you arranged yourself bounces when the money is not
+     there. It takes what it can, the bank charges you for the failure, and
+     the rest stays outstanding — it does not become a debt on the same day. */
+  if(auto&&autopayBounces()&&S.money<total){
+    const took=Math.max(0,Math.min(S.money,total));
+    const fee=Math.round(30*country().col);
+    S.money-=took;
+    if(took>0)ledger('spend','Bills (part paid)',took);
+    S.credit=Math.max(300,(S.credit==null?600:S.credit)-20);
+    const left=total-took+fee;
+    S.billsDue=left;
+    S.billItems=[{l:'Outstanding bills',a:total-took},{l:'Failed payment fee',a:fee}].filter(x=>x.a>0);
+    if(out)out.push(took>0
+      ? `Your direct debit bounced. Only ${money(took)} of ${money(total)} went out and the bank charged ${money(fee)}. ${money(left)} is still owed.`
+      : `Your direct debit bounced — there was nothing in the account. The bank charged ${money(fee)}. ${money(left)} is owed.`);
+    return true;
+  }
+  const use=Math.max(0,Math.min(S.money,total));
   S.money-=use;
   const short=total-use;
   (S.billItems||[]).forEach(x=>ledger('spend',x.l,x.a));
   if(short>0){
     const onCard=chargeToCard(short);
     if(onCard<short){
-      S.arrears+=(short-onCard);
-      S.credit=Math.max(300,(S.credit==null?600:S.credit)-40);
-      if(out)out.push(`You could not cover ${money(short-onCard)} of your bills. It has gone into arrears.`);
-    } else if(out)out.push(`Bills of ${money(total)} paid, ${money(onCard)} of it on credit.`);
+      /* What you genuinely cannot cover stays outstanding and takes the
+         same grace year as anything else. Nothing becomes a debt the day
+         you fail to pay it. */
+      const left=short-onCard;
+      S.credit=Math.max(300,(S.credit==null?600:S.credit)-25);
+      S.billsDue=left; S.billItems=[{l:'Unpaid bills',a:left}];
+      if(out)out.push(`You could not cover ${money(left)} of your bills. It stays owing.`);
+      return true;
+    }
+    if(out)out.push(`Bills of ${money(total)} paid, ${money(onCard)} of it on credit.`);
   } else if(out)out.push(`${auto?'Bills paid automatically':'Bills paid'}: ${money(total)}.`);
   S.billsDue=0; S.billItems=[];
   return true;
 }
-/* arrears bite: eviction, downgrades, credit damage */
+/* arrears bite: eviction, downgrades, credit damage — but they can be
+   climbed out of, because a debt nobody can ever clear is not a difficulty,
+   it is a scripted ending. */
 function tickArrears(out){
-  if(S.arrears<=0)return;
-  S.arrears=Math.round(S.arrears*1.08);
-  S.credit=Math.max(300,(S.credit==null?600:S.credit)-15);
-  S.stats.happiness=clamp(S.stats.happiness-4);
-  out.push(`You owe ${money(S.arrears)} in arrears.`);
-  if(S.arrears>Math.round(18000*country().col)&&S.home!=='parents'&&R()<0.4){
-    const idx=HOUSING.findIndex(h=>h.id===S.home);
-    S.home=HOUSING[Math.max(0,idx-2)].id;
-    S.arrears=Math.round(S.arrears*0.5);
-    out.push(`You were evicted. You are now in ${HOME(S.home).n.toLowerCase()}.`);
-    logLine('You were evicted.','bad');
+  if(S.arrears<=0){ S.arrPaid=0; S.arrPlan=null; return; }
+  /* A repayment plan runs first. Keeping to it is the thing that makes
+     arrears survivable; missing it twice tears the agreement up. */
+  if(S.arrPlan){
+    const due=Math.min(S.arrPlan.amt,S.arrears);
+    if(S.money>=due){
+      S.money-=due; S.arrears-=due; S.arrPaid+=due;
+      ledger('spend','Repayment plan',due);
+      S.arrPlan.missed=0;
+      S.credit=Math.min(850,(S.credit==null?600:S.credit)+8);
+      out.push(`Repayment plan: ${money(due)} paid.`);
+    } else {
+      S.arrPlan.missed=(S.arrPlan.missed||0)+1;
+      out.push(`You could not make this year\u2019s ${money(due)} repayment.`);
+      if(S.arrPlan.missed>=2){ S.arrPlan=null;
+        out.push('Your repayment plan has collapsed and the interest is running again.'); }
+    }
   }
+  if(S.arrears<=0){
+    out.push('Your arrears are cleared.');
+    logLine('Cleared your arrears.','good');
+    S.arrears=0; S.arrPlan=null; S.arrPaid=0; return;
+  }
+  /* Interest only runs on a debt you ignored completely. Pay anything at
+     all and it stops growing — which is what a real creditor wants. */
+  if(S.arrPaid>0){
+    S.stats.happiness=clamp(S.stats.happiness-1);
+    out.push(`${money(S.arrears)} of arrears left, and you are paying it down.`);
+  } else {
+    S.arrears=Math.round(S.arrears*1.08);
+    S.credit=Math.max(300,(S.credit==null?600:S.credit)-15);
+    S.stats.happiness=clamp(S.stats.happiness-4);
+    out.push(`You owe ${money(S.arrears)} in arrears and paid nothing towards it.`);
+  }
+  S.arrPaid=0;
+  /* Enforcement. What they can take depends on what you have. If there is
+     genuinely nothing to collect the balance is written off: rock bottom,
+     ruined credit, but not a life sentence. */
+  if(S.arrears>Math.round(18000*country().col)&&R()<0.4){
+    if(S.home!=='parents'){
+      const idx=HOUSING.findIndex(h=>h.id===S.home);
+      S.home=HOUSING[Math.max(0,idx-2)].id;
+      out.push(`You were evicted. You are now in ${HOME(S.home).n.toLowerCase()}.`);
+      logLine('You were evicted.','bad');
+    }
+    const liquid=Math.max(0,S.money)+Math.max(0,S.savings||0);
+    const worth=liquid+propertyEquity()+vehicleValue()+businessValue();
+    if(worth<S.arrears*0.25){
+      const took=Math.min(Math.max(0,S.money),S.arrears);
+      S.money-=took; S.arrears=0; S.arrPlan=null;
+      S.credit=Math.max(300,(S.credit==null?600:S.credit)-60);
+      out.push(`The debt was written off as uncollectable. They took ${money(took)} and your credit is ruined, but you owe nothing.`);
+      logLine('Your arrears were written off.','bad');
+    } else {
+      let need=S.arrears, grabbed=0;
+      const cash=Math.min(Math.max(0,S.money),need); S.money-=cash; need-=cash; grabbed+=cash;
+      const sav=Math.min(Math.max(0,S.savings||0),need); S.savings-=sav; need-=sav; grabbed+=sav;
+      S.arrears=Math.round(need*0.6);
+      out.push(grabbed>0
+        ? `Enforcement agents took ${money(grabbed)}. ${money(S.arrears)} of the debt remains.`
+        : `Enforcement agents called. What they seized brought the debt down to ${money(S.arrears)}.`);
+    }
+  }
+}
+/* On a difficulty where nobody sets a direct debit up for you, the first
+   bill is the moment to say so. Asked once, either way, and never again —
+   a player should not be able to lose a life to a feature they never knew
+   existed. */
+function offerDirectDebit(){
+  if(!S.alive||S.age<18||S.flags.ddAsked)return;
+  if(!autopayBounces()||autopayOn())return;
+  if(!(S.billsDue>0||S.overdue>0))return;
+  S.flags.ddAsked=true;
+  /* queued, not drained: this runs inside ageUp and must take its turn
+     behind the birthday and the year summary rather than interrupting them */
+  push({type:'D',title:'Set up a direct debit?',
+    text:`Nobody is paying your bills for you on ${diffDef(S.diff).n}. You can arrange a direct debit so they go out on their own \u2014 but if the account is short on the day it will bounce, and the bank will charge you. Otherwise you pay them yourself from the Money tab each year.`,
+    yes:()=>{ S.autopay=true;
+      popupOK('Arranged','Your bills will go out automatically. Keep money in the account.');
+      save(); renderAll(); }});
+}
+/* An agreed plan: a fixed sum each year that clears the debt in about eight,
+   and freezes the interest for as long as you keep to it. */
+function arrPlanAmount(){
+  const income=S.job?Math.round(S.job.pay*0.77):Math.round(6500*country().col);
+  return Math.max(Math.round(S.arrears/8),Math.round(income*0.05));
+}
+function startArrPlan(){
+  if(S.arrears<=0)return popupOK('Nothing owed','You are not in arrears.');
+  if(S.arrPlan)return popupOK('Already agreed',`You are paying ${money(S.arrPlan.amt)} a year.`);
+  const amt=arrPlanAmount();
+  confirmDo('Agree a repayment plan',
+    `They will accept ${money(amt)} a year and freeze the interest while you keep to it. Miss two years and the agreement is torn up.`,
+    ()=>{ S.arrPlan={amt,missed:0};
+      popupOK('Agreed',`${money(amt)} a year. The interest stops while you keep to it.`);
+      save(); renderAll(); });
+}
+function cancelArrPlan(){
+  if(!S.arrPlan)return;
+  S.arrPlan=null;
+  popupOK('Cancelled','The plan is off and the interest will run again.');
+  save(); renderAll();
 }
 function chargeToCard(amount){
   let left=amount, used=0;
@@ -1257,7 +1392,7 @@ function resolveChoice(ev,ci){
   if(ch.ruin){ const loss=Math.round((S.money+S.savings)*0.9); S.money-=loss; S.savings=0; S.businesses=[];
     S.flags.owns_business=false; S.credit=Math.max(300,(S.credit||600)-150); add(`It cost you ${money(loss)}.`); }
   if(ch.bankrupt){ S.money=0; S.savings=0; S.debt=0; S.businesses=[]; S.flags.owns_business=false;
-    S.properties=[]; S.home='room'; S.cards=[]; S.arrears=0; S.credit=320; S.banned.push({field:'corp',until:S.age+8,why:'An undischarged bankruptcy bars you'});
+    S.properties=[]; S.home='room'; S.cards=[]; S.arrears=0; S.overdue=0; S.overdueItems=[]; S.arrPlan=null; S.billsDue=0; S.billItems=[]; S.credit=320; S.banned.push({field:'corp',until:S.age+8,why:'An undischarged bankruptcy bars you'});
     add('Everything was written off, and so were you, for a while.'); }
   if(ch.retrain){ S.edu=Math.max(S.edu,2); S.careerLvl=Math.max(0,(S.careerLvl==null?0:S.careerLvl)-2);
     if(S.job){S.job=null;} S.banned=[]; add('You are starting again, lower down, in something new.'); }
@@ -2630,10 +2765,15 @@ function viewLife(){
   const slots=[];
   const add=(pri,html)=>slots.push({pri,html});
 
-  if(S.billsDue>0||S.arrears>0)add(1,`<div class="card" style="border-color:rgba(224,86,91,.5)">
+  if(S.billsDue>0||S.overdue>0||S.arrears>0)add(1,`<div class="card" style="border-color:rgba(224,86,91,.5)">
       <div class="ct" style="color:var(--r)">Needs dealing with</div>
       ${S.billsDue>0?`<div class="kv"><span>Bills due</span><b class="bad">${money(S.billsDue)}</b></div>`:''}
+      ${S.overdue>0?`<div class="kv"><span>Final notice</span><b class="bad">${money(S.overdue)}</b></div>`:''}
       ${S.arrears>0?`<div class="kv"><span>Arrears</span><b class="bad">${money(S.arrears)}</b></div>`:''}
+      <div class="hsub dim">${S.overdue>0
+        ? 'Settle the final notice this year or it goes to collection as arrears.'
+        : S.arrears>0&&!S.arrPlan ? 'Paying anything at all stops the interest for a year.'
+        : 'Bills left unpaid get one year\u2019s grace, then become a debt.'}</div>
       <div class="nact"><button onclick="setTab('money');openMoney('living')">Deal with it</button></div></div>`);
 
   if(S.inSchool){
@@ -2692,6 +2832,11 @@ function viewLife(){
       <div><b>${esc(ms.label)}</b><div class="hsub dim">in ${ms.inYears} year${ms.inYears>1?'s':''} \u00b7 age ${ms.age}</div></div></div>`:''}
   </div>`;
 
+  /* Teaching sits directly under the hero card, above whatever the life is
+     shouting about, and only ever one at a time. It does not compete for
+     the three optional slots. */
+  h+=coachCard();
+
   h+=shown.map(x=>x.html).join('');
   if(hidden>0)h+=`<div class="hsub dim" style="text-align:center;padding:2px 0 6px">
     ${hidden} more card${hidden>1?'s':''} hidden to keep this readable</div>`;
@@ -2705,9 +2850,6 @@ function viewLife(){
     ${S.log.length>26?`<button class="showmore" onclick="S.logAll=!S.logAll;renderTab('life')">
       ${showAll?'Show less':'Show all '+S.log.length+' entries'}</button>`:''}</div>`;
 
-  if(S.age===0)h+=`<div class="card tip"><div class="ct">How to play</div>
-    <div class="hsub">Press <b>AGE UP</b> to live a year. Between years, use <b>Do</b> to study, train,
-    work and build a life. Everything compounds \u2014 habits, skills, relationships and money all carry forward.</div></div>`;
   return h;
 }
 function viewActs(){
@@ -2975,23 +3117,45 @@ function toggleSub(id){
   save(); renderAll();
 }
 function toggleAutopay(){
-  if(!autopayAllowed())return popupOK('Not on this difficulty',
-    'On Hard and Brutal you pay your own bills. That is part of the setting.');
   S.autopay=!autopayOn();
-  popupOK('Payments',S.autopay?'Bills will be paid automatically.':'You will pay bills yourself each year.');
+  popupOK('Direct debit', S.autopay
+    ? (autopayBounces()
+        ? 'Set up. Your bills will go out automatically \u2014 but if the account is short on the day it will bounce, and the bank will charge you for it.'
+        : 'Bills will be paid automatically.')
+    : 'Cancelled. You will pay your bills yourself each year.');
   save(); renderAll();
 }
 function payBillsNow(){
   if(!(S.billsDue>0))return popupOK('Nothing due','Your bills are settled.');
   payBills(null,false); popupOK('Paid','Your bills are settled.'); save(); renderAll();
 }
+/* Settling the final notice is the whole point of the grace year, so it is
+   its own button and it can be part-paid. */
+function payOverdueNow(){
+  if(!(S.overdue>0))return popupOK('Nothing overdue','You have no final notice outstanding.');
+  const pay=Math.min(Math.max(0,S.money),S.overdue);
+  if(pay<=0)return popupOK('No money','You have nothing to pay it with.');
+  S.money-=pay; S.overdue-=pay; ledger('spend','Overdue bills',pay);
+  if(S.overdue<=0){
+    S.overdue=0; S.overdueItems=[];
+    S.credit=Math.min(850,(S.credit==null?600:S.credit)+12);
+    popupOK('Settled','The final notice is cleared. Nothing goes to collection.');
+  } else {
+    popupOK('Part paid',`${money(pay)} paid. ${money(S.overdue)} still owed before the year turns.`);
+  }
+  save(); renderAll();
+}
 function payArrears(){
   if(S.arrears<=0)return popupOK('Nothing owed','You are not in arrears.');
-  const pay=Math.min(S.money,S.arrears);
+  const pay=Math.min(Math.max(0,S.money),S.arrears);
   if(pay<=0)return popupOK('No money','You have nothing to pay with.');
   S.money-=pay; S.arrears-=pay; ledger('spend','Arrears',pay);
+  S.arrPaid=(S.arrPaid||0)+pay;          // any payment freezes this year's interest
   S.credit=Math.min(850,(S.credit==null?600:S.credit)+10);
-  popupOK('Paid',`${money(pay)} off your arrears. ${money(S.arrears)} remaining.`); save(); renderAll();
+  popupOK('Paid',S.arrears>0
+    ? `${money(pay)} off your arrears. ${money(S.arrears)} remaining, and the interest is frozen this year.`
+    : `${money(pay)} paid. Your arrears are cleared.`);
+  save(); renderAll();
 }
 function applyCard(id){
   const def=CARD(id), sc=S.credit==null?600:S.credit;
@@ -3031,10 +3195,19 @@ function moneyLiving(){
     <div class="kv mt"><span>Household</span><b>${people} ${people===1?'person':'people'} \u00b7 ${h.space} space${h.space===1?'':'s'}</b></div>
     ${S.billsDue>0?`<div class="hardnote">${money(S.billsDue)} due now</div>
       <button class="btn wide mt" onclick="payBillsNow()">Pay ${money(S.billsDue)}</button>`:''}
-    ${S.arrears>0?`<div class="hardnote" style="color:var(--r)">${money(S.arrears)} in arrears</div>
-      <button class="btn wide mt" onclick="payArrears()">Clear arrears</button>`:''}
-    <button class="row mt" onclick="toggleAutopay()"><div><div class="rn">Automatic payment</div>
-      <div class="hsub dim">${autopayAllowed()?(autopayOn()?'On \u2014 bills settle themselves':'Off \u2014 you pay each year'):'Not available on '+diffDef(S.diff).n}</div></div>
+    ${S.overdue>0?`<div class="hardnote" style="color:var(--a)">Final notice \u2014 ${money(S.overdue)} from last year. Settle it before the year turns or it goes to collection.</div>
+      <button class="btn wide mt" onclick="payOverdueNow()">Settle ${money(S.overdue)}</button>`:''}
+    ${S.arrears>0?`<div class="hardnote" style="color:var(--r)">${money(S.arrears)} in arrears${S.arrPlan?` \u00b7 plan: ${money(S.arrPlan.amt)}/yr, interest frozen`:' \u00b7 growing 8% a year until you pay something'}</div>
+      <button class="btn wide mt" onclick="payArrears()">Pay what you can</button>
+      ${S.arrPlan
+        ? `<button class="row mt" onclick="cancelArrPlan()"><div><div class="rn">Repayment plan</div>
+             <div class="hsub dim">${money(S.arrPlan.amt)} a year \u00b7 interest frozen${S.arrPlan.missed?` \u00b7 ${S.arrPlan.missed} missed`:''}</div></div><i>\u2715</i></button>`
+        : `<button class="row mt" onclick="startArrPlan()"><div><div class="rn">Agree a repayment plan</div>
+             <div class="hsub dim">${money(arrPlanAmount())} a year and the interest stops</div></div><i>\u203a</i></button>`}`:''}
+    <button class="row mt" onclick="toggleAutopay()"><div><div class="rn">Direct debit</div>
+      <div class="hsub dim">${autopayOn()
+        ? (autopayBounces()?'On \u2014 but it bounces if the account is short':'On \u2014 bills settle themselves')
+        : (autopayBounces()?'Off \u2014 arrange one, or pay each year yourself':'Off \u2014 you pay each year')}</div></div>
       <i>${autopayOn()?'\u2713':'\u25CB'}</i></button>
   </div>
   <div class="card"><div class="ct">Where you live</div>
@@ -3533,7 +3706,7 @@ function buyPerk(id){
     if(id==='cleanslate'){ S.record.forEach(r=>r.spent=true); popupOK(p.n,'Your record is spent.'); }
     if(id==='goodyear'){ S.charmedUntil=S.age+5; popupOK(p.n,'Things will go your way for a while.'); }
     if(id==='reputation'){ S.stats.reputation=Math.max(75,S.stats.reputation); popupOK(p.n,'People speak well of you.'); }
-    if(id==='debtwipe'){ S.arrears=0; (S.cards||[]).forEach(c=>c.bal=0); popupOK(p.n,'Settled.'); }
+    if(id==='debtwipe'){ S.arrears=0; S.overdue=0; S.overdueItems=[]; S.arrPlan=null; (S.cards||[]).forEach(c=>c.bal=0); popupOK(p.n,'Settled.'); }
     save(); renderAll();
   });
 }
@@ -3681,6 +3854,8 @@ function viewStats(){
        `<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}
    </div></div>
    <div class="card"><div class="ct">Game</div>
+   <button class="row" onclick="coachReplay()"><div><div class="rn">How to play</div>
+     <div class="hsub dim">Replay the introduction and bring the tips back</div></div><i>\u203a</i></button>
    <button class="row" onclick="save();popupOK('Saved','Your life has been saved.')"><div class="rn">Save now</div><i>›</i></button>
    <button class="row" onclick="lowerDiff()"><div><div class="rn">Lower the difficulty</div>
      <div class="hsub dim">Currently ${diffDef(S.diff).n}${S.assisted?' · assisted':''} · Legacy Points \u00d7${lpMult().toFixed(2)}</div></div><i>\u203a</i></button>
@@ -3868,6 +4043,8 @@ function countryChanged(v){
 function startLife(){
   newGame({name:CREATE.name,typed:CREATE.typed,gender:CREATE.gender||null,country:CREATE.country||null,diff:CREATE.diff,mods:CREATE.mods});
   app().dataset.screen='game'; setTab('life'); renderAll();
+  /* First life on this device: explain the loop before asking them to live it. */
+  if(coachOpeningDue()) openingShow(0);
 }
 function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('life'); renderAll(); if(!S.alive)showDeath(); } }
 

@@ -19,6 +19,7 @@ shp   = (d/'shop.js').read_text()
 mkt   = (d/'market.js').read_text()
 avat  = (d/'avatar.js').read_text()
 egg   = (d/'easter.js').read_text()
+coach = (d/'coach.js').read_text()
 game  = (d/'game.js').read_text()
 # Derive the inline icon from the committed PNG so the build has no hidden
 # dependency on a generated file. Falls back to the cache if it exists.
@@ -106,6 +107,9 @@ html = f"""<!doctype html>
 </script>
 <script>
 {ach}
+</script>
+<script>
+{coach}
 </script>
 <script>
 {game}

@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -39,7 +39,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1202,21 +1202,180 @@ t('housing and food change how you feel', () => {
   const crowded = G.livingEffect();
   return crowded.happy < comfy.happy ? true : 'overcrowding did not hurt';
 });
-t('auto-pay is off on Hard and Brutal', () => {
-  atAge(30); G.S.diff='normal'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='normal').m);
-  const easyOk = G.autopayAllowed();
-  G.S.diff='hard'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='hard').m);
-  const hardOk = G.autopayAllowed();
-  return (easyOk && !hardOk) ? true : `normal:${easyOk} hard:${hardOk}`;
+/* ---- onboarding ---- */
+t('a new player is shown the opening before their first life', () => {
+  G.META.tips = {};
+  const due = G.coachOpeningDue();
+  G.coachMark('opening');
+  return (due && !G.coachOpeningDue()) ? true : `due:${due} after:${G.coachOpeningDue()}`;
 });
-t('unpaid bills become arrears and damage your credit', () => {
+t('the opening is more than one screen and every pane has words in it', () => {
+  if (G.COACH_OPENING.length < 3) return 'only ' + G.COACH_OPENING.length + ' panes';
+  const thin = G.COACH_OPENING.filter(p => !p.t || !p.x || p.x.length < 80);
+  return thin.length ? thin.length + ' thin panes' : true;
+});
+t('teaching continues past age 0', () => {
+  const late = G.COACH_TIPS.filter(c => c.to == null || c.to > 5);
+  return late.length >= 5 ? true : 'only ' + late.length + ' tips land after early childhood';
+});
+t('every tip names a real place to go', () => {
+  const bad = G.COACH_TIPS.filter(c => c.go && !/^set(Tab|More)\(|^openMoney\(/.test(c.go[0]));
+  const nameless = G.COACH_TIPS.filter(c => !c.id || !c.t || !c.x || typeof c.when !== 'function');
+  return (!bad.length && !nameless.length) ? true : `${bad.length} bad links, ${nameless.length} malformed`;
+});
+t('a first life meets a tip at each system as it opens', () => {
+  G.META.tips = {}; G.META.lives = 0;
+  G.newGame({});
+  const met = [];
+  let g = 0;
+  while (G.S.alive && G.S.age < 30 && g++ < 60) {
+    const c = G.coachTip();
+    if (c) { met.push(c.id); G.coachMark(c.id); }
+    G.ageUp();
+  }
+  const want = ['ageup','acts','stats','people','work','money'];
+  const missed = want.filter(w => met.indexOf(w) < 0);
+  return missed.length ? 'never taught: ' + missed.join(',') : true;
+});
+t('only one tip is ever on screen at a time', () => {
+  G.META.tips = {};
+  G.newGame({}); G.S.age = 20; G.S.alive = true;
+  const html = G.coachCard();
+  return (html.match(/class="card tip coach"/g) || []).length <= 1 ? true : 'more than one tip card';
+});
+t('a tip whose moment has passed is retired rather than shown late', () => {
+  G.META.tips = {};
+  G.newGame({}); G.S.age = 40; G.S.alive = true;
+  G.coachTip();
+  return G.coachSeen('ageup') ? true : 'still trying to teach AGE UP at 40';
+});
+t('a player who already knows the game is not taught it again', () => {
+  G.META.tips = {};
+  G.newGame({}); G.S.age = 0; G.S.alive = true;
+  const first = G.coachTip();
+  if (!first) return 'no tip on a fresh life';
+  G.coachDismiss(first.id);
+  G.newGame({}); G.S.age = 0; G.S.alive = true;       // a second life
+  const again = G.coachTip();
+  return (!again || again.id !== first.id) ? true : 'repeated the same tip on a new life';
+});
+t('the tutorial can be replayed', () => {
+  G.META.tips = {}; G.coachMark('opening'); G.coachMark('ageup');
+  G.coachReplay();
+  return (!G.coachSeen('opening') && !G.coachSeen('ageup')) ? true : 'replay did not reset the tips';
+});
+t('the how-to-play entry is reachable from the More tab', () => {
+  G.newGame({}); G.S.age = 30; G.S.alive = true;
+  return /coachReplay\(\)/.test(G.viewStats()) ? true : 'no way back to the tutorial';
+});
+t('the direct debit offer waits its turn instead of jumping the queue', () => {
+  // it runs inside ageUp, so it must not drain the popups queued before it
+  const src = require('fs').readFileSync(require('path').join(DIR,'game.js'),'utf8');
+  const fn = src.slice(src.indexOf('function offerDirectDebit'));
+  const body = fn.slice(0, fn.indexOf('\n}'));
+  return /push\(\{type:'D'/.test(body) && !/confirmDo\(/.test(body) ? true
+    : 'offerDirectDebit drains the queue mid-year';
+});
+t('a direct debit is offered once, to players who are not given one', () => {
+  G.newGame({diff:'hard'});
+  G.S.age = 25; G.S.alive = true; G.S.autopay = false; G.S.flags = {}; G.S.billsDue = 4000;
+  G.offerDirectDebit();
+  if (!G.S.flags.ddAsked) return 'never offered on Hard';
+  G.S.flags.ddAsked = false;
+  G.S.diff = 'normal'; G.S.mods = Object.assign({}, G.DIFFICULTIES.find(d=>d.id==='normal').m);
+  G.S.autopay = null;
+  G.offerDirectDebit();
+  return !G.S.flags.ddAsked ? true : 'offered one to a player who already has it';
+});
+
+t('a direct debit is off by default on Hard, on by default below it', () => {
+  atAge(30); G.S.autopay=null;
+  G.S.diff='normal'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='normal').m);
+  const normalOn = G.autopayOn(), normalSafe = !G.autopayBounces();
+  G.S.diff='hard'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='hard').m);
+  const hardOff = !G.autopayOn(), hardRisky = G.autopayBounces(), hardCanArrange = G.autopayAllowed();
+  return (normalOn && normalSafe && hardOff && hardRisky && hardCanArrange) ? true
+    : `normal on:${normalOn} safe:${normalSafe} / hard off:${hardOff} risky:${hardRisky} arrangeable:${hardCanArrange}`;
+});
+t('a direct debit bounces rather than silently covering a short balance', () => {
   atAge(30);
   G.S.diff='hard'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='hard').m);
-  G.S.home='family'; G.S.food='good'; G.S.subs={utilities:true,gym:true,therapy_s:true};
-  G.S.money=0; G.S.cards=[]; G.S.credit=700; G.S.arrears=0; G.S.job=null;
-  for (let i=0;i<4 && G.S.alive;i++) G.ageUp();
-  return (G.S.arrears > 0 && G.S.credit < 700) ? true
-    : `arrears ${Math.round(G.S.arrears)}, credit ${Math.round(G.S.credit)}`;
+  G.S.autopay=true; G.S.cards=[]; G.S.credit=700; G.S.arrears=0; G.S.overdue=0;
+  G.S.money=500; G.S.billsDue=4000; G.S.billItems=[{l:'Test',a:4000}];
+  G.payBills(null,true);
+  return (G.S.money===0 && G.S.billsDue>3500 && G.S.arrears===0 && G.S.credit<700) ? true
+    : `money ${G.S.money}, stillDue ${G.S.billsDue}, arrears ${G.S.arrears}, credit ${G.S.credit}`;
+});
+t('unpaid bills get one year of grace before they become arrears', () => {
+  atAge(30);
+  G.S.diff='hard'; G.S.mods=Object.assign({},G.DIFFICULTIES.find(d=>d.id==='hard').m);
+  G.S.autopay=false; G.S.money=0; G.S.cards=[]; G.S.credit=700;
+  G.S.arrears=0; G.S.overdue=0; G.S.billsDue=3000; G.S.billItems=[{l:'Test',a:3000}];
+  const out=[];
+  G.tickBills(out);                       // year one: final notice, not arrears
+  if (!(G.S.overdue > 3000)) return `no final notice, overdue ${G.S.overdue}`;
+  if (G.S.arrears !== 0) return `went straight to arrears: ${G.S.arrears}`;
+  G.S.billsDue=0; G.S.billItems=[];
+  G.tickBills(out);                       // year two, still unpaid: now it is a debt
+  return (G.S.arrears > 3000 && G.S.overdue === 0) ? true
+    : `after grace year: arrears ${G.S.arrears}, overdue ${G.S.overdue}`;
+});
+t('settling a final notice stops it reaching collection', () => {
+  atAge(30);
+  G.S.arrears=0; G.S.overdue=2000; G.S.money=5000; G.S.credit=600;
+  G.payOverdueNow();
+  if (G.S.overdue !== 0) return `overdue ${G.S.overdue}`;
+  const out=[]; G.S.billsDue=0; G.S.billItems=[]; G.tickBills(out);
+  return G.S.arrears === 0 ? true : `arrears appeared anyway: ${G.S.arrears}`;
+});
+t('paying anything at all freezes the arrears interest for a year', () => {
+  atAge(30);
+  G.S.arrears=10000; G.S.money=200; G.S.arrPlan=null; G.S.arrPaid=0; G.S.savings=0;
+  G.payArrears();                          // pays 200, leaves 9800
+  const owed=G.S.arrears;
+  const out=[]; G.tickArrears(out);
+  const frozen = G.S.arrears <= owed;
+  G.S.arrears=10000; G.S.arrPaid=0; G.S.money=0; G.S.savings=0;
+  const out2=[]; G.tickArrears(out2);
+  const grew = G.S.arrears > 10000;
+  return (frozen && grew) ? true : `frozen:${frozen} (${owed}->${G.S.arrears}) grew:${grew}`;
+});
+t('a repayment plan clears a debt instead of it compounding forever', () => {
+  atAge(30);
+  G.S.arrears=20000; G.S.money=0; G.S.savings=0; G.S.arrPaid=0; G.S.home='parents';
+  G.S.arrPlan={amt:G.arrPlanAmount(),missed:0};
+  for (let y=0; y<25 && G.S.arrears>0; y++){ G.S.money=G.S.arrPlan?G.S.arrPlan.amt:0; G.tickArrears([]); }
+  return G.S.arrears === 0 ? true : `still owed ${Math.round(G.S.arrears)} after 25 years of paying`;
+});
+t('an uncollectable debt is written off rather than growing forever', () => {
+  atAge(30);
+  let cleared=false;
+  for (let i=0;i<60 && !cleared;i++){
+    G.S.arrears=200000; G.S.money=0; G.S.savings=0; G.S.arrPaid=0; G.S.arrPlan=null;
+    G.S.properties=[]; G.S.vehicles=[]; G.S.businesses=[]; G.S.home='room';
+    for (let y=0;y<12 && G.S.arrears>0;y++) G.tickArrears([]);
+    if (G.S.arrears===0) cleared=true;
+  }
+  return cleared ? true : 'a destitute debtor never escaped their arrears';
+});
+t('arrears are no longer the certain outcome of a Hard life', () => {
+  // A player who engages with the Money tab at all should usually not end in arrears.
+  let ended=0;
+  const N=40;
+  for (let i=0;i<N;i++){
+    G.newGame({diff:'hard'});
+    let g=0;
+    while (G.S.alive && g++<130){
+      G.ageUp();
+      if (!G.S.alive) break;
+      if (G.S.age>=18 && G.S.autopay!==true) G.S.autopay=true;   // arranges a direct debit
+      if (G.S.overdue>0 && G.S.money>0){ const p=Math.min(G.S.money,G.S.overdue); G.S.money-=p; G.S.overdue-=p; }
+      if (G.S.arrears>0 && !G.S.arrPlan && G.S.money>0) G.S.arrPlan={amt:G.arrPlanAmount(),missed:0};
+    }
+    if (G.S.arrears>0) ended++;
+  }
+  const pct = Math.round(ended/N*100);
+  return pct <= 60 ? true : `${pct}% of engaged Hard lives still ended in arrears`;
 });
 t('credit cards are gated by score and can be paid down', () => {
   atAge(30); G.S.cards=[]; G.S.credit=520; G.S.money=100000;
@@ -1506,15 +1665,17 @@ t('rare events are rare in a first life', () => {
   // aim for roughly one every other life, so finding one still feels like something
   return per <= 0.85 ? true : per.toFixed(2) + ' rare events per first life';
 });
-t('auto-pay is explicit on custom difficulty', () => {
+t('the auto-pay knob still means something on custom difficulty', () => {
   const knob = G.DIFF_KNOBS.find(k => k.k === 'autopay');
   if (!knob) return 'no autopay knob';
   atAge(30);
   G.S.diff = 'custom'; G.S.mods = Object.assign({}, G.DIFFICULTIES.find(d=>d.id==='normal').m, {autopay:1});
-  const on = G.autopayAllowed();
+  G.S.autopay = null;
+  const free = G.autopayFree(), onByDefault = G.autopayOn();
   G.S.mods.autopay = 0;
-  const off = G.autopayAllowed();
-  return (on && !off) ? true : `on:${on} off:${off}`;
+  const risky = G.autopayBounces(), offByDefault = !G.autopayOn();
+  return (free && onByDefault && risky && offByDefault) ? true
+    : `free:${free} default-on:${onByDefault} risky:${risky} default-off:${offByDefault}`;
 });
 t('utilities can be cancelled to save money', () => {
   atAge(30); G.S.subs = {utilities:true};

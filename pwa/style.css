@@ -340,6 +340,11 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 .tline.good .tt{color:var(--g)} .tline.bad .tt{color:var(--r)}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .card.tip{background:rgba(240,166,60,.07);border-color:rgba(240,166,60,.3)}
+/* coaching: distinct from the life's own cards, and clearly dismissible */
+.card.coach{background:rgba(143,227,255,.06);border-color:rgba(143,227,255,.32)}
+.card.coach .ct{color:#8fe3ff}
+.card.coach .hsub{color:var(--t);opacity:.9}
+.card.coach .hsub.dim{text-transform:uppercase;letter-spacing:.09em;font-size:10px;opacity:.55}
 
 /* people avatars */
 .npcwho{display:flex;gap:10px;align-items:center}
