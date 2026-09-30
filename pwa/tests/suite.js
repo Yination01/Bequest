@@ -851,9 +851,11 @@ t('secret traits are never rolled at birth', () => {
   return bad.length ? [...new Set(bad)].join(',') : true;
 });
 t('secret shop items stay hidden until unlocked', () => {
-  Object.keys(G.META.eggs).forEach(k => delete G.META.eggs[k]);
   G.newGame({}); ageTo(30);
   if (!G.S.alive) return true;
+  // clear AFTER living: about one life in a hundred finds the V8 egg during
+  // those thirty years, and the shop was then right to show it
+  Object.keys(G.META.eggs).forEach(k => delete G.META.eggs[k]);
   const html = G.moneyShop('Vehicle');
   return /buyV8/.test(html) ? 'the V8 is visible without finding it' : true;
 });
@@ -2328,7 +2330,10 @@ t('going to university always means reading something', () => {
     G.newGame({});
     let g = 0;
     while (G.S.alive && G.S.age < 18 && g++ < 40) G.ageUp();
-    if (G.S.age < 18) continue;
+    // a life that died exactly at 18 leaves age === 18 and alive === false,
+    // and ageUp() then early-returns, so the degree never gets assigned and
+    // the test blames the engine for something it never ran
+    if (G.S.age < 18 || !G.S.alive) continue;
     G.S.flags.inCollege = true; G.S.inSchool = true;
     G.S.degree = null; G.S.degreeYears = null; G.S.collegeYears = 0;
     G.ageUp();
@@ -3350,11 +3355,25 @@ t('finance needs credit and creates repayments', () => {
     : `properties ${G.S.properties.length}, finance ${(G.S.finance||[]).length}`;
 });
 t('finance repayments are collected and eventually end', () => {
-  atAge(35); G.S.money=4000000; G.S.finance=[{l:'Test car',annual:5000,left:3,principal:15000}];
-  let paid=0;
-  for(let y=0;y<5 && G.S.alive;y++){ const before=G.S.money; G.ageUp();
-    if(G.S.money<before)paid++; }
-  return (S=>true)() && (G.S.finance||[]).length===0 ? true : 'finance never cleared';
+  // two things used to derail this and neither is the guarantee: the life
+  // dying inside the loop, and an event signing a NEW agreement so the array
+  // is not empty. Track the specific agreement instead, and retry on death.
+  for (let attempt = 0; attempt < 6; attempt++) {
+    atAge(35); G.S.money = 4000000;
+    G.S.finance = [{ l:'Test car', annual:5000, left:3, principal:15000 }];
+    let paid = 0, died = false;
+    for (let y = 0; y < 5; y++) {
+      const before = G.S.money;
+      G.ageUp();
+      if (!G.S.alive) { died = true; break; }
+      if (G.S.money < before) paid++;
+    }
+    if (died) continue;
+    if (!paid) return 'nothing was ever collected';
+    if ((G.S.finance || []).some(f => f.l === 'Test car')) return 'the agreement never ended';
+    return true;
+  }
+  return 'no life survived five years at 35 in six attempts';
 });
 t('an insulting offer can lose you the listing', () => {
   let withdrawn=false;
