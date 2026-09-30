@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 279 tests, 20 modules, 706 KB, no known integrity
+Current state: 533 events, 288 tests, 21 modules, 714 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -78,6 +78,35 @@ The things that would most improve a session.
 | 8 | ~~**A proper death and legacy screen**~~ — **done** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
 | 9 | **Year-summary pacing** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
 | 10 | **Notifications** | "Your character is waiting" brings people back. Needs the native layer, so it belongs after the APK. | S |
+
+### What item 13 turned into
+
+`invest.js`. There was one investment in the game: crypto, whose price moved
+by up to forty per cent a year on a coin flip. Savings paid 2.5%. Investing
+was a single lever and the only decision was how hard to pull it.
+
+Six asset classes, and the reason for six is that they do not move together.
+Each year the market has a mood; every asset responds to it by its own beta
+and then adds noise of its own. Gold's beta is negative, so it is the only
+thing that rises in a bad year, and bonds barely notice one.
+
+Measured over 30 years and 2,000 runs, £60,000 invested:
+
+| | median | bad case (10th) | ended down |
+|---|---|---|---|
+| all in shares | 6.0%/yr | 0.8%/yr | 7% |
+| all in an index fund | 5.6%/yr | 2.0%/yr | 2% |
+| **spread across all six** | **5.3%/yr** | **2.3%/yr** | **0%** |
+| all in bonds | 3.0%/yr | 2.6%/yr | 0% |
+| all in gold | 2.2%/yr | 0.7%/yr | 3% |
+
+Nothing in the code says "diversification is good". It falls out of the betas,
+which is the only way a lesson like that is worth having in a game. Gold on
+its own is a poor investment and a good hedge, and the table shows both.
+
+The portfolio screen reports how spread out the money is as a single number,
+because that is the thing a player cannot work out at a glance and the thing
+that decides how the bad years feel.
 
 ### What item 16 turned into
 
@@ -388,7 +417,7 @@ a cue name is otherwise silent in the most literal way.
 |---|---|---|---|
 | 11 | ~~**324 → 500 events**~~ — **done, 506** | At ~100 events a life, a committed player exhausts the library in five or six runs. Content is the genre's fuel. | L |
 | 12 | ~~**School subjects**~~ — **done** | Education is one grade number. Subjects that feed degrees and careers would make ages 11–18 matter as much as adulthood. | M |
-| 13 | **Investments beyond crypto** | Shares, funds, bonds, gold — a real portfolio with risk profiles. ReLife's players rate this highly. | M |
+| 13 | ~~**Investments beyond crypto**~~ — **done** | Shares, funds, bonds, gold — a real portfolio with risk profiles. ReLife's players rate this highly. | M |
 | 14 | ~~**Court and legal process**~~ — **done** | Arrests jump straight to a sentence. A plea, a lawyer, a trial and an appeal would make crime a system rather than a dice roll. | M |
 | 15 | **Health depth** | Specialists, surgery, waiting lists, rehabilitation, and country-by-country healthcare differences that already exist in the data but barely surface. | M |
 | 16 | ~~**Group and family events**~~ — **done** | Everything is one-to-one. Christmases, funerals, weddings, family arguments with three people in them. | M |
@@ -440,9 +469,14 @@ the larger of the two once the arrears numbers were properly measured.
 
 ~~**Next:** group and family events (16)~~ — done.
 
-**What is left** is P2 items 13 and 15, plus P3 and P4. Item 13 (investments
-beyond crypto) is the last one with real depth in it; 15 (health) was largely
-absorbed by the agency and court work.
+~~**Next:** investments beyond crypto (13)~~ — done.
+
+**What is left** is P2 item 15 (health depth), then P3 and P4. Health has
+already picked up a good deal on the way through — illness risk rather than
+certainty, waiting lists, physiotherapy, private versus the health service,
+screening you can ignore — so what remains of 15 is mainly specialists and
+the country-by-country differences that are already sitting unused in the
+data.
 
 ~~**Only then** content volume (11)~~ — done, and it was right to do it last:
 it would have been wasted before the first five minutes worked.

@@ -107,6 +107,7 @@ function migrate(){
   willMigrate(S);
   schoolMigrate(S);
   courtMigrate(S);
+  investMigrate(S);
   /* a case in progress when the game was closed has to come back, or the
      charge quietly disappears and S.legalCase blocks the next one */
   if(S.legalCase&&S.alive){ QUEUE.push({type:'COURT'}); }
@@ -247,7 +248,7 @@ function country(){ return DATA.countries.find(c=>c.id===S.country)||DATA.countr
 function propertyEquity(){ return (S.properties||[]).reduce((n,p)=>n+p.value-p.mortgage,0); }
 function vehicleValue(){ return (S.vehicles||[]).reduce((n,v)=>n+v.value,0); }
 function businessValue(){ return (S.businesses||[]).reduce((n,b)=>n+b.value,0); }
-function netWorth(){ return S.money+S.savings+cryptoValue()+assetValue()+propertyEquity()
+function netWorth(){ return S.money+S.savings+cryptoValue()+holdingsValue()+assetValue()+propertyEquity()
   +vehicleValue()+businessValue()-S.debt-(S.cards||[]).reduce((n,c)=>n+c.bal,0)-(S.arrears||0)-(S.overdue||0); }
 function cryptoValue(){ return S.crypto.units*S.crypto.price; }
 function assetValue(){ return (S.assets||[]).reduce((n,a)=>n+a.value,0); }
@@ -344,6 +345,7 @@ function newGame(opts){
     S.orientation=o.id; }
   willBirth(S);
   schoolBirth(S);
+  investBirth(S);
   SETTLEMENT=null;   /* the last life's estate must never leak into this one */
   S.bmonth=ri(1,12); S.bday=ri(1,28);
   if(R()<0.0007){ S.bmonth=2; S.bday=29; }
@@ -598,6 +600,7 @@ function ageUp(){
   push({type:'B',title:`You turned ${S.age}`,text:birthdayText(),sub:stage()});
   notes.push(...tickHabits());
   notes.push(...tickFinance());
+  tickInvest(S,notes);
   notes.push(...tickConditions());
   notes.push(...tickAging());
   tickNPCs(notes); tickPets(notes); tickTrack(notes); tickSchool(notes); tickNews(notes);
@@ -3792,11 +3795,12 @@ function viewMoney(){
       : sec==='mkt_item'?marketView('item','Things for sale')
       : sec==='biz'?moneyBusinesses()
       : sec==='will'?willView()
+      : sec==='invest'?moneyInvest()
       : sec.indexOf('shop:')===0?moneyShop(sec.slice(5)) : moneyOverview();
     const title = sec==='overview'?'Budget' : sec==='bank'?'Banking' : sec==='careers'?'Careers'
       : sec==='property'?'Property' : sec==='living'?'Living costs' : sec==='cards'?'Credit'
       : sec==='estate'?'Your property' : sec==='vehicles'?'Your vehicles' : sec==='biz'?'Businesses'
-      : sec==='will'?'Your will'
+      : sec==='will'?'Your will' : sec==='invest'?'Investments'
       : sec==='mkt_vehicle'?'Vehicle market' : sec==='mkt_property'?'Property market' : sec==='mkt_item'?'Marketplace'
       : sec.slice(5);
     return `<div class="card secthead"><button class="backbtn" onclick="closeMoney()">\u2039 Money</button>
@@ -3813,6 +3817,7 @@ function viewMoney(){
                ['estate','\u229E','Your property','Let, renovate and sell'],
                ['vehicles','\u229F','Your vehicles','Service and sell'],
                ['biz','\u25A3','Businesses','Start, staff, upgrade and sell'],
+               ['invest','\u25CE','Investments','Shares, bonds, gold and what they do'],
                ['will','\u25C8','Your will','Who gets what, and what it costs them']]
     .concat(cats.map(c=>['shop:'+c,'\u25CF',c,'Shop']));
   return `<div class="card"><div class="ctrow"><div class="ct">Money</div>

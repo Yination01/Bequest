@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -48,7 +48,7 @@ module.exports={
     get QUEUE(){return QUEUE},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
@@ -1362,6 +1362,127 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- investments ---- */
+function investor(alloc){
+  G.newGame({});
+  const s = G.S; s.age = 30; s.holdings = {};
+  Object.keys(alloc || {}).forEach(k => s.holdings[k] = alloc[k]);
+  return s;
+}
+function grow(alloc, years, runs){
+  const ends = [];
+  for (let i = 0; i < runs; i++) {
+    const s = investor(alloc);
+    for (let y = 0; y < years; y++) { s.age++; G.tickInvest(s, null); }
+    ends.push(G.holdingsValue(s));
+  }
+  ends.sort((a, b) => a - b);
+  return { med: ends[Math.floor(runs/2)], p10: ends[Math.floor(runs*0.1)], p90: ends[Math.floor(runs*0.9)] };
+}
+
+t('a new life starts with an empty portfolio and old saves get one', () => {
+  G.newGame({});
+  if (!G.S.holdings) return 'no holdings object';
+  if (G.holdingsValue(G.S) !== 0) return 'born holding investments';
+  const s = investor({}); delete s.holdings; delete s.market; delete s.investIn;
+  G.investMigrate(s);
+  if (!s.holdings || !s.market || s.investIn == null) return 'migrate left it half-built';
+  return true;
+});
+
+t('risk and return line up across the asset classes', () => {
+  const shares = grow({ shares: 60000 }, 30, 500);
+  const bonds  = grow({ bonds: 60000 },  30, 500);
+  if (!(shares.med > bonds.med)) return `shares median ${shares.med} vs bonds ${bonds.med}`;
+  const shareSpread = shares.p90 - shares.p10, bondSpread = bonds.p90 - bonds.p10;
+  if (!(shareSpread > bondSpread * 2)) return 'shares are no riskier than bonds';
+  return true;
+});
+
+t('spreading the money is worth something', () => {
+  // the whole reason for six asset classes: a spread should give up a little
+  // of the upside and a lot of the downside
+  const all  = grow({ shares: 60000 }, 30, 600);
+  const mix  = grow({ bonds:10000, index:10000, reit:10000, shares:10000, em:10000, gold:10000 }, 30, 600);
+  if (!(mix.p10 > all.p10)) return `a spread's bad case (${Math.round(mix.p10)}) is no better than one bet's (${Math.round(all.p10)})`;
+  if (!(all.p90 > mix.p90)) return 'one big bet has no more upside than a spread, so there is no trade-off';
+  return true;
+});
+
+t('gold rises when the market falls', () => {
+  // it earns its place by being the only thing that does
+  let goldUp = 0, sharesUp = 0, bad = 0;
+  for (let i = 0; i < 4000; i++) {
+    const s = investor({ gold: 10000, shares: 10000 });
+    s.age++; G.tickInvest(s, null);
+    if (s.market.last < -0.15) {
+      bad++;
+      if (s.holdings.gold > 10000) goldUp++;
+      if (s.holdings.shares > 10000) sharesUp++;
+    }
+  }
+  if (bad < 40) return 'not enough bad years to measure (' + bad + ')';
+  if (!(goldUp / bad > sharesUp / bad + 0.3))
+    return `in a bad year gold rose ${(100*goldUp/bad).toFixed(0)}% of the time and shares ${(100*sharesUp/bad).toFixed(0)}%`;
+  return true;
+});
+
+t('buying moves real money and selling brings it back', () => {
+  const s = investor({}); s.money = 50000; s.age = 30;
+  G.investBuy('index', 10000);
+  if (s.money !== 40000) return 'cash did not go down: ' + s.money;
+  if (G.holdingOf(s, 'index') !== 10000) return 'the holding did not appear';
+  if (s.investIn !== 10000) return 'the contribution was not recorded';
+  G.investSell('index', 1);
+  if (G.holdingOf(s, 'index') !== 0) return 'the holding survived being sold';
+  if (s.money !== 50000) return 'the money did not come back: ' + s.money;
+  if (s.investOut !== 10000) return 'the withdrawal was not recorded';
+  return true;
+});
+
+t('you cannot buy below the minimum or beyond your means', () => {
+  const s = investor({}); s.money = 800; s.age = 30;
+  G.investBuy('reit', 2000);                 // minimum is 2000, and he has 800
+  if (G.holdingOf(s, 'reit') > 0) return 'bought a property fund with $800';
+  if (s.money < 0) return 'money went negative';
+  G.investBuy('index', 100);                 // below the 500 minimum
+  if (G.holdingOf(s, 'index') > 0) return 'bought below the minimum';
+  s.age = 12; s.money = 100000;
+  G.investBuy('index', 5000);
+  if (G.holdingOf(s, 'index') > 0) return 'a twelve-year-old opened a brokerage account';
+  return true;
+});
+
+t('a portfolio counts towards what you are worth, and what you leave', () => {
+  const s = investor({ index: 40000 }); s.money = 0; s.savings = 0; s.debt = 0;
+  s.cards = []; s.arrears = 0; s.overdue = 0; s.crypto = {units:0, price:100};
+  s.properties = []; s.vehicles = []; s.businesses = []; s.assets = []; s.loans = [];
+  if (Math.abs(G.netWorth() - 40000) > 1) return 'net worth ignores the portfolio: ' + G.netWorth();
+  const st = G.settleEstate(s, G.netWorth());
+  if (st.gross < 39000) return 'the estate does not include investments';
+  return true;
+});
+
+t('the spread measure reads one bet and an even split correctly', () => {
+  if (G.spread(investor({ index: 50000 })) > 0.01) return 'one holding does not read as concentrated';
+  const even = {}; G.ASSETS.forEach(a => even[a.id] = 10000);
+  if (G.spread(investor(even)) < 0.99) return 'an even split does not read as spread';
+  if (G.spread(investor({})) !== 0) return 'an empty portfolio has a spread';
+  return true;
+});
+
+t('the investments screen renders without leaking a raw value', () => {
+  const s = investor({ index: 12000, gold: 3000 }); s.age = 40; s.money = 20000;
+  s.market.last = -0.3;
+  const html = G.moneyInvest();
+  if (html.indexOf('index fund') < 0) return 'the assets are not listed';
+  if (html.indexOf('very bad year') < 0) return 'the market mood is not reported';
+  if (/undefined|NaN|\[object/.test(html)) return 'the screen leaked a raw value';
+  s.age = 12;
+  if (G.moneyInvest().indexOf('opens at 18') < 0) return 'a child was offered a portfolio';
+  return true;
 });
 
 /* ---- the event cast ---- */
