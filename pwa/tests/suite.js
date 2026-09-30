@@ -18,7 +18,7 @@ global.localStorage = { _d:{}, getItem(k){return this._d[k]||null}, setItem(k,v)
   removeItem(k){delete this._d[k]}, clear(){this._d={}} };
 global.setTimeout = f => f();
 
-const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','coach.js','game.js'];
+const FILES = ['data.js','events.js','difficulty.js','systems.js','careers.js','economy.js','assets.js','social.js','shop.js','market.js','avatar.js','easter.js','achievements.js','sound.js','eulogy.js','will.js','school.js','court.js','invest.js','health.js','crash.js','adminlink.js','coach.js','game.js'];
 const SRC = FILES.map(f => fs.readFileSync(path.join(DIR,f),'utf8')).join('\n');
 
 const HARNESS = `
@@ -51,7 +51,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -1380,6 +1380,143 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
   } finally { global.document.getElementById = realGet; }
 });
 
+/* ---- the admin console ---- */
+t('a code the console generates is one the game accepts', () => {
+  // the algorithm exists in two files, pwa/adminlink.js and the console's
+  // own copy, because the console is a separate page that cannot import the
+  // bundle. If they drift, every code minted is rejected.
+  const fs2 = require('fs'), p2 = require('path');
+  const src = fs2.readFileSync(p2.join(DIR, 'admin', 'admin.js'), 'utf8');
+  const grab = name => {
+    const i2 = src.indexOf('function ' + name + '(');
+    if (i2 < 0) throw new Error('the console has no ' + name);
+    const end = src.indexOf('\n}', i2);
+    if (end < 0) throw new Error(name + ' is not closed where expected');
+    return src.slice(i2, end + 2);
+  };
+  const consoleMake = new Function(
+    src.match(/var CODE_SECRET = '[^']*';/)[0] + '\n' +
+    grab('codeHash') + '\n' + grab('padCheck') + '\n' + grab('makeCode') + '\n' +
+    'return makeCode;')();
+
+  const cases = [['LP','dw'],['LP','1'],['LP','zzz'],['PERK','inheritance'],['EGG','sonder'],['LP','0']];
+  for (const [t2, v] of cases) {
+    const fromConsole = consoleMake(t2, v);
+    const fromGame = G.makeCode(t2, v);
+    if (fromConsole !== fromGame)
+      return `console minted ${fromConsole} but the game mints ${fromGame}`;
+    if (!G.readCode(fromConsole)) return 'the game rejected its own code: ' + fromConsole;
+  }
+  return true;
+});
+
+t('a tampered or invented code is refused', () => {
+  const real = G.makeCode('LP', 'dw');
+  const bad = [real.slice(0, -1) + 'X', 'LP-DW-0000', 'LP-ZZZZ', 'nonsense',
+               '', 'PLUS-LIFETIME-AAAA', real.replace('LP', 'PERK')];
+  for (let i = 0; i < bad.length; i++)
+    if (G.readCode(bad[i])) return 'accepted a bad code: ' + JSON.stringify(bad[i]);
+  if (!G.readCode(real)) return 'refused a good one';
+  return true;
+});
+
+t('no code can ever grant Bequest Plus', () => {
+  // money-backed entitlement, same rule as the cloud sync
+  if (G.CODE_GRANTS.plus || G.CODE_GRANTS.premium || G.CODE_GRANTS.lifetime)
+    return 'there is a grant type for the paid tier';
+  G.META.premium = { plus:false, lifetime:false, since:null };
+  G.META.redeemed = {};
+  ['PLUS','PREMIUM','LIFETIME'].forEach(k => G.redeemCode(G.makeCode(k, 'x')));
+  if (G.isPlus()) return 'a code granted Plus';
+  return true;
+});
+
+t('a code pays out once and only once', () => {
+  G.META.lp = 0; G.META.redeemed = {};
+  const code = G.makeCode('LP', (500).toString(36));
+  G.redeemCode(code);
+  const after = G.META.lp;
+  if (after !== 500) return 'expected 500 Legacy Points, got ' + after;
+  G.redeemCode(code);
+  G.redeemCode(code.toLowerCase());
+  if (G.META.lp !== after) return 'the same code paid out twice: ' + G.META.lp;
+  return true;
+});
+
+t('a forced event fires on the next year and then stops', () => {
+  G.newGame({});
+  G.S.age = 30; G.S.alive = true;
+  G.clearForced();
+  if (!G.forceEvent('g_kidsfight')) return 'could not queue a real event';
+  if (G.forceEvent('no_such_event_id')) return 'queued an event that does not exist';
+  const seen = [];
+  const realShow = global.showPopup;
+  G.META.forced = ['g_kidsfight'];
+  const taken = G.takeForced();
+  if (!taken.length || taken[0].id !== 'g_kidsfight') return 'the queue did not hand the event back';
+  if ((G.META.forced || []).length) return 'the queue was not emptied after being taken';
+  return true;
+});
+
+t('a broadcast shows, dismisses, and stays dismissed', () => {
+  G.newGame({});
+  G.setBroadcast('Servers are fine. It is the writing that is slow.');
+  let html = G.broadcastCard();
+  if (html.indexOf('writing that is slow') < 0) return 'the note did not render';
+  G.dismissBroadcast();
+  if (G.broadcastCard() !== '') return 'it came back after being dismissed';
+  G.setBroadcast('');
+  if (G.broadcast()) return 'clearing it left something behind';
+  // and an expired one never shows
+  G.setBroadcast('old news', Date.now() - 1000);
+  if (G.broadcastCard() !== '') return 'an expired note still showed';
+  G.setBroadcast('');
+  return true;
+});
+
+t('the admin console is never shipped inside the game', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const built = fs2.readFileSync(p2.join(DIR, 'index.html'), 'utf8');
+  if (/BEQUEST ADMIN|admin\/admin\.js|PASS_KEY/.test(built))
+    return 'the console leaked into the built bundle';
+  const build = fs2.readFileSync(p2.join(DIR, 'build.py'), 'utf8');
+  if (/admin\//.test(build)) return 'build.py inlines the console directory';
+  // the in-game half must be there, though: the paired positive
+  if (built.indexOf('redeemCode') < 0) return 'the in-game half is missing from the bundle';
+  return true;
+});
+
+t('the console reads the same storage keys the game writes', () => {
+  // the console is a separate page with its own copy of the key names, so
+  // it can silently administer nothing at all
+  const fs2 = require('fs'), p2 = require('path');
+  const gsrc = fs2.readFileSync(p2.join(DIR, 'game.js'), 'utf8');
+  const asrc = fs2.readFileSync(p2.join(DIR, 'admin', 'admin.js'), 'utf8');
+  const constOf = (src, name) => {
+    const m = src.match(new RegExp(name + "\\s*=\\s*'([^']+)'"));
+    return m ? m[1] : null;
+  };
+  for (const k of ['META_KEY','SAVE_KEY']) {
+    const game = constOf(gsrc, k), cons = constOf(asrc, k);
+    if (!game) return 'game.js no longer defines ' + k;
+    if (!cons) return 'the console no longer defines ' + k;
+    if (game !== cons) return `${k}: game uses ${game}, the console uses ${cons}`;
+  }
+  if (/'bequest\.meta'|'bequest\.save'/.test(asrc))
+    return 'the console still has an unversioned key name in it';
+  return true;
+});
+
+t('the console passphrase is stored as a hash, not as itself', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const src = fs2.readFileSync(p2.join(DIR, 'admin', 'admin.js'), 'utf8');
+  if (/setItem\(PASS_KEY,\s*v\)/.test(src)) return 'the passphrase is stored in clear';
+  if (!/setItem\(PASS_KEY,\s*hash\(/.test(src)) return 'the passphrase is not hashed on the way in';
+  if (!/hash\(v\)\s*!==\s*localStorage\.getItem\(PASS_KEY\)/.test(src))
+    return 'the check does not compare hashes';
+  return true;
+});
+
 /* ---- the developer surface does not ship ---- */
 t('a player is never offered a button that grants the paid tier', () => {
   // protoUnlocked was written at load and read nowhere, so the "Switch Plus
@@ -1518,12 +1655,25 @@ t('the privacy policy lists every key the game writes', () => {
     if (/localStorage\.setItem\(\s*CRASH_KEY/.test(src)) keys.add('CRASH_KEY');
     if (/localStorage\.setItem\(\s*slotKey/.test(src))   keys.add('slot');
   });
+  // resolve the constants from the source rather than restating them here:
+  // hardcoding them meant this test happily validated a policy that listed
+  // two key names the game has never written
+  const gsrc = fs2.readFileSync(p2.join(DIR, 'game.js'), 'utf8');
+  const csrc = fs2.readFileSync(p2.join(DIR, 'crash.js'), 'utf8');
+  const constOf = (src, name) => {
+    const m = src.match(new RegExp(name + "\\s*=\\s*'([^']+)'"));
+    return m ? m[1] : null;
+  };
   const documented = {
     'bequest.cloud':'bequest.cloud', 'bequest.lastslot':'bequest.lastslot',
     'bequest.migrated':'bequest.migrated',
-    'META_KEY':'bequest.meta', 'SAVE_KEY':'bequest.save',
-    'CRASH_KEY':'bequest.crashlog', 'slot':'bequest.slot'
+    'META_KEY':  constOf(gsrc, 'META_KEY'),
+    'SAVE_KEY':  constOf(gsrc, 'SAVE_KEY'),
+    'CRASH_KEY': constOf(csrc, 'CRASH_KEY'),
+    'slot':      'bequest.slot'
   };
+  const unresolved = Object.keys(documented).filter(k => !documented[k]);
+  if (unresolved.length) return 'could not resolve key constants: ' + unresolved.join(', ');
   const missing = [...keys].filter(k => {
     const shown = documented[k] || k;
     return policy.indexOf(shown) < 0;

@@ -25,8 +25,8 @@ sent to us.
 
 | Key | What it holds |
 |---|---|
-| `bequest.save`, `bequest.slot1-3` | Your saved lives: the character, family, money, career, history |
-| `bequest.meta` | Progress across lives: Legacy Points, achievements, records, unlocks, whether Plus is active |
+| `bequest.save.v1`, `bequest.slot1-3` | Your saved lives: the character, family, money, career, history |
+| `bequest.meta.v1` | Progress across lives: Legacy Points, achievements, records, unlocks, whether Plus is active |
 | `bequest.cloud` | Your cloud sync settings, if you turned it on: the code and the server address you typed |
 | `bequest.crashlog` | Up to twelve problem reports, described in section 5 |
 | `bequest.lastslot`, `bequest.migrated` | Housekeeping |

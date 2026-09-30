@@ -676,6 +676,8 @@ function ageUp(){
   tickNPCs(notes); tickPets(notes); tickTrack(notes); tickSchool(notes); tickNews(notes);
   if(notes.length) push({type:'YEAR',title:`Age ${S.age}`,notes:notes.slice()});
   offerDirectDebit();
+  takeForced().forEach(ev=>{ const cast=makeCast();
+    push({type:'A',ev,text:withCast(cast,()=>variant(ev.x)),cast}); });
   const n = S.jailLeft>0?0:(R()<0.3?2:1)+(R()<0.15?1:0);
   pickEvents(n).forEach(ev=>{ const cast=makeCast();
     push({type:'A',ev,text:withCast(cast,()=>variant(ev.x)),cast}); });
@@ -3061,6 +3063,7 @@ function viewLife(){
   const add=(pri,html)=>slots.push({pri,html});
   if(S.inSchool&&S.age>=SCHOOL_START&&S.age<=SCHOOL_END){ const sc=subjectsCard(); if(sc)add(4,sc); }
   if((S.conditions||[]).length){ const hc=healthCard(); if(hc)add(2,hc); }
+  { const bc=broadcastCard(); if(bc)add(0,bc); }
 
   if(S.billsDue>0||S.overdue>0||S.arrears>0)add(1,`<div class="card" style="border-color:rgba(224,86,91,.5)">
       <div class="ct" style="color:var(--r)">Needs dealing with</div>
