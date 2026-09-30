@@ -7396,8 +7396,13 @@ function loadMeta(){
   m.adsSeen=m.adsSeen||0;
   m.eggs=m.eggs||{}; m.deathAges=m.deathAges||[]; m.taps=m.taps||0; m.perks=m.perks||{};
   /* Ships locked, so the free tier is what you actually experience.
-     The prototype toggle on the Shop page turns it on for testing. */
-  if(m.premium.protoUnlocked===undefined){ m.premium.protoUnlocked=true; m.premium.plus=false; }
+     protoUnlocked was set here and then never read anywhere, so the
+     "Switch Plus on" button rendered for every player: a button that hands
+     out the paid tier. It now defaults to off and is only turned on by a
+     developer setting bequest.dev in localStorage, which no player will do
+     by accident. */
+  if(m.premium.protoUnlocked===undefined){ m.premium.protoUnlocked=false; m.premium.plus=false; }
+  try{ if(localStorage.getItem('bequest.dev')==='1') m.premium.protoUnlocked=true; }catch(e){}
   return m;
 }
 function saveMeta(){ try{localStorage.setItem(META_KEY,JSON.stringify(META));}catch(e){ softFail('saveMeta',e); } }
@@ -11394,9 +11399,11 @@ function viewPlus(){
     <div class="hsub">No content is ever locked behind payment. No energy timers. No loot boxes.
       Nothing you can buy makes your character better at living. If your subscription lapses,
       every save you made stays yours.</div></div>
-  <div class="card"><div class="ct">Prototype controls</div>
+  ${devUnlocked()?`<div class="card"><div class="ct">Prototype controls</div>
+    <div class="hsub dim mb">Developer build. Not shown to players.</div>
     <button class="row" onclick="togglePlus()"><div><div class="rn">${on?'Switch Plus off':'Switch Plus on'}</div>
-      <div class="hsub dim">For testing both sides of the paywall</div></div><i>\u203a</i></button>
+      <div class="hsub dim">For testing both sides of the paywall</div></div><i>\u203a</i></button></div>`:''}
+  <div class="card">
     <button class="row" onclick="popupOK('Restore','No previous purchases were found on this device.')">
       <div class="rn">Restore purchases</div><i>\u203a</i></button></div>`;
 }
@@ -11412,7 +11419,10 @@ function buyPlus(kind){
     renderAll();
   });
 }
+function devUnlocked(){ return !!(META.premium&&META.premium.protoUnlocked); }
 function togglePlus(){
+  /* the entitlement is not a toggle outside a developer build */
+  if(!devUnlocked()) return;
   META.premium.plus=!isPlus(); META.premium.lifetime=false; saveMeta(); renderAll();
   popupOK('Prototype',`Plus is now ${isPlus()?'ON':'OFF'}.`);
 }

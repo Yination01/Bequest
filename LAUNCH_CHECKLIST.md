@@ -97,7 +97,30 @@ Feature graphic 1024 x 500 does not exist. Screenshots exist as development
 captures in `shots/` and need exporting at store resolution.
 `PLAY_LISTING.md` names the five to use and the order.
 
-## 9. Then, and only then, name a build
+## 9. There is no admin panel, and there should not be one
+
+Football-Legend and Poise both have one. Football-Legend's signs in against
+Supabase and can search players, inspect a uid, gift, ban, create events,
+generate redeem codes, broadcast, and close a season.
+
+**None of that has a subject in Bequest.** No server, no accounts, no uids,
+no seasons, no live ops. An admin panel here would mean inventing the
+backend the product deliberately does not have, which `.agent/agent-pack.json`
+explicitly warns against.
+
+What Bequest needed instead was the opposite: the developer surface it
+already had was **shipping to players**. `META.premium.protoUnlocked` was
+written at load and read nowhere, so a card headed "Prototype controls",
+containing a button labelled **Switch Plus on**, rendered for everybody. It
+is now off by default, only enabled by setting `bequest.dev` to `1` in
+localStorage, and `togglePlus()` refuses to fire outside a developer build
+rather than merely being hidden.
+
+If a QA build ever needs more than that, the honest form is a local debug
+panel behind the same flag: jump to an age, force an event, set a stat.
+That is a developer tool, not an admin panel, and it never leaves the phone.
+
+## 10. Then, and only then, name a build
 
 Per `CLAUDE.md` hard rule 1, no build is ever started that you have not
 named in your own message. When items 1, 2 and 4 are done, say the build

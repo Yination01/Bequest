@@ -51,7 +51,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -659,7 +659,13 @@ t('every gated event becomes reachable once its gate is met', () => {
       if (q.sibling && !G.anyOf('sibling').length) assign('sibling');
       while (q.children2 && G.anyOf('child').length < 2) assign('child');
       while (q.siblings2 && G.anyOf('sibling').length < 2) assign('sibling');
-      if (q.gathering) { while (G.anyOf('child').length + G.anyOf('sibling').length < 2) assign('child'); }
+      if (q.gathering) {
+        // g_whenyou is gathering AND nochild: filling the room with children
+        // makes its own gate unsatisfiable, so use siblings when children are
+        // excluded
+        const fill = q.nochild ? 'sibling' : 'child';
+        while (G.anyOf('child').length + G.anyOf('sibling').length < 2) assign(fill);
+      }
       if (q.teacher && !G.anyOf('teacher').length) assign('teacher');
       if (q.property && !(G.S.properties||[]).length) G.S.properties = [{t:'flat',value:200000,mortgage:0,rented:false,cond:70,home:true}];
       if (q.noproperty) G.S.properties = [];
@@ -804,11 +810,19 @@ t('extra save slots require Plus', () => {
   return (blocked && G.S.slot === 3) ? true : 'slot gating not working';
 });
 t('buying Plus actually grants it, and can be switched off', () => {
-  G.META.premium.plus = false;
+  // switching it off is a developer affordance now, not a player one, so the
+  // test has to say which build it is standing in. It also has to leave
+  // META clean: lifetime surviving this test made the next one compare two
+  // identical screens.
+  G.META.premium = { plus:false, lifetime:false, since:null, protoUnlocked:true };
   G.AUTOCONFIRM = true; G.buyPlus('lifetime'); G.AUTOCONFIRM = null;
   const on = G.isPlus() && G.META.premium.lifetime;
   G.togglePlus();
-  return (on && !G.isPlus()) ? true : 'purchase or toggle failed';
+  const off = !G.isPlus();
+  G.META.premium = { plus:false, lifetime:false, since:null, protoUnlocked:false };
+  if (!on) return 'the purchase did not grant Plus';
+  if (!off) return 'the developer toggle did not revoke it';
+  return true;
 });
 t('a free player still gets one Second Chance per life', () => {
   G.META.premium.plus = false;
@@ -1364,6 +1378,43 @@ t('the death screen leads with the obituary and keeps the numbers', () => {
     G.toggleDeathStats();
     return true;
   } finally { global.document.getElementById = realGet; }
+});
+
+/* ---- the developer surface does not ship ---- */
+t('a player is never offered a button that grants the paid tier', () => {
+  // protoUnlocked was written at load and read nowhere, so the "Switch Plus
+  // on" card rendered for everybody
+  G.META.premium = { plus:false, lifetime:false, since:null, protoUnlocked:false };
+  G.newGame({});
+  const html = G.viewPlus();
+  if (/togglePlus/.test(html)) return 'the Plus toggle is on screen for a normal player';
+  if (/Prototype controls/.test(html)) return 'the prototype card is on screen for a normal player';
+  if (!/Restore purchases/.test(html)) return 'the real purchase controls disappeared with it';
+  return true;
+});
+
+t('the toggle refuses to fire even if it is called directly', () => {
+  // hiding a button is not the same as disabling it
+  G.META.premium = { plus:false, lifetime:false, since:null, protoUnlocked:false };
+  G.togglePlus();
+  if (G.isPlus()) return 'calling togglePlus() granted Plus without a developer build';
+  return true;
+});
+
+t('a developer build still gets the controls', () => {
+  // the paired positive: hiding it from everyone including the developer
+  // would pass the two checks above and be useless
+  G.META.premium = { plus:false, lifetime:false, since:null, protoUnlocked:true };
+  G.newGame({});
+  if (!G.devUnlocked()) return 'the developer flag does not register';
+  const html = G.viewPlus();
+  if (!/togglePlus/.test(html)) return 'a developer build cannot reach the toggle';
+  G.togglePlus();
+  if (!G.isPlus()) return 'the toggle does not work in a developer build';
+  G.togglePlus();
+  if (G.isPlus()) return 'the toggle does not switch back off';
+  G.META.premium.protoUnlocked = false;
+  return true;
 });
 
 /* ---- the store declarations have to stay true ---- */
