@@ -1411,7 +1411,7 @@ const EVENTS = [
 {id:'y_burnout_early', min:22,max:35,w:6, req:{job:true}, t:'Too Much, Too Soon',
  x:['You have been working eleven-hour days to prove something.'],
  c:[{l:'Keep proving it', e:{money:6000,health:-10,happiness:-10}, promoBoost:true},
-    {l:'Ease off', e:{health:6,happiness:8,promoPenalty:true}}]},
+    {l:'Ease off', e:{health:6,happiness:8}, promoPenalty:true}]},
 {id:'y_family_money', min:20,max:50,w:6, t:'They Need Help Back Home',
  x:['Your family is struggling and you are the one with an income.'],
  c:[{l:'Send money every month', e:{money:-7000,rel:{parents:20},reputation:6}},
@@ -1587,7 +1587,7 @@ const EVENTS = [
 {id:'a_opportunity_abroad', min:30,max:58,w:5, req:{job:true}, t:'A Posting Overseas',
  x:['The company wants you in another country for three years.'],
  c:[{l:'Take the posting', e:{money:20000,happiness:-4,skill:{charisma:8}}, emigrate:true},
-    {l:'Stay', e:{promoPenalty:true,happiness:2}}]},
+    {l:'Stay', e:{happiness:2}, promoPenalty:true}]},
 {id:'a_child_money', min:40,max:68,w:6, req:{child:true}, t:'{child} Needs Money',
  x:['{child} is an adult now, and is asking for help with something significant.'],
  c:[{l:'Give it to them', e:{money:-20000,rel:{children:18}}},
@@ -1606,6 +1606,7 @@ const EVENTS = [
 {id:'o_retire', min:58,max:70,w:8, req:{job:true}, t:'A Gentle Push',
  x:['The company is offering early retirement packages. The subtext is not subtle.'],
  c:[{l:'Take the package', e:{money:30000,happiness:6}, retire:true},
+    {l:'Go part time instead', e:{happiness:8,money:-4000,health:2}},
     {l:'Refuse and stay', e:{reputation:-4,happiness:-4}}]},
 {id:'o_pension', min:62,max:85,w:7, t:'The Numbers Do Not Work',
  x:['You sit down with your pension statement and do the arithmetic twice.'],
@@ -1631,7 +1632,9 @@ const EVENTS = [
     {l:'Keep busy', e:{happiness:-18,health:-3,discipline:5}, widow:true}]},
 {id:'o_downsize', min:60,max:108,w:6, req:{property:true}, t:'Too Many Rooms',
  x:['The house is far bigger than you need and the stairs are becoming a problem.'],
- c:[{l:'Sell and downsize', e:{happiness:-4}, propSell:true},{l:'Stay put', e:{happiness:5,health:-3}}]},
+ c:[{l:'Sell and downsize', e:{happiness:-4}, propSell:true},
+    {l:'Sell, and give most of it to the children now', e:{happiness:6,rel:{children:20},money:-40000}, propSell:true},
+    {l:'Stay put', e:{happiness:5,health:-3}}]},
 {id:'o_scam', min:62,max:115,w:6, t:'A Very Convincing Call',
  x:['Somebody rings claiming to be from your bank. They know your name, your address, and what you spent on Tuesday.'],
  c:[{l:'Give them what they ask for', e:{}, scamLoss:true},
@@ -1659,7 +1662,8 @@ const EVENTS = [
 {id:'o_fall', min:68,max:115,w:7, t:'A Fall',
  x:['You went down in the kitchen and could not get up for some time.'],
  c:[{l:'Hospital ($6,000)', e:{money:-6000,health:-8}, medical:true},
-    {l:'Tell nobody', e:{health:-18,happiness:-6}}]},
+    {l:'Move somewhere on one floor', e:{money:-9000,health:8,happiness:-10,rel:{children:6}}},
+    {l:'Tell nobody', e:{health:-18,happiness:-6}, condition:'injury'}]},
 {id:'o_lonely', min:65,max:115,w:7, t:'The Phone Does Not Ring',
  x:['You realise, on a Thursday, that you have not spoken aloud to another person since Sunday.'],
  c:[{l:'Join something local', e:{happiness:12,health:3}, friend:true},
@@ -1697,7 +1701,7 @@ const EVENTS = [
     {l:'Admit you never worked it out', e:{happiness:8,reputation:4}}]},
 /* ============ INFANCY & TODDLERHOOD 0–5 ============ */
 {id:'i_firstword', min:1,max:3,w:10, once:true, t:'Your First Word',
- x:['Everyone has been waiting for this. The room goes quiet.','It comes out suddenly, in the middle of an ordinary afternoon.'],
+ x:['Everyone has been waiting for this. The room goes quiet.','The word comes out suddenly, in the middle of an ordinary afternoon.'],
  c:[{l:'Say something that delights them', e:{rel:{parents:10},happiness:6,smarts:2}},
     {l:'Say something rude you overheard', e:{rel:{parents:-3},happiness:4,skill:{charisma:4}}},
     {l:'Stay silent a while longer', e:{smarts:3,discipline:2}}]},
@@ -1961,7 +1965,9 @@ const EVENTS = [
 {id:'h_secondopinion', min:30,max:100,w:6, req:{condition:true}, t:'A Second Opinion',
  x:['Another doctor is not sure the first one was right.'],
  c:[{l:'Pay for private tests', e:{money:-4200}, treatOne:true},
-    {l:'Stay with the original plan', e:{happiness:-3}}]},
+    {l:'Insist on a specialist on the health service', e:{money:-1800,health:8,happiness:-4}},
+    {l:'Look it up and treat yourself', e:{happiness:-6,health:-6}, quackery:true},
+    {l:'Stay with the original plan', e:{happiness:-3,health:-6}}]},
 {id:'h_altmed', min:25,max:100,w:6, req:{condition:true}, t:'Someone Recommends a Cure',
  x:['A friend swears by something that is not medicine.'],
  c:[{l:'Try it', e:{money:-1800,happiness:4}, quackery:true},
@@ -2431,7 +2437,310 @@ const EVENTS = [
  c:[{l:'Put a little in', e:{money:-2000}, cryptoStart:2000},
     {l:'Put in more than you should', e:{money:-9000}, cryptoStart:9000},
     {l:'Keep your money in the bank', e:{discipline:5,savings:500}}]}
+,
+
+/* ============ FORKS ============
+   Events whose branches send a life somewhere different, rather than moving
+   its statistics up and down. Eighty per cent of the events above adjust
+   numbers; these change what the rest of the life is made of. Weighted
+   towards the places the rest of the content is thin: whether there are
+   children, whether there is any more education, and the years after sixty,
+   where almost nothing used to fork at all.                                */
+
+/* ---- whether there are children ---- */
+{id:'r_tryfor', min:24,max:41,w:11, once:true, req:{partner:true,nochild:true}, t:'The Conversation',
+ x:['{partner} asks, carefully, whether you have thought about children.','The subject comes up over dinner and does not go away afterwards.','"Do you want them or not?" It is a fair question and you have been avoiding it.'],
+ c:[{l:'Yes. Start trying', e:{happiness:8,money:-3000}, child:true},
+    {l:'Agree to think about it properly', e:{happiness:2,rel:{partner:3},discipline:3}},
+    {l:'No. You are certain', e:{happiness:-4,rel:{partner:-14}}, flag:'no_children'}]},
+{id:'r_accident', min:19,max:43,w:9, req:{partner:true,noflags:['no_children']}, cd:14, t:'Two Lines',
+ x:['The test is positive, and neither of you planned this.','The test is on the side of the sink and neither of you has said anything for a minute.'],
+ c:[{l:'Keep it', e:{happiness:6,money:-6000,discipline:6}, child:true},
+    {l:'Talk it through, then decide together', e:{rel:{partner:8},happiness:-2,smarts:3}},
+    {l:'Not now', e:{happiness:-12,rel:{partner:-6}}}]},
+{id:'r_adopt', min:30,max:52,w:7, once:true, req:{nochild:true}, t:'The Home Study',
+ x:['The agency says the assessment takes a year and asks everything.','There is a child who needs somewhere. The paperwork is two inches thick.'],
+ c:[{l:'Go through with it', e:{happiness:16,money:-14000,reputation:6}, child:true},
+    {l:'Foster instead, for now', e:{happiness:9,money:-2000}, dependent:true},
+    {l:'Withdraw the application', e:{happiness:-8}}]},
+{id:'r_lateone', min:38,max:47,w:6, once:true, req:{nochild:true,partner:true}, t:'Last Chance',
+ x:['The consultant is kind about it but the numbers are the numbers.','If it is going to happen it has to happen now, and it will cost.'],
+ c:[{l:'Spend whatever it takes', e:{money:-32000,happiness:10,health:-4}, child:true},
+    {l:'One round, and then let it go', e:{money:-11000,happiness:-6}},
+    {l:'Accept it', e:{happiness:-10,discipline:8,rel:{partner:6}}, flag:'no_children'}]},
+{id:'r_another', min:26,max:44,w:7, req:{child:true}, cd:9, t:'One More',
+ x:['One of you wants another. The other has not said no yet.','The house is loud enough already, and you are both still thinking about it.'],
+ c:[{l:'Have another', e:{happiness:7,money:-9000,health:-3}, child:true},
+    {l:'Stop at what you have', e:{happiness:3,money:2000,discipline:4}}]},
+{id:'r_raisekin', min:28,max:58,w:6, once:true, req:{sibling:true}, t:'Their Child',
+ x:['Your sibling cannot cope, and there is a child in the middle of it.','Social services ask whether there is anyone in the family. There is you.'],
+ c:[{l:'Take the child in', e:{happiness:-4,money:-12000,reputation:12,rel:{all:6}}, child:true},
+    {l:'Help with money instead', e:{money:-9000,rel:{all:3}}},
+    {l:'You cannot', e:{happiness:-14,rel:{all:-12}}}]},
+{id:'r_snip', min:33,max:49,w:5, once:true, req:{child:true}, t:'That Is Enough',
+ x:['The appointment is fifteen minutes and it is permanent.','You have as many as you are going to have, and you would like to be sure.'],
+ c:[{l:'Book it', e:{happiness:6,money:-1200}, flag:'no_children'},
+    {l:'Leave it to chance', e:{happiness:1}}]},
+
+/* ---- whether there is any more education ---- */
+{id:'a_openuni', min:26,max:54,w:9, once:true, req:{job:true}, t:'Evening Class',
+ x:['The prospectus has been on the table for a fortnight. Four years, part time.','You could have the degree by fifty. You would be tired until then.'],
+ c:[{l:'Enrol', e:{money:-9000,happiness:-6,smarts:10,discipline:8}, setEdu:3},
+    {l:'Do one module and see', e:{money:-1400,smarts:4}},
+    {l:'Put it back in the drawer', e:{happiness:-3}}]},
+{id:'y_apprentice', min:16,max:24,w:10, once:true, req:{noflags:['inCollege']}, t:'Indentured',
+ x:['Four years, low pay, a trade at the end of it.','The foreman says he will take one of you on. You would be earning on Monday.'],
+ c:[{l:'Sign the papers', e:{money:7000,discipline:10,skill:{handiness:14}}, setEdu:2},
+    {l:'Hold out for something better', e:{happiness:-4,smarts:3}},
+    {l:'Stay in education', e:{money:-2000,smarts:8}, setEdu:1}]},
+{id:'y_dropout', min:18,max:23,w:8, req:{flags:['inCollege']}, cd:99, t:'Halfway Through',
+ x:['You are two years in, badly in debt, and no longer sure why.','The course is not what the prospectus said. Nobody offers a refund.'],
+ c:[{l:'Finish it anyway', e:{happiness:-8,discipline:10,smarts:6}},
+    {l:'Switch to something else entirely', e:{money:-6000,smarts:4,happiness:4}},
+    {l:'Walk away now', e:{money:4000,happiness:6,reputation:-6}, flag:'dropped_out'}]},
+{id:'a_retrain', min:34,max:57,w:9, once:true, req:{job:true}, t:'Start Again Lower Down',
+ x:['The field you are in is closing. There is a conversion course, and it is a year of your life.','You are forty and you would be the oldest person in the room by fifteen years.'],
+ c:[{l:'Retrain completely', e:{happiness:-10,money:-8000,smarts:8}, retrain:true},
+    {l:'Take the certificate at weekends', e:{money:-2600,smarts:5,discipline:5}, setEdu:2},
+    {l:'Stay where you are', e:{happiness:-5,discipline:-3}}]},
+{id:'t_scholar', min:15,max:18,w:7, once:true, req:{smart:62}, t:'The Letter',
+ x:['A school you had not heard of wants to pay for you to attend.','The scholarship covers everything. It is three hundred miles away.'],
+ c:[{l:'Take the place', e:{happiness:-8,smarts:14,reputation:8,rel:{parents:-8}}, flag:'scholarship', setEdu:1},
+    {l:'Stay near home', e:{happiness:6,rel:{parents:8},smarts:2}}]},
+{id:'y_night', min:20,max:35,w:7, req:{job:true}, cd:12, t:'After the Shift',
+ x:['The course runs twice a week from seven until ten, after work.','You would get home at eleven and do it again the next day.'],
+ c:[{l:'Enrol and see it through', e:{happiness:-9,health:-4,smarts:9,discipline:9}, setEdu:2},
+    {l:'Enrol and quietly stop going', e:{money:-900,happiness:-4,discipline:-6}},
+    {l:'Keep your evenings', e:{happiness:6}}]},
+{id:'a_phd', min:24,max:38,w:5, once:true, req:{smart:70}, t:'Another Six Years',
+ x:['Your supervisor thinks you should carry on. The stipend is poverty and the work is yours alone.','A doctorate, if you want it, and very little else for the duration.'],
+ c:[{l:'Take it', e:{money:-4000,smarts:16,happiness:-6,discipline:10}, setEdu:4},
+    {l:'Leave with the masters', e:{smarts:6,money:3000}, setEdu:3},
+    {l:'Go and get a job', e:{money:9000,happiness:4}}]},
+
+/* ---- crime, and whether it catches up with you ---- */
+{id:'x_wheelman', min:17,max:34,w:7, cd:16, t:'Just Driving',
+ x:['You would not be going inside. You would be sitting outside with the engine running.','All you have to do is drive. That is what they keep saying.'],
+ c:[{l:'Drive', e:{money:9000,happiness:-8}, crimeRoll:'burglary'},
+    {l:'Find them somebody else who will', e:{money:1200,reputation:-4}, arrestRisk:true},
+    {l:'Refuse and mean it', e:{happiness:-4,discipline:6,rel:{friends:-16}}}]},
+{id:'x_books', min:28,max:58,w:7, req:{job:true}, cd:14, t:'The Second Set',
+ x:['Nobody checks the reconciliation. You have known that for two years.','It would be a few thousand a month and it would not be noticed for a long time.'],
+ c:[{l:'Start taking it', e:{money:38000,happiness:-10}, fraudRoll:true},
+    {l:'Take a little, once', e:{money:5000,reputation:-3}, arrestRisk:true},
+    {l:'Report what you found', e:{reputation:14,happiness:-4}, whistle:true}]},
+{id:'x_carry', min:15,max:30,w:7, cd:12, t:'Something in the Bag',
+ x:['You are asked to hold it for a week. You are not asked what it is.','The package fits in a rucksack, and someone will collect it on Friday.'],
+ c:[{l:'Hold it', e:{money:2500}, crimeRoll:'drugs'},
+    {l:'Look inside first', e:{happiness:-6,smarts:4}, arrestRisk:true},
+    {l:'Say no', e:{rel:{friends:-12},discipline:6}}]},
+{id:'x_comeclean', min:20,max:62,w:6, req:{record:true}, cd:18, t:'The Old Business',
+ x:['The old case is being reopened, and your name is in the file somewhere.','A detective leaves a card. It has been eleven years.'],
+ c:[{l:'Confess and take what comes', e:{happiness:-14,reputation:-8}, courtRoll:true},
+    {l:'Say nothing and wait', e:{happiness:-10,health:-4}},
+    {l:'Get a solicitor first', e:{money:-7000,reputation:4}, expunge:true}]},
+{id:'x_inside', min:19,max:55,w:6, req:{record:true}, cd:20, t:'A Name on the Wing',
+ x:['Someone recognises you in the yard and says your brother owes them.','There is an arrangement on offer and a cost to refusing it.'],
+ c:[{l:'Take the protection', e:{happiness:4,reputation:-6}, crimeRoll:'mugging'},
+    {l:'Stand on your own', e:{health:-18,reputation:10,skill:{combat:10}}},
+    {l:'Ask to be moved', e:{happiness:-8,reputation:-10}, paroleRisk:true}]},
+{id:'x_fence', min:22,max:50,w:6, req:{flags:['owns_business']}, cd:16, t:'Through the Books',
+ x:['The goods would pass through the shop and out again. The margin is absurd.','The man selling it does not say where it comes from, and you do not ask.'],
+ c:[{l:'Take the trade', e:{money:26000}, crimeRoll:'fraud'},
+    {l:'One consignment only', e:{money:7000,happiness:-4}, arrestRisk:true},
+    {l:'Keep the shop clean', e:{reputation:8,discipline:5}}]},
+
+/* ---- the body, and how long it lasts ---- */
+{id:'h_lump', min:32,max:74,w:5, once:true, t:'Something You Found',
+ x:['The lump has been there a fortnight and you have told nobody.','You noticed it in the shower and you have been noticing it ever since.'],
+ c:[{l:'Go to the doctor this week', e:{happiness:-6,money:-400,health:4}},
+    {l:'Wait and see if it changes', e:{happiness:-10,health:-6}},
+    {l:'Decide it is nothing', e:{happiness:2,health:-10}, conditionRisk:{id:'cancer',p:0.38,miss:'You were lucky, and you will never know how lucky.'}}]},
+{id:'h_warning', min:40,max:68,w:6, once:true, t:'The Numbers Are Wrong',
+ x:['The nurse reads your blood pressure twice and then writes something down.','"If nothing changes," the doctor says, "we will be having a different conversation in five years."'],
+ c:[{l:'Change everything, starting now', e:{health:14,happiness:-8,discipline:12,habit:{junkfood:-30,gym:20}}},
+    {l:'Take the tablets and carry on', e:{health:4,money:-1200}, condition:'hyperten'},
+    {l:'Ignore it', e:{happiness:4,health:-7}, conditionRisk:{id:'heart',p:0.38}}]},
+{id:'h_drink', min:24,max:62,w:5, once:true, req:{noflags:['teetotal']}, t:'Every Night Now',
+ x:['A bottle most evenings, and it has been that way for a while.','You count back through the week and cannot find a night without one.'],
+ c:[{l:'Stop completely', e:{happiness:-14,health:12,discipline:14,habit:{drinking:-60}}, flag:'teetotal'},
+    {l:'Cut down', e:{health:4,happiness:-4,habit:{drinking:-20}}},
+    {l:'It is under control', e:{happiness:4,health:-8}, conditionRisk:{id:'liver',p:0.38}}]},
+{id:'h_surgery', min:48,max:80,w:7, once:true, req:{condition:true}, t:'Elective',
+ x:['The operation would fix it. One in forty do not wake up.','The surgeon gives you the odds twice and asks you to sign underneath them.'],
+ c:[{l:'Have it done', e:{health:20,happiness:8,money:-9000}, treatOne:true},
+    {l:'Manage it with drugs instead', e:{health:-2,money:-2600}},
+    {l:'Live with it', e:{happiness:-6,health:-10}}]},
+{id:'o_forget', min:64,max:92,w:5, once:true, t:'The Word Would Not Come',
+ x:['An ordinary word, one you have used all your life, simply was not there.','Your daughter has started finishing your sentences and you have noticed her doing it.'],
+ c:[{l:'Get tested', e:{happiness:-12,money:-800,smarts:-2}},
+    {l:'Write everything down instead', e:{discipline:8,happiness:-4,smarts:2}},
+    {l:'Say nothing to anyone', e:{happiness:-8,smarts:-6}, conditionRisk:{id:'dementia',p:0.32}}]},
+
+/* ---- the years after sixty, where nothing used to fork ---- */
+{id:'o_carer', min:55,max:80,w:9, cd:14, t:'They Cannot Manage Alone',
+ x:['Somebody has to, and the somebody is going to be you.','The alternative is a home neither of you can afford and both of you have seen.'],
+ c:[{l:'Move them in with you', e:{happiness:-12,health:-8,rel:{all:16},money:-6000}, dependent:true},
+    {l:'Pay for care instead', e:{money:-28000,happiness:-4,rel:{all:4}}},
+    {l:'It has to be the home', e:{happiness:-16,rel:{all:-14},money:-9000}}]},
+{id:'o_lateloveagain', min:62,max:88,w:8, once:true, req:{nopartner:true}, t:'At This Age',
+ x:['Somebody at the club has asked you to dinner and you said you would think about it.','You had not expected to be doing this again, and certainly not now.'],
+ c:[{l:'Say yes', e:{happiness:20,health:4,rel:{children:-6}}, romance:0.8},
+    {l:'Keep it as friendship', e:{happiness:10}, friend:true},
+    {l:'You are too old for it', e:{happiness:-8,discipline:4}}]},
+{id:'o_giveaway', min:63,max:90,w:8, cd:12, t:'While You Can Watch',
+ x:['You could give it to them now and see what they do with it.','The money is doing nothing and they are struggling now, not in twenty years.'],
+ c:[{l:'Give a large part of it away now', e:{happiness:16,rel:{children:22},reputation:8,money:-40000}},
+    {l:'Give a little and keep the rest', e:{happiness:6,rel:{children:8},money:-6000}},
+    {l:'They can wait until you are gone', e:{happiness:-4,rel:{children:-10}}}]},
+{id:'o_lastmove', min:66,max:92,w:7, once:true, t:'Nearer the Grandchildren',
+ x:['The move would be two hundred miles, and everyone you know is here.','Your daughter has found you a bungalow at the end of her road.'],
+ c:[{l:'Move', e:{happiness:-6,rel:{children:22},health:-4}},
+    {l:'Stay among your own people', e:{happiness:10,rel:{children:-12}}}]},
+{id:'o_tellthem', min:60,max:94,w:7, once:true, t:'The Thing You Never Said',
+ x:['There is one conversation you have been not having for thirty years.','If it is going to be said it will have to be said soon.'],
+ c:[{l:'Say it', e:{happiness:14,rel:{all:14},health:-2}},
+    {l:'Write it down and leave it to be found', e:{happiness:4,discipline:6}},
+    {l:'Take it with you', e:{happiness:-18,health:-6}}]}
+,
+
+/* ---- the states that persist ----
+   Final happiness barely moved between opposite runs, because misery
+   self-corrects: below 25 it gains back two points a year. Only standing
+   conditions change where a life ends up — whether there is anyone there,
+   and whether an illness was ever treated. These forks end in those.     */
+{id:'h_therapy', min:22,max:66,w:6, once:true, t:'Six Weeks for an Appointment',
+ x:['You have been like this for over a year and have stopped calling it a bad patch.','The form asks you to rate, out of ten, how often you have felt hopeless.'],
+ c:[{l:'Go, and keep going', e:{money:-3600,happiness:10,discipline:6}, treatOne:true},
+    {l:'Go once, then stop', e:{money:-400,happiness:-2}},
+    {l:'Handle it yourself', e:{happiness:-8,discipline:4}, condition:'depression'}]},
+{id:'h_grief', min:26,max:78,w:6, cd:18, t:'After the Funeral',
+ x:['Everyone goes home and the house is the way it was, except it is not.','Four months on, and their things are still exactly where they left them.'],
+ c:[{l:'Talk to somebody about it', e:{happiness:6,money:-1400,rel:{all:6}}},
+    {l:'Throw yourself into work', e:{money:9000,happiness:-6,health:-4}},
+    {l:'Close the door on it', e:{happiness:-18,rel:{all:-14}}}]},
+{id:'r_walkout', min:27,max:62,w:9, req:{partner:true}, cd:20, t:'Twenty Years of This',
+ x:['Nothing happened. That is rather the point — nothing has happened for years.','You could stay and it would be fine, in the way that it has been fine.'],
+ c:[{l:'Leave', e:{happiness:-6,health:-4}, divorce:true},
+    {l:'Say what is wrong, out loud', e:{happiness:8,rel:{partner:14},discipline:6}},
+    {l:'Stay and say nothing', e:{happiness:-16,health:-4}}]},
+{id:'r_neveragain', min:40,max:80,w:8, once:true, req:{nopartner:true}, t:'Not Again',
+ x:['Someone asks whether you will ever try again. You hear yourself answering.','You have been on your own long enough that it has stopped feeling temporary.'],
+ c:[{l:'Try again', e:{happiness:10,looks:2}, romance:0.65},
+    {l:'Build a life around friends instead', e:{happiness:8,rel:{friends:16}}, friend:true},
+    {l:'Decide you are done with all that', e:{happiness:-4,discipline:8}, vow:true}]},
+{id:'r_cutoff', min:20,max:70,w:8, cd:22, t:'The Last Straw',
+ x:['You could end it here and never speak to any of them again.','The same argument as last Christmas, and the one before that.'],
+ c:[{l:'Say your piece and stay', e:{happiness:-4,rel:{all:6},reputation:2}},
+    {l:'Leave early and let it cool', e:{happiness:2,rel:{all:-4}}},
+    {l:'Cut them all off', e:{happiness:-20,rel:{all:-38}}}]},
+{id:'a_remote', min:30,max:68,w:7, once:true, t:'Somewhere Quieter',
+ x:['A cottage, four miles from the nearest shop, for less than your deposit here.','You would be able to hear yourself think. That may not be a good thing.'],
+ c:[{l:'Go, and make it work', e:{happiness:12,health:8,money:-18000,rel:{friends:-20}}},
+    {l:'Rent for a year first', e:{money:-7000,happiness:4}},
+    {l:'Go, and see nobody for years', e:{happiness:-16,health:6,rel:{all:-30}}}]},
+
+/* ---- the body, again: choices that end a life early or do not ---- */
+{id:'h_thirtyaday', min:26,max:60,w:5, once:true, t:'You Have Tried Before',
+ x:['Twelve years of it. The cough has been there since March.','The patches are in the drawer with the last lot of patches.'],
+ c:[{l:'Stop, properly, this time', e:{happiness:-12,health:16,discipline:14,habit:{smoking:-70}}},
+    {l:'Cut down to a few', e:{health:4,habit:{smoking:-25}}},
+    {l:'Carry on', e:{happiness:3,health:-7,habit:{smoking:15}}, conditionRisk:{id:'copd',p:0.32}}]},
+{id:'h_screening', min:45,max:74,w:6, cd:12, t:'The Letter From the Surgery',
+ x:['The screening invitation is routine. You have binned the last two.','Fifteen minutes, they say, and most people never hear anything more.'],
+ c:[{l:'Go to the appointment', e:{happiness:-2,health:6,money:-200}},
+    {l:'Book it and forget', e:{health:-2}},
+    {l:'Bin it again', e:{happiness:2,health:-9}}]},
+{id:'w_overwork', min:30,max:62,w:6, req:{job:true}, cd:14, t:'Seventy-Hour Weeks',
+ x:['You have not taken leave in three years and they have stopped offering.','The chest pain was probably nothing. It was probably the coffee.'],
+ c:[{l:'Step back before it costs you', e:{money:-12000,health:12,happiness:8}, perfDrop:18},
+    {l:'Keep going and take the money', e:{money:34000,health:-10,happiness:-6}, conditionRisk:{id:'heart',p:0.35}},
+    {l:'Keep going and hide it', e:{money:22000,health:-12}, condition:'hyperten'}]},
+{id:'h_knee', min:34,max:70,w:5, once:true, t:'It Has Gone Again',
+ x:['The physio says stop running. Running is the only thing that helps.','You can have it fixed, or you can stop, or you can carry on and pay later.'],
+ c:[{l:'Have it operated on', e:{money:-8000,health:8,happiness:4}},
+    {l:'Stop, and find something else', e:{happiness:-6,health:2,discipline:5}},
+    {l:'Carry on running', e:{happiness:8,health:-10}, condition:'arthritis'}]},
+
+/* ---- a few more that decide whether there is a next generation ---- */
+{id:'r_singleparent', min:24,max:44,w:7, once:true, req:{nopartner:true,nochild:true}, t:'On Your Own',
+ x:['You do not need anybody else to do this. You do need about nine thousand pounds.','The clinic is straightforward about the costs and the odds.'],
+ c:[{l:'Go ahead alone', e:{money:-9000,happiness:12,health:-4,reputation:-4}, child:true},
+    {l:'Wait for the right person', e:{happiness:-4}},
+    {l:'Decide against it', e:{happiness:2,discipline:6}, flag:'no_children'}]},
+{id:'r_stepkids', min:28,max:52,w:7, once:true, req:{partner:true,nochild:true}, t:'Theirs',
+ x:['Her two children come as a pair, and they are not sure about you yet.','You would be somebody\u2019s stepfather by the spring.'],
+ c:[{l:'Take it on properly', e:{happiness:6,money:-7000,rel:{partner:16}}, dependent:true},
+    {l:'Be friendly and no more', e:{happiness:-2,rel:{partner:-10}}},
+    {l:'It is not what you wanted', e:{happiness:-8,rel:{partner:-24}}, divorce:true}]},
+
+/* ---- crime late, when there is more to lose ---- */
+{id:'x_lateheist', min:45,max:70,w:6, req:{job:true}, cd:20, t:'One Last Thing',
+ x:['You know the building, the codes and the rota. You have known for eleven years.','The money would clear the mortgage and you would never work again.'],
+ c:[{l:'Take the money', e:{happiness:-8}, crimeRoll:'embezzle'},
+    {l:'Sell what you know to somebody else', e:{money:18000,reputation:-6}, arrestRisk:true},
+    {l:'Retire quietly instead', e:{happiness:6,discipline:8}}]},
+{id:'x_pensionfraud', min:55,max:82,w:6, cd:18, t:'They Never Checked',
+ x:['The payments have kept coming and you have not corrected anybody.','Four hundred a month, and it has been nineteen months now.'],
+ c:[{l:'Keep quiet and keep it', e:{money:9000,happiness:-6}, fraudRoll:true},
+    {l:'Pay it back before anyone notices', e:{money:-7600,reputation:6,discipline:8}},
+    {l:'Tell them and take the consequences', e:{money:-7600,happiness:-4,reputation:10}, courtRoll:true}]}
+,
+
+/* ---- who is in the room at the end ----
+   Late-life happiness now depends on whether anyone is still close to you,
+   so these decide that, decades before it is collected.                    */
+{id:'r_movefor', min:23,max:45,w:8, once:true, req:{partner:true}, t:'Their Job, Not Yours',
+ x:['The offer is theirs and it is four hundred miles from everyone you know.','One of you is going to give something up and you both know which.'],
+ c:[{l:'Go with them', e:{happiness:-6,rel:{partner:20},money:-6000}, fire:true},
+    {l:'Try it at a distance', e:{happiness:-8,rel:{partner:-16}}},
+    {l:'Refuse, and let them go', e:{happiness:-10}, divorce:true}]},
+{id:'r_oldfriend', min:35,max:75,w:9, cd:15, t:'Thirty Years of Silence',
+ x:['You could write. You have known where they live for eleven years.','Their name comes up and everyone looks at you.'],
+ c:[{l:'Write to them', e:{happiness:10,rel:{friends:14}}, friend:true},
+    {l:'Think about it and do nothing', e:{happiness:-4}},
+    {l:'Let it stay where it is', e:{happiness:-8,rel:{friends:-8}}}]},
+{id:'r_estranged', min:30,max:80,w:8, req:{child:true}, cd:16, t:'Not Spoken Since',
+ x:['Your child has not called in three years and you have not called either.','There is a grandchild you have only seen in photographs.'],
+ c:[{l:'Apologise first, whether or not you were wrong', e:{happiness:12,rel:{children:32}}},
+    {l:'Send money and say nothing', e:{money:-5000,rel:{children:6}}},
+    {l:'Wait for them to come to you', e:{happiness:-10,rel:{children:-16}}}]},
+{id:'o_alone', min:62,max:96,w:6, once:true, t:'Nobody Knows You Are Here',
+ x:['You have not spoken to another person since Tuesday and it is Sunday.','The warden knocks once a week and that is the week.'],
+ c:[{l:'Join something, however grim it looks', e:{happiness:14,health:4,rel:{friends:10}}, friend:true},
+    {l:'Ring the children more often', e:{happiness:8,rel:{children:14}}},
+    {l:'You have always been self-sufficient', e:{happiness:-10,health:-4}, condition:'depression'}]},
+
+/* ---- how long it lasts ---- */
+{id:'h_transplant', min:38,max:76,w:6, once:true, req:{condition:true}, t:'On the List',
+ x:['You are on the list. Being on the list is not the same as being near the top.','There is a private route. It costs more than the house.'],
+ c:[{l:'Wait your turn', e:{happiness:-8,health:-6}},
+    {l:'Pay for it', e:{money:-90000,health:22,happiness:10}, treatOne:true},
+    {l:'Take yourself off the list', e:{happiness:4,health:-20}}]},
+{id:'w_sitework', min:25,max:58,w:4, req:{job:true}, cd:16, t:'The Dust',
+ x:['There is no extraction on the line and there has not been for years.','The mask is uncomfortable and nobody else bothers with it.'],
+ c:[{l:'Raise it formally', e:{reputation:6,happiness:-4}, perfDrop:14},
+    {l:'Wear the mask and say nothing', e:{happiness:-2,health:2}},
+    {l:'Do what everyone else does', e:{happiness:2,health:-8}, condition:'asthma'}]},
+
+/* ---- crime with something to lose ---- */
+{id:'x_favour', min:26,max:60,w:7, cd:16, t:'A Favour For the Family',
+ x:['One signature on one form, and it is not even your name on it.','The family helped you when nobody else would. This is what that costs.'],
+ c:[{l:'Sign it', e:{money:12000,happiness:-6}, crimeRoll:'fraud'},
+    {l:'Sign it and keep a copy of everything', e:{money:9000,smarts:6}, arrestRisk:true},
+    {l:'Refuse and accept what follows', e:{happiness:-8,rel:{all:-20},discipline:8}}]},
+{id:'x_caught', min:20,max:66,w:7, req:{record:true}, cd:20, t:'They Have You On Camera',
+ x:['The solicitor says the tape is not as clear as they are pretending.','The prosecutor offers eighteen months if you save them a trial.'],
+ c:[{l:'Take the deal', e:{happiness:-10,reputation:-8}, crimeRoll:'burglary'},
+    {l:'Fight it', e:{money:-16000,happiness:-8}, courtRoll:true},
+    {l:'Give them somebody else', e:{happiness:-14,rel:{all:-24},reputation:-6}, flag:'informer'}]},
+{id:'x_drift', min:16,max:28,w:8, cd:14, t:'Who You Are Around',
+ x:['They are not bad people. They are just always in the middle of something.','You have started being somewhere else when it happens, but only just.'],
+ c:[{l:'Stay in it', e:{happiness:6,reputation:-8}, crimeRoll:'shoplift'},
+    {l:'Drift out slowly', e:{happiness:-4,discipline:8,rel:{friends:-14}}},
+    {l:'Cut it off in one go', e:{happiness:-10,discipline:14,rel:{friends:-30},reputation:6}}]}
 ];
+
 </script>
 <script>
 /* BEQUEST — difficulty.
@@ -6176,6 +6485,9 @@ function tickAging(){
   if(S.debt>20000)hd-=2;
   if(partner())hd+=2;
   if(anyOf('friend').length)hd+=1;
+  if(anyOf('child').some(k=>k.r>=70))hd+=1;          // children you are close to
+  if(a>=60&&!partner()&&!anyOf('friend').length
+     &&!anyOf('child').some(k=>k.r>=55))hd-=3;       // and old age with nobody in it
   if(!S.job&&a>=22&&a<65)hd-=3;
   if(hd<0)hd*=M('decay');
   S.stats.happiness=clamp(S.stats.happiness+hd);
@@ -6332,7 +6644,9 @@ function eggTick(){
   if((S.habits.reading>30||S.skills.writing>40)&&!hasEgg('bookmark')&&eggRoll('wink'))
     findEgg('bookmark','"If you are reading this, I got out. I hope you do too. — M, 1974"');
   /* WINK: a child born on your birthday */
-  if(anyOf('child').length&&!hasEgg('sharedbday')&&R()<0.02)findEgg('sharedbday');
+  /* far more lives end up with children now, and a yearly 2% over forty of
+     them is not a rare event any more */
+  if(anyOf('child').length&&!hasEgg('sharedbday')&&R()<0.005)findEgg('sharedbday');
   /* RARE: sonder */
   if(a>=12&&eggRoll('rare')&&!hasEgg('sonder'))
     findEgg('sonder', sonderLife(R,pick,nameFor,surFor,cityFor,country().reg));
@@ -6592,6 +6906,16 @@ function resolveChoice(ev,ci){
   if(ch.condition){ if(!S.conditions.some(k=>k.id===ch.condition)){
       const c=COND(ch.condition); addCondition(ch.condition,c.sev);
       add(`You now live with ${c.n.toLowerCase()}.`); } }
+  /* A bad decision should risk an illness, not guarantee one. Ignoring a lump
+     usually comes to nothing, which is exactly why people ignore lumps. */
+  if(ch.conditionRisk){
+    const cr=ch.conditionRisk;
+    if(R()<cr.p){
+      if(!S.conditions.some(k=>k.id===cr.id)){
+        const c=COND(cr.id); addCondition(cr.id,c.sev);
+        add(`It was not nothing. You now live with ${c.n.toLowerCase()}.`); }
+    } else add(cr.miss||'Nothing came of it. Not this time.');
+  }
   if(ch.treatOne){ if(S.conditions.length){ const k=pick(S.conditions); k.treated=true; add(`Your ${COND(k.id).n.toLowerCase()} is being properly managed.`); } }
   if(ch.quackery){ if(R()<0.15){ const k=pick(S.conditions); if(k){k.treated=true;add('Against the odds, you feel better.');} }
     else { applyEff({health:-4}); add('It did nothing.'); } }
@@ -6734,7 +7058,7 @@ function resolveChoice(ev,ci){
   if(ch.collegeRoll||ch.setEdu||ch.gradeBoost)steer('s',true);
   if(ch.child||ch.romance!=null)steer('r',true);
   if(ch.startup||ch.expand||ch.takeJob||ch.promoRoll)steer('w',true);
-  if(ch.condition||ch.medical||ch.treatOne)steer('h',true);
+  if(ch.condition||ch.conditionRisk||ch.medical||ch.treatOne)steer('h',true);
   if(ch.fameRoll)steer('f',true);
   if(ch.cryptoBuy!=null||ch.mortgageRoll||ch.debtAdd)steer('m',true);
 

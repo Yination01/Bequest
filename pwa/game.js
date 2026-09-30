@@ -1076,6 +1076,9 @@ function tickAging(){
   if(S.debt>20000)hd-=2;
   if(partner())hd+=2;
   if(anyOf('friend').length)hd+=1;
+  if(anyOf('child').some(k=>k.r>=70))hd+=1;          // children you are close to
+  if(a>=60&&!partner()&&!anyOf('friend').length
+     &&!anyOf('child').some(k=>k.r>=55))hd-=3;       // and old age with nobody in it
   if(!S.job&&a>=22&&a<65)hd-=3;
   if(hd<0)hd*=M('decay');
   S.stats.happiness=clamp(S.stats.happiness+hd);
@@ -1232,7 +1235,9 @@ function eggTick(){
   if((S.habits.reading>30||S.skills.writing>40)&&!hasEgg('bookmark')&&eggRoll('wink'))
     findEgg('bookmark','"If you are reading this, I got out. I hope you do too. — M, 1974"');
   /* WINK: a child born on your birthday */
-  if(anyOf('child').length&&!hasEgg('sharedbday')&&R()<0.02)findEgg('sharedbday');
+  /* far more lives end up with children now, and a yearly 2% over forty of
+     them is not a rare event any more */
+  if(anyOf('child').length&&!hasEgg('sharedbday')&&R()<0.005)findEgg('sharedbday');
   /* RARE: sonder */
   if(a>=12&&eggRoll('rare')&&!hasEgg('sonder'))
     findEgg('sonder', sonderLife(R,pick,nameFor,surFor,cityFor,country().reg));
@@ -1492,6 +1497,16 @@ function resolveChoice(ev,ci){
   if(ch.condition){ if(!S.conditions.some(k=>k.id===ch.condition)){
       const c=COND(ch.condition); addCondition(ch.condition,c.sev);
       add(`You now live with ${c.n.toLowerCase()}.`); } }
+  /* A bad decision should risk an illness, not guarantee one. Ignoring a lump
+     usually comes to nothing, which is exactly why people ignore lumps. */
+  if(ch.conditionRisk){
+    const cr=ch.conditionRisk;
+    if(R()<cr.p){
+      if(!S.conditions.some(k=>k.id===cr.id)){
+        const c=COND(cr.id); addCondition(cr.id,c.sev);
+        add(`It was not nothing. You now live with ${c.n.toLowerCase()}.`); }
+    } else add(cr.miss||'Nothing came of it. Not this time.');
+  }
   if(ch.treatOne){ if(S.conditions.length){ const k=pick(S.conditions); k.treated=true; add(`Your ${COND(k.id).n.toLowerCase()} is being properly managed.`); } }
   if(ch.quackery){ if(R()<0.15){ const k=pick(S.conditions); if(k){k.treated=true;add('Against the odds, you feel better.');} }
     else { applyEff({health:-4}); add('It did nothing.'); } }
@@ -1634,7 +1649,7 @@ function resolveChoice(ev,ci){
   if(ch.collegeRoll||ch.setEdu||ch.gradeBoost)steer('s',true);
   if(ch.child||ch.romance!=null)steer('r',true);
   if(ch.startup||ch.expand||ch.takeJob||ch.promoRoll)steer('w',true);
-  if(ch.condition||ch.medical||ch.treatOne)steer('h',true);
+  if(ch.condition||ch.conditionRisk||ch.medical||ch.treatOne)steer('h',true);
   if(ch.fameRoll)steer('f',true);
   if(ch.cryptoBuy!=null||ch.mortgageRoll||ch.debtAdd)steer('m',true);
 

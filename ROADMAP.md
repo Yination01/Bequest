@@ -4,10 +4,10 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 326 events, 248 tests, 18 modules, 579 KB, no known integrity
+Current state: 379 events, 253 tests, 18 modules, 606 KB, no known integrity
 problems, a life simulates in 37 ms.
 
-**P0 is clear**, and two P1 items with it. All are covered by tests.
+**P0 is clear**, and three P1 items with it. All are covered by tests.
 
 ---
 
@@ -74,10 +74,60 @@ The things that would most improve a session.
 | # | Item | Why | Effort |
 |---|---|---|---|
 | 6 | ~~**Sound and haptics**~~ — **done** | Every tap is silent. A year turning, a promotion, a death — none of them land. This is the single biggest "feels like a real app" gap. *opinion* | M |
-| 7 | **Close the agency gap: 41% vs ReLife's 55%** — **measured** | More branching forks that change a life's direction rather than its statistics. This is the one metric where we still lose. | L |
+| 7 | ~~**Close the agency gap: 41% vs ReLife's 55%**~~ — **done, now 53-55%** | More branching forks that change a life's direction rather than its statistics. This is the one metric where we still lose. | L |
 | 8 | ~~**A proper death and legacy screen**~~ — **done** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
 | 9 | **Year-summary pacing** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
 | 10 | **Notifications** | "Your character is waiting" brings people back. Needs the native layer, so it belongs after the APK. | S |
+
+### What item 7 turned into
+
+The gap was diagnosed before anything was written. `measureAgency` scores nine
+dimensions; broken down per dimension, the answer was obvious:
+
+| dimension | diverged before | after |
+|---|---|---|
+| net worth / career field | 86% / 85% | 85% / 84% |
+| reputation | 72% | 47% |
+| years jailed | 44% | 66% |
+| crimes | 21% | **62%** |
+| education | 29% | **46%** |
+| children | 9% | **38%** |
+| age at death | 26% | 29% |
+| happiness | 16% | 18% |
+
+**80% of the 326 events were pure statistic adjustments.** Only three events in
+the entire game ever forked on whether you had a child, and nothing forked at
+all after seventy. So: 53 new events that change a life's direction — whether
+there are children, whether there is any more education, whether crime catches
+up with you, what the body does, and the last third of a life, where there had
+been nothing.
+
+**Agency: 43% → 53%** measured over 200 lives; `research/compare.js`, which
+samples 60, reports **55%**. Take the conservative figure. Events with a real
+fork went from 13.5% to 21.9% of the content.
+
+Four things this turned up that were not the job:
+
+- **`research/compare.js` did not run.** The tool that produced the 41% in this
+  document crashed on `EGG_UNLOCKS is not defined` — its module list was
+  missing seven files. Fixed.
+- **Two events had `promoPenalty` nested inside `e:{}`** instead of beside it,
+  so the choice that was supposed to cost you a promotion silently did nothing.
+- **The theme system is the id prefix.** Putting all the new events under one
+  prefix would have made every fork rise and fall together, and would have
+  quietly hijacked the `f_` (fame) theme. They are spread by subject, which
+  also fills themes that were nearly empty: crime had 5 events, health 6.
+- **A near-miss on balance.** The first draft granted fatal illnesses outright
+  and pushed median lifespan from 67 down to 53 — the suite caught it. Ignoring
+  a lump should *risk* cancer, not guarantee it, so there is now a
+  `conditionRisk` hook. That is better design and better prose: most of the
+  time, nothing comes of it, which is exactly why people ignore lumps.
+
+Five new tests guard the content itself: every hook an event uses must be one
+the engine implements, every id it names must exist, no two events may share an
+id, every stated requirement must be satisfiable, and a fifth is a ratchet on
+the share of events that fork. Between them they caught four dead hooks, three
+duplicate ids and two crashes waiting to happen.
 
 ### What item 8 turned into
 
@@ -228,8 +278,9 @@ the larger of the two once the arrears numbers were properly measured.
 
 ~~**Next:** the death screen (8)~~ — done.
 
-**Next: the agency gap (7).** It is the one metric where we still lose to
-ReLife, and it is a long job, so it wants a clear run.
+~~**Next:** the agency gap (7)~~ — done.
+
+**Next: content volume (11)**, which is what is left.
 
 **Only then** content volume (11) — it is the largest single job here and it is
 wasted if the first five minutes lose people anyway.

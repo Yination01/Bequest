@@ -49,27 +49,27 @@
       "humour": 0.15000000000000024,
       "agency": 0.55
     },
-    "Twelvemonth": {
+    "Bequest": {
       "lives": 100,
-      "withinLifeUniqueness": 0.9698507468901925,
-      "betweenLifeOverlap": 0.22216392493040907,
-      "emptyYearRate": 0.008800246802058136,
-      "eventsPerYear": 1.4271382982395326,
-      "midGameSag": 1.0078834253745383,
-      "systemsPerLife": 6.81,
-      "medianAge": 75,
-      "medianWealth": 1374410.52,
-      "ageSpread": 42,
-      "npcAutonomy": 0.9511610455535398,
+      "withinLifeUniqueness": 0.9922443785692707,
+      "betweenLifeOverlap": 0.14871013100641647,
+      "emptyYearRate": 0.2828266168242288,
+      "eventsPerYear": 1.0407408090879395,
+      "midGameSag": 0.7710167293825796,
+      "systemsPerLife": 8.07,
+      "medianAge": 72,
+      "medianWealth": 1128631.44,
+      "ageSpread": 40,
+      "npcAutonomy": 0.9589469738226805,
       "grounded": 0.9500000000000017,
       "humour": 0.19999999999999962,
-      "agency": 0.4080746143827161
+      "agency": 0.5510514494444444
     }
   },
   "signatures": {
     "BitLife": 100,
     "AltLife": 100,
     "ReLife": 100,
-    "Twelvemonth": 100
+    "Bequest": 100
   }
 }

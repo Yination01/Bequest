@@ -2360,14 +2360,98 @@ t('every event establishes a situation, not just a fragment', () => {
   return bad.length ? bad.slice(0,6).join(' | ') : true;
 });
 t('event text never opens on an unexplained pronoun', () => {
+  // every phrasing, not just the first: the game picks one at random, so a
+  // second variant opening on a bare "It" is seen just as often
   const bad = [];
   G.EVENTS.forEach(e => {
-    const txt = String(Array.isArray(e.x) ? e.x[0] : e.x);
-    if (/^(It|They|He|She|Not from|This)\b/.test(txt) && txt.length < 70)
-      bad.push(e.id + ': "' + txt.slice(0,50) + '"');
+    (Array.isArray(e.x) ? e.x : [e.x]).forEach((raw, i) => {
+      const txt = String(raw);
+      if (/^(It|They|He|She|Not from|This)\b/.test(txt) && txt.length < 70)
+        bad.push(e.id + '[' + i + ']: "' + txt.slice(0,44) + '"');
+    });
   });
-  return bad.length ? bad.slice(0,6).join(' | ') : true;
+  return bad.length ? bad.length + ' openings, e.g. ' + bad.slice(0,5).join(' | ') : true;
 });
+t('every hook an event uses is one the engine implements', () => {
+  // Content and engine live in different files and nothing connected them.
+  // A misspelled hook is silently ignored, so the choice looks like it does
+  // something and does nothing at all. This caught four dead hooks.
+  const fs2 = require('fs'), p2 = require('path');
+  const game = fs2.readFileSync(p2.join(DIR,'game.js'),'utf8');
+  const impl = new Set([...game.matchAll(/ch\.([a-zA-Z]+)/g)].map(m => m[1]));
+  const bad = [];
+  G.EVENTS.forEach(e => (e.c||[]).forEach((c,i) => {
+    Object.keys(c).forEach(k => {
+      if (k === 'l' || k === 'e') return;
+      if (!impl.has(k)) bad.push(`${e.id} choice ${i}: '${k}'`);
+    });
+  }));
+  return bad.length ? bad.slice(0,8).join(' | ') : true;
+});
+
+t('every id an event names actually exists', () => {
+  const bad = [];
+  const conds = new Set(G.CONDITIONS.map(c => c.id));
+  const crimes = new Set(G.DATA.crimes.map(c => c.id));
+  const habits = new Set(Object.keys(G.DATA.habits));
+  const skills = new Set(Object.keys(G.DATA.skills));
+  const stats  = new Set(G.DATA.statKeys);
+  const fields = new Set(Object.keys(G.DATA.fieldNames || {}));
+  G.EVENTS.forEach(e => (e.c||[]).forEach((c,i) => {
+    const at = w => bad.push(`${e.id} choice ${i}: ${w}`);
+    if (c.condition && !conds.has(c.condition)) at(`condition '${c.condition}'`);
+    if (c.conditionRisk) {
+      if (!conds.has(c.conditionRisk.id)) at(`conditionRisk '${c.conditionRisk.id}'`);
+      if (!(c.conditionRisk.p > 0 && c.conditionRisk.p <= 1)) at(`conditionRisk p=${c.conditionRisk.p}`);
+    }
+    if (c.crimeRoll && !crimes.has(c.crimeRoll)) at(`crime '${c.crimeRoll}'`);
+    if (c.banField && !fields.has(c.banField)) at(`field '${c.banField}'`);
+    if (c.setEdu != null && (c.setEdu < 0 || c.setEdu >= G.DATA.eduNames.length)) at(`setEdu ${c.setEdu}`);
+    Object.keys((c.e && c.e.habit) || {}).forEach(h => { if (!habits.has(h)) at(`habit '${h}'`); });
+    Object.keys((c.e && c.e.skill) || {}).forEach(h => { if (!skills.has(h)) at(`skill '${h}'`); });
+    Object.keys(c.e || {}).forEach(k => {
+      if (['money','savings','skill','habit','rel','followers'].includes(k)) return;
+      if (!stats.has(k)) at(`effect '${k}' is not a stat`);
+    });
+  }));
+  return bad.length ? bad.slice(0,8).join(' | ') : true;
+});
+
+t('no two events share an id', () => {
+  // pickChoice() resolves by id, so a duplicate makes a click fire the wrong
+  // event, and the two share one cooldown
+  const seen = new Set(), dup = [];
+  G.EVENTS.forEach(e => { if (seen.has(e.id)) dup.push(e.id); seen.add(e.id); });
+  return dup.length ? 'duplicate ids: ' + [...new Set(dup)].join(', ') : true;
+});
+
+t('every requirement an event states can actually be met', () => {
+  const fs2 = require('fs'), p2 = require('path');
+  const game = fs2.readFileSync(p2.join(DIR,'game.js'),'utf8');
+  const evsrc = fs2.readFileSync(p2.join(DIR,'events.js'),'utf8');
+  const reqKeys = new Set([...game.matchAll(/q\.([a-zA-Z]+)/g)].map(m => m[1]));
+  const setFlags = new Set([...evsrc.matchAll(/flag:'([a-zA-Z_]+)'/g)].map(m => m[1]));
+  [...game.matchAll(/S\.flags\.([a-zA-Z_]+)\s*=/g)].forEach(m => setFlags.add(m[1]));
+  const bad = [];
+  G.EVENTS.forEach(e => {
+    Object.keys(e.req || {}).forEach(k => { if (!reqKeys.has(k)) bad.push(`${e.id}: req.${k} is never read`); });
+    ((e.req && e.req.flags) || []).forEach(f => { if (!setFlags.has(f)) bad.push(`${e.id}: needs flag '${f}' nothing sets`); });
+    if (e.min > e.max) bad.push(`${e.id}: min ${e.min} > max ${e.max}`);
+  });
+  return bad.length ? bad.slice(0,8).join(' | ') : true;
+});
+
+t('a meaningful share of events change a life rather than its statistics', () => {
+  // the agency measurement in research/compare.js turns on this
+  const DIRECTIONAL = ['setEdu','collegeRoll','examRoll','retrain','child','crimeRoll','arrestRisk',
+    'fraudRoll','courtRoll','condition','conditionRisk','deport','emigrate','bankrupt','ruin','vow',
+    'divorce','widow','joinForces','takeJob','careerReset','banField','retire','bigBreak','startup'];
+  const forked = G.EVENTS.filter(e => (e.c||[]).some(c => DIRECTIONAL.some(k => c[k] != null)));
+  const share = forked.length / G.EVENTS.length;
+  // 13.5% before this work, 21.9% after; the bar is a ratchet, not a target
+  return share >= 0.20 ? true : `only ${(share*100).toFixed(0)}% of events contain a fork`;
+});
+
 t('every choice label is a readable instruction', () => {
   const bad = [];
   G.EVENTS.forEach(e => e.c.forEach(c => {
