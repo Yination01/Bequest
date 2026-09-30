@@ -1343,6 +1343,7 @@ function evWeight(e){
   let w=e.w*(S.seen[e.id]?0.25:1);
   if(S.lean&&S.lean.indexOf(theme)>=0)w*=2.1;
   if(S.away&&S.away.indexOf(theme)>=0)w*=0.35;
+  if(e.pathFork)w*=2.2;   /* a year should more often hand you a decision than a nudge */
   return w;
 }
 function pickEvents(n){

@@ -4,7 +4,7 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 379 events, 253 tests, 18 modules, 606 KB, no known integrity
+Current state: 506 events, 254 tests, 18 modules, 666 KB, no known integrity
 problems, a life simulates in 37 ms.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
@@ -78,6 +78,50 @@ The things that would most improve a session.
 | 8 | ~~**A proper death and legacy screen**~~ — **done** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
 | 9 | **Year-summary pacing** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
 | 10 | **Notifications** | "Your character is waiting" brings people back. Needs the native layer, so it belongs after the APK. | S |
+
+### What item 11 turned into
+
+**324 → 506 events.** The target was 500 and the distribution mattered more
+than the number.
+
+The theme system picks four themes a life leans towards and three it leans
+away from, weighting events by the prefix of their id. Fourteen themes were
+leanable and half of them were empty:
+
+| theme | before | after |
+|---|---|---|
+| business | **2** | 24 |
+| fame | **4** | 21 |
+| school | 7 | 22 |
+| money | 7 | 24 |
+| work | 12 | 29 |
+| people / the ordinary week | 8 / 12 | 20 / 24 |
+
+A life that leaned towards business got a doubled weight on two events. That
+is not a theme, it is a promise the engine could not keep. Filling those was
+both the volume target and the fix.
+
+**Volume cost agency, and that had to be paid back.** 182 mostly-ordinary
+events pushed the share of events containing a real fork from 21.9% to 19.0%,
+and measured agency fell from 53% to 49.5%. The ratchet test caught the first;
+the second only showed up because it was measured. The answer was not to
+hand-tune a hundred weights but to state the rule: **a year should more often
+hand you a decision than a nudge.** Events are tagged at load and weighted up.
+
+The subtlety that took three attempts: boosting *all* forks shortened every
+life in the game, because illness is a fork. Weighting illness up put median
+lifespan at 58 and the suite refused it. Splitting the tag in two — `fork` for
+the content ratchet, `pathFork` for the frequency bonus, with illness in the
+first and not the second — was better on both axes at once: **agency 54%,
+median lifespan 66.**
+
+Where it leaves the original complaint:
+
+- a life now draws on **~100 events**, from a library it takes **eight lives**
+  to see two thirds of, against six before
+- events available at any given age rose across the board, and the empty
+  stretch after seventy is no longer empty
+- median lifespan now matches ReLife's 76 exactly
 
 ### What item 7 turned into
 
@@ -234,7 +278,7 @@ a cue name is otherwise silent in the most literal way.
 
 | # | Item | Why | Effort |
 |---|---|---|---|
-| 11 | **324 → 500 events** | At ~100 events a life, a committed player exhausts the library in five or six runs. Content is the genre's fuel. | L |
+| 11 | ~~**324 → 500 events**~~ — **done, 506** | At ~100 events a life, a committed player exhausts the library in five or six runs. Content is the genre's fuel. | L |
 | 12 | **School subjects** | Education is one grade number. Subjects that feed degrees and careers would make ages 11–18 matter as much as adulthood. | M |
 | 13 | **Investments beyond crypto** | Shares, funds, bonds, gold — a real portfolio with risk profiles. ReLife's players rate this highly. | M |
 | 14 | **Court and legal process** | Arrests jump straight to a sentence. A plea, a lawyer, a trial and an appeal would make crime a system rather than a dice roll. | M |
@@ -280,10 +324,14 @@ the larger of the two once the arrears numbers were properly measured.
 
 ~~**Next:** the agency gap (7)~~ — done.
 
-**Next: content volume (11)**, which is what is left.
+~~**Next:** content volume (11)~~ — done.
 
-**Only then** content volume (11) — it is the largest single job here and it is
-wasted if the first five minutes lose people anyway.
+**What is left** is P2 items 12-16, P3 and P4. The largest single piece of
+remaining value is probably **school subjects (12)**, because ages 11-18 are a
+third of the events and still resolve to one grade number.
+
+~~**Only then** content volume (11)~~ — done, and it was right to do it last:
+it would have been wasted before the first five minutes worked.
 
 The APK is no longer blocked, and it is now worth putting in front of someone:
 the first five minutes teach you the game, the difficulty is a difficulty

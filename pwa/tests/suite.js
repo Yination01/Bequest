@@ -36,7 +36,7 @@ module.exports={
   api:{ get S(){return S}, set S(v){S=v}, get META(){return META},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
@@ -2450,6 +2450,24 @@ t('a meaningful share of events change a life rather than its statistics', () =>
   const share = forked.length / G.EVENTS.length;
   // 13.5% before this work, 21.9% after; the bar is a ratchet, not a target
   return share >= 0.20 ? true : `only ${(share*100).toFixed(0)}% of events contain a fork`;
+});
+
+t('a year is more likely to hand you a decision than a nudge', () => {
+  // adding 182 events for volume quietly diluted this and cost three points
+  // of measured agency. The engine now prefers events that redirect a life;
+  // this asserts the preference survives, and that illness is NOT boosted
+  // (weighting illness up shortens every life in the game).
+  G.newGame({});
+  G.S.lean = []; G.S.away = [];          // neutralise the theme multiplier
+  const path = G.EVENTS.filter(e => e.pathFork);
+  const plain = G.EVENTS.filter(e => !e.fork);
+  if (!path.length || !plain.length) return 'events are not being tagged at load';
+  const avg = a => a.reduce((n,e) => n + G.evWeight(e), 0) / a.length;
+  const ratio = avg(path) / avg(plain);
+  if (ratio < 1.5) return `path forks are only ${ratio.toFixed(2)}x as likely as filler`;
+  const ill = G.EVENTS.filter(e => e.fork && !e.pathFork);
+  if (ill.some(e => e.pathFork)) return 'illness is being boosted';
+  return true;
 });
 
 t('every choice label is a readable instruction', () => {
