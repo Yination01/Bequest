@@ -6,7 +6,7 @@ commands.
 ## Commands
 
     cd pwa && node tests/suite.js     the whole suite, one command
-    python3 pwa/build.py              writes pwa/index.html ONLY
+    python3 pwa/build.py              writes pwa/index.html AND assembles dist/
     npm run serve                     static server on 8080
     node research/compare.js          the competitor table and the agency score
 
@@ -20,6 +20,16 @@ After `build.py`, regenerate the two mirrors in the same pass:
     pathlib.Path('Bequest.html').write_text(s)
     pathlib.Path('pwa/Bequest.html').write_text(s)
     PY
+
+## What ships
+
+`capacitor.config.json` copies `webDir` wholesale into the APK, and `webDir`
+is **`dist/`**, assembled by `build.py`: `index.html`, `manifest.webmanifest`,
+`sw.js` and `icons/`. Seven files, about 810 KB.
+
+It used to be `pwa/`, which shipped the admin console at `/admin/`, 788 KB of
+module source already inlined into `index.html`, and the build scripts. Never
+point `webDir` back at a source folder. A test enforces it.
 
 ## Where things live
 

@@ -2,6 +2,12 @@
 
 `pwa/admin/`. A separate page, never shipped inside the app.
 
+**It was, though, until 2026-09-30.** `capacitor.config.json` pointed
+`webDir` at `pwa/`, and Capacitor copies that folder wholesale, so the
+console travelled inside every APK at `/admin/`. The build now assembles a
+`dist/` containing only the game, and a test fails if `webDir` ever points
+at a source folder again.
+
 Built to the shape of Football-Legend's console: a passphrase gate, a
 sidebar, a `PAGES` object, cards and tables. What sits behind it is
 different, because Bequest has no Supabase and no accounts.

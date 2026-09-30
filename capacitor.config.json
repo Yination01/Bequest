@@ -1,7 +1,7 @@
 {
   "appId": "app.bequest.game",
   "appName": "Bequest",
-  "webDir": "pwa",
+  "webDir": "dist",
   "bundledWebRuntime": false,
   "android": {
     "allowMixedContent": false,

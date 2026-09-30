@@ -146,3 +146,34 @@ html = f"""<!doctype html>
 """
 (d/'index.html').write_text(html)
 print('built index.html  %.1f KB' % (len(html)/1024))
+
+# ---------------------------------------------------------------------------
+# dist/ is what actually ships.
+#
+# capacitor.config.json used to point webDir at pwa/, which copies the WHOLE
+# folder into the APK: the admin console at /admin/, 788 KB of module source
+# that is already inlined into index.html, and the build scripts themselves.
+# A passphrase on a page that is sitting inside the app the attacker already
+# unpacked is not a boundary.
+#
+# The app needs four things. This assembles exactly those and nothing else.
+# ---------------------------------------------------------------------------
+import shutil
+root = d.parent
+dist = root / 'dist'
+if dist.exists():
+    shutil.rmtree(dist)
+dist.mkdir(parents=True)
+(dist/'index.html').write_text(html)
+for name in ('manifest.webmanifest', 'sw.js'):
+    src = d / name
+    if src.exists():
+        shutil.copy2(src, dist / name)
+if (d/'icons').is_dir():
+    shutil.copytree(d/'icons', dist/'icons')
+
+shipped = sorted(q.relative_to(dist).as_posix() for q in dist.rglob('*') if q.is_file())
+total = sum(q.stat().st_size for q in dist.rglob('*') if q.is_file())
+print('built dist/       %.1f KB across %d files' % (total/1024, len(shipped)))
+for q in shipped:
+    print('   ' + q)

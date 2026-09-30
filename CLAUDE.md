@@ -83,9 +83,12 @@ If a decision is worth keeping it lands in a file in this repo.
   Missing one fails only in that tool, silently, later.
 - **`confirmDo()` calls `drain()`**, so it must never be used from inside
   `ageUp()`. Push onto the queue directly. A source-reading test guards it.
-- **`python3 pwa/build.py` writes `pwa/index.html` only.** `Bequest.html`
-  and `pwa/Bequest.html` are the same file minus the manifest and
-  apple-touch-icon lines, and must be regenerated in the same pass.
+- **`python3 pwa/build.py` writes `pwa/index.html` and assembles `dist/`.**
+  `Bequest.html` and `pwa/Bequest.html` are the same file minus the manifest
+  and apple-touch-icon lines, and must be regenerated in the same pass.
+- **`dist/` is what ships, and only `dist/`.** Capacitor copies `webDir`
+  wholesale. It pointed at `pwa/` until 2026-09-30, which put the admin
+  console, all the module source and the build scripts inside the APK.
 - **Content volume dilutes agency.** Every batch of events has lowered the
   share that contain a real fork. There is a ratchet test at 20 percent.
   Pay it back in the same turn, do not lower the bar.

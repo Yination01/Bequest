@@ -1890,8 +1890,9 @@ t('the admin console is never shipped inside the game', () => {
   const built = fs2.readFileSync(p2.join(DIR, 'index.html'), 'utf8');
   if (/BEQUEST ADMIN|admin\/admin\.js|PASS_KEY/.test(built))
     return 'the console leaked into the built bundle';
-  const build = fs2.readFileSync(p2.join(DIR, 'build.py'), 'utf8');
-  if (/admin\//.test(build)) return 'build.py inlines the console directory';
+  const build = fs2.readFileSync(p2.join(DIR, 'build.py'), 'utf8')
+    .split('\n').filter(l => !/^\s*#/.test(l)).join('\n');   // comments are not code
+  if (/admin\//.test(build)) return 'build.py reads the console directory';
   // the in-game half must be there, though: the paired positive
   if (built.indexOf('redeemCode') < 0) return 'the in-game half is missing from the bundle';
   return true;
@@ -1915,6 +1916,29 @@ t('the console reads the same storage keys the game writes', () => {
   }
   if (/'bequest\.meta'|'bequest\.save'/.test(asrc))
     return 'the console still has an unversioned key name in it';
+  return true;
+});
+
+t('only the game is shipped, not the workshop', () => {
+  // capacitor.config.json copies webDir wholesale into the APK. It used to
+  // point at pwa/, which ships the admin console at /admin/, 788 KB of
+  // module source already inlined into index.html, and the build scripts.
+  // A passphrase on a page sitting inside the app is not a boundary.
+  const fs2 = require('fs'), p2 = require('path');
+  const root = p2.join(DIR, '..');
+  const cfg = JSON.parse(fs2.readFileSync(p2.join(root, 'capacitor.config.json'), 'utf8'));
+  if (cfg.webDir === 'pwa') return 'webDir still points at the source folder';
+  const dist = p2.join(root, cfg.webDir);
+  if (!fs2.existsSync(dist)) return `${cfg.webDir}/ does not exist; run pwa/build.py`;
+  const walk = dir => fs2.readdirSync(dir, { withFileTypes:true }).flatMap(e =>
+    e.isDirectory() ? walk(p2.join(dir, e.name)) : [p2.relative(dist, p2.join(dir, e.name))]);
+  const files = walk(dist);
+  const banned = files.filter(f =>
+    /^admin[\/\\]/.test(f) || /\.py$/.test(f) || f === 'Bequest.html' ||
+    (/\.js$/.test(f) && f !== 'sw.js'));
+  if (banned.length) return 'these would ship inside the app: ' + banned.slice(0,6).join(', ');
+  if (!files.includes('index.html')) return 'the game itself is missing from the bundle';
+  if (!files.some(f => /^icons[\/\\]/.test(f))) return 'the icons are missing';
   return true;
 });
 
