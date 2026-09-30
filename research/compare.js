@@ -244,7 +244,19 @@ function simBequest(scen) {
     let budget = 0;
     while (S.actionsLeft > 0 && budget++ < 8) {
       const acts = L.ACTS(); if (!acts.length) break;
-      let chosen = acts[Math.floor(Math.random()*acts.length)];
+      /* Uniform random choice is not a player, it is a lunatic. The action
+         list contains fourteen crimes, so picking uniformly produced 18
+         felonies a life and put the simulated player in prison for over
+         half of every adult decade. Prison years draw no events by design,
+         and that alone produced the "mid-game sag" this table reported for
+         Bequest and for no competitor: the competitor models do not
+         simulate prison at all.
+
+         A plausible player commits the occasional crime. Three per cent of
+         actions is still far more crime than most people manage. */
+      const lawful = acts.filter(a2 => a2.grp !== 'Crime');
+      const fromPool = (lawful.length && Math.random() > 0.03) ? lawful : acts;
+      let chosen = fromPool[Math.floor(Math.random()*fromPool.length)];
       if (scen.field) {
         const pref = acts.filter(a => a.grp === 'Skills' || a.grp === 'Work' || a.grp === 'School');
         if (pref.length && Math.random() < 0.6) chosen = pref[Math.floor(Math.random()*pref.length)];
@@ -279,7 +291,7 @@ function simBequest(scen) {
   const live = S.npcs.filter(n=>n.own);
   const withStory = live.filter(n => n.own.job || n.own.married || n.own.kids || n.own.city).length;
   return record('Bequest', scen, {
-    age: S.age, events: L.FIRED.slice(), years, systems,
+    age: S.age, events: L.FIRED.slice(), years, systems, crimes: S.crimesCommitted,
     wealth: Math.max(0, S.peakNet),
     choiceSpread: null,
     humour: 0.2, grounded: 0.95,
@@ -399,6 +411,22 @@ Object.keys(engines).forEach(name => {
   const dups = lives.filter(l=>l.duplicate).length;
   console.log(`  ${name.padEnd(9)} 100 lives, ${dups} duplicate life-signatures`);
 });
+
+/* A plausibility check on our own simulated player. Every Bequest number in
+   this table is only as good as the robot that produced it, and a robot that
+   behaves like nobody makes the table lie. This once reported a mid-game sag
+   of 0.77 and 30% empty years purely because the simulated player committed
+   18 felonies a life and sat in prison for half of it. */
+{
+  const bq = results.Bequest || [];
+  const crimes = bq.reduce((n, l) => n + (l.crimes || 0), 0) / Math.max(1, bq.length);
+  console.log(`\nPlausibility of the simulated player: ${crimes.toFixed(1)} crimes per life.`);
+  if (crimes > 6) {
+    console.log('  ** WARNING: that is not a person. Prison years draw no events, so the');
+    console.log('  ** density, empty-year and sag figures below are measuring the harness,');
+    console.log('  ** not the game. Fix the action picker before believing this table.');
+  }
+}
 
 console.log('\nMeasuring agency in Bequest (same scenario, opposite choices)...');
 const agency = measureAgency(scenarios);

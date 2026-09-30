@@ -339,6 +339,51 @@ id, every stated requirement must be satisfiable, and a fifth is a ratchet on
 the share of events that fork. Between them they caught four dead hooks, three
 duplicate ids and two crashes waiting to happen.
 
+### The mid-game sag was not real
+
+The comparison table reported a mid-game density of **0.77** for Bequest
+against 0.99 for all three competitors: the years from thirty to
+fifty-five looked measurably emptier than the rest of a life. It was the
+only metric where Bequest was clearly worst, and no roadmap item covered
+it, so it looked like the obvious next job.
+
+Measured directly in the engine, the ratio is **0.98**. Events fired per
+year is flat across every age band, from 1.38 to 1.50.
+
+The difference is that `research/compare.js` plays the year, and the way it
+played was to pick an action **uniformly at random** from a list that
+contains fourteen crimes. That simulated player committed **18 felonies a
+life** and spent **over half of every adult decade in prison**. Prison
+years draw no events, by design. The competitor models do not simulate
+prison at all, which is why only Bequest showed a sag.
+
+Traced by elimination rather than guessed at: the eligible pool is
+*largest* at 30-55 (167 events), cooldowns suppress only 6% there, and
+nothing at all was lost between drawing an event and showing it. The loss
+was entirely at draw time, and `pickEvents` returns nothing while you are
+inside.
+
+With a plausible player, who commits the occasional crime rather than one
+every other year, three headline numbers change:
+
+| | uniform random | a plausible player | competitors |
+|---|---|---|---|
+| Mid-game density | 0.77 | **0.99** | 0.99 |
+| Empty years | 30% | **2%** | 14 to 37% |
+| Events per year | 1.02 | **1.41** | 0.63 to 1.24 |
+| Agency | 51% | **55%** | 34 to 55% |
+
+`compare.js` now prints the simulated player's crime rate and refuses to
+be believed above six a life, because every Bequest figure in that table
+is only as good as the robot that produced it.
+
+**Two things this leaves open, honestly.** Empty years at 2% may now be
+too *few*: a life where something happens every single year has no quiet
+in it, and BitLife sits at 14%. And median peak wealth of $1.87m against
+ReLife's $651k is a real gap that nobody has justified. Both are
+balance questions, and both are now measured rather than hidden behind a
+broken harness.
+
 ### What item 9 turned into
 
 Measured before anything was written, because "four dismissals" was a guess

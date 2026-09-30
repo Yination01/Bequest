@@ -51,19 +51,19 @@
     },
     "Bequest": {
       "lives": 100,
-      "withinLifeUniqueness": 0.9883421297851958,
-      "betweenLifeOverlap": 0.13594932578388572,
-      "emptyYearRate": 0.2976015286327074,
-      "eventsPerYear": 1.021464361030381,
-      "midGameSag": 0.7690959838390803,
-      "systemsPerLife": 8.1,
-      "medianAge": 76,
-      "medianWealth": 1160809,
-      "ageSpread": 31,
-      "npcAutonomy": 0.9642048789830588,
+      "withinLifeUniqueness": 0.9825083311329927,
+      "betweenLifeOverlap": 0.1314470860098342,
+      "emptyYearRate": 0.0178633309826401,
+      "eventsPerYear": 1.4117963269534264,
+      "midGameSag": 0.9896705579794969,
+      "systemsPerLife": 7.86,
+      "medianAge": 73,
+      "medianWealth": 1924903.08,
+      "ageSpread": 38,
+      "npcAutonomy": 0.9613475765897737,
       "grounded": 0.9500000000000017,
       "humour": 0.19999999999999962,
-      "agency": 0.5058180430316154
+      "agency": 0.5370796057510288
     }
   },
   "signatures": {
