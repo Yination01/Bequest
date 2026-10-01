@@ -14,7 +14,21 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 #app[data-screen="game"] #screen-title,#app[data-screen="game"] #screen-create{display:none}
 /* the two full-page screens must own the scrolling, not the fixed-height shell */
 #screen-title,#screen-create{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-#game{display:flex;flex-direction:column;height:100%;min-height:0}
+#game{display:flex;flex-direction:column;height:100%;min-height:0;position:relative}
+.menubtn{position:absolute;top:10px;left:10px;z-index:35;width:40px;height:40px;border-radius:12px;
+  border:1px solid var(--line);background:rgba(8,12,22,.88);color:var(--tx);font-size:22px;cursor:pointer}
+.menubtn:active{background:var(--card2)}
+.menuhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.menugrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.menuitem{min-height:76px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:13px;
+  background:var(--bg2);color:var(--tx)}
+.menuitem b{display:block;font-size:14px;margin-bottom:3px}.menuitem span{font-size:11px;color:var(--mut)}
+.profilehero{display:flex;align-items:center;gap:13px}
+.profilehero .npcav{flex:0 0 64px}
+details.card{padding:0;overflow:hidden}details.card>summary{list-style:none;cursor:pointer;padding:14px;font-weight:750}
+details.card>summary::-webkit-details-marker{display:none}details.card>summary:after{content:'›';float:right;color:var(--am)}
+details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbody{padding:0 14px 14px}
+.coach-target{position:relative;z-index:81!important;box-shadow:0 0 0 4px var(--am),0 0 0 9999px rgba(4,7,14,.72)!important}
 .dim{color:var(--dim)}
 .bad{color:var(--r)}
 .ok{color:var(--g)}
@@ -131,7 +145,7 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
   letter-spacing:.14em;cursor:pointer;background:linear-gradient(90deg,var(--am),var(--am2));
   box-shadow:0 6px 24px rgba(239,106,77,.28)}
 #ageBtn:active{transform:scale(.99)}
-.nav{flex:0 0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;
+.nav{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
   padding:7px 7px calc(7px + env(safe-area-inset-bottom));background:var(--bg2);border-top:1px solid var(--line)}
 .nav button{padding:8px 2px;border:0;background:none;color:var(--mut);font-size:10.5px;font-weight:650;
   cursor:pointer;border-radius:9px;letter-spacing:.02em}
@@ -322,7 +336,7 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 :root{ --glow:0 0 0 1px rgba(255,255,255,.04), 0 8px 24px rgba(0,0,0,.35); }
 
 /* hero header */
-#hdr{padding:12px 13px 10px;background:
+#hdr{padding:12px 13px 10px 58px;background:
   radial-gradient(120% 100% at 0% 0%, #1b2743 0%, #101829 55%, #0b1120 100%);
   border-bottom:1px solid var(--line)}
 .hero{display:flex;align-items:center;gap:12px}

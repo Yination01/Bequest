@@ -157,13 +157,24 @@ function cue(id, h){ const a = sfx(id); const b = haptic(h || 'light'); return a
    One quiet tick on any button that does not already make a noise of its
    own, bound once at the document level so nothing else has to think
    about it. */
+const TAP_MOVE = 10;
 function bindTapSounds(){
   const D = (typeof document !== 'undefined') ? document : null;
   if(!D || !D.addEventListener) return;
+  let gesture = null;
   D.addEventListener('pointerdown', e => {
     audioResume();                                   // unlocks audio on gesture one
     const el = e.target && e.target.closest && e.target.closest('button,.row,.choice');
-    if(!el || el.dataset.noSfx) return;
+    gesture = el && !el.dataset.noSfx ? { el, x:e.clientX, y:e.clientY, moved:false } : null;
+  }, { passive: true });
+  D.addEventListener('pointermove', e => {
+    if(gesture && (Math.abs(e.clientX-gesture.x)>TAP_MOVE || Math.abs(e.clientY-gesture.y)>TAP_MOVE))
+      gesture.moved = true;
+  }, { passive: true });
+  D.addEventListener('pointercancel', () => { gesture=null; }, { passive:true });
+  D.addEventListener('pointerup', e => {
+    const g=gesture; gesture=null;
+    if(!g || g.moved || !(g.el===e.target || (g.el.contains&&g.el.contains(e.target)))) return;
     sfx('tap'); haptic('light');
   }, { passive: true });
 }

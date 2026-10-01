@@ -48,10 +48,10 @@ module.exports={
     get QUEUE(){return QUEUE},
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
-    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
+    newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,toggleMenu,closeMenu,openMenuPage,gameBack,bindNativeBack,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
-    viewLife,viewActs,viewPeople,viewMoney,viewMore,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,livingFloor,livingRatio,livingTarget,tickLiving,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,i18nKey,T,setLocale,currentLocale,trackMissing,missingStrings,localiseData,pseudoLocale,variant,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingDone,offerDirectDebit,viewStats,
+    viewLife,viewActs,viewPeople,viewMoney,viewMore,viewStats,renderHeader,renderTitle,renderCreate,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,livingFloor,livingRatio,livingTarget,tickLiving,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,i18nKey,T,setLocale,currentLocale,trackMissing,missingStrings,localiseData,pseudoLocale,variant,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingSkipPrompt,openingDone,coachSetTips,offerDirectDebit,viewStats,viewSettings,viewHelp,viewMenu,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -583,7 +583,7 @@ t('every onclick handler in every screen actually exists', () => {
     do { G.newGame({}); ageTo(age); tries++; } while (!G.S.alive && tries < 25);
     if (!G.S.alive) return;
     scan(G.viewLife()); scan(G.viewActs()); scan(G.viewPeople()); scan(G.viewMoney());
-    ['stats','ach','chal','rec','save'].forEach(v => { G.S.moreView = v; scan(G.viewMore()); });
+    ['stats','ach','chal','goals','rec','save','shop','settings','help'].forEach(v => { G.S.moreView = v; scan(G.viewMore()); });
   });
   G.CREATE = {name:'',gender:'',country:'',typed:false,diff:'normal',mods:null,showCompare:true,showCustom:true};
   G.setDiff('custom'); scan(G.renderCreate() || '');
@@ -594,6 +594,41 @@ t('navigation ignores taps before a life is loaded', () => {
   G.setTab('more');
   G.setMore('plus');
   return G.S === null ? true : 'navigation created or changed game state';
+});
+t('primary navigation is four focused tabs plus a menu', () => {
+  const html = fs.readFileSync(path.join(DIR, 'build.py'), 'utf8');
+  const nav = (html.match(/<nav class="nav"[\s\S]*?<\/nav>/) || [''])[0];
+  return /Activities<\/button>/.test(nav) && !/data-t="more"/.test(nav)
+    && /id="menuBtn"/.test(html) ? true : 'navigation still exposes Do/More or has no menu';
+});
+t('settings is a dedicated grouped page', () => {
+  return /function viewSettings\(\)/.test(SRC) && /Preferences/.test(SRC)
+    && /Save and transfer/.test(SRC) && /Problem reports/.test(SRC)
+    ? true : 'settings does not group preferences, data, and reports';
+});
+t('profile starts with identity and grouped details', () => {
+  fresh();
+  const h = G.viewStats();
+  return h.indexOf('Profile') >= 0 && h.indexOf('Profile') < h.indexOf('Skills')
+    && /<details/.test(h) ? true : 'profile is not first or not grouped';
+});
+t('tab rendering preserves the current scroll position', () => {
+  return /SCROLL\[t\]\s*=\s*prev/.test(SRC) && !/SCROLL\[t\]\s*=\s*0/.test(SRC)
+    ? true : 'tab rendering still resets scroll';
+});
+t('tap sounds wait for a completed non-scrolling gesture', () => {
+  const sound = fs.readFileSync(path.join(DIR, 'sound.js'), 'utf8');
+  return /pointerup/.test(sound) && /pointermove/.test(sound) && /TAP_MOVE/.test(sound)
+    ? true : 'sound still fires on pointerdown/scroll';
+});
+t('Android back is handled inside the game', () => {
+  return /function bindNativeBack/.test(SRC) && /backButton/.test(SRC) && /gameBack\(\)/.test(SRC)
+    ? true : 'native back handler is missing';
+});
+t('skipping the opening asks about later tutorials', () => {
+  const coach = fs.readFileSync(path.join(DIR, 'coach.js'), 'utf8');
+  return /openingSkipPrompt/.test(coach) && /Turn off later tips/.test(coach)
+    ? true : 'tutorial skip does not offer to disable later tips';
 });
 t('every activity id offered is actually runnable', () => {
   const broken = [];
@@ -3422,9 +3457,9 @@ t('a result popup sounds like what it did to you', () => {
 });
 t('the sound settings are reachable and can be turned off', () => {
   G.newGame({}); G.S.age = 30; G.S.alive = true; G.META.sfx = null;
-  const html = G.viewStats();
+  const html = G.viewSettings();
   return (/setSound\(/.test(html) && /setHaptics\(/.test(html) && /setVolume\(/.test(html)) ? true
-    : 'no sound settings on the More tab';
+    : 'no sound settings on the Settings page';
 });
 t('a whole life can be lived with the sound code in the loop', () => {
   G.META.sfx = null;
@@ -3451,7 +3486,7 @@ t('teaching continues past age 0', () => {
   return late.length >= 5 ? true : 'only ' + late.length + ' tips land after early childhood';
 });
 t('every tip names a real place to go', () => {
-  const bad = G.COACH_TIPS.filter(c => c.go && !/^set(Tab|More)\(|^openMoney\(/.test(c.go[0]));
+  const bad = G.COACH_TIPS.filter(c => c.go && !/^set(Tab|More)\(|^openMoney\(|^openMenuPage\(/.test(c.go[0]));
   const nameless = G.COACH_TIPS.filter(c => !c.id || !c.t || !c.x || typeof c.when !== 'function');
   return (!bad.length && !nameless.length) ? true : `${bad.length} bad links, ${nameless.length} malformed`;
 });
@@ -3501,9 +3536,9 @@ t('the tutorial can be replayed', () => {
   G.coachReplay();
   return (!G.coachSeen('opening') && !G.coachSeen('ageup')) ? true : 'replay did not reset the tips';
 });
-t('the how-to-play entry is reachable from the More tab', () => {
+t('the how-to-play entry is reachable from Help', () => {
   G.newGame({}); G.S.age = 30; G.S.alive = true;
-  return /coachReplay\(\)/.test(G.viewStats()) ? true : 'no way back to the tutorial';
+  return /coachReplay\(\)/.test(G.viewHelp()) ? true : 'no way back to the tutorial';
 });
 t('the direct debit offer waits its turn instead of jumping the queue', () => {
   // it runs inside ageUp, so it must not drain the popups queued before it
@@ -4369,7 +4404,7 @@ t('every screen renders at every life stage', () => {
     G.newGame({}); ageTo(age); if (!G.S.alive) return;
     ['life','act','ppl','money','more'].forEach(() => {});
     try { G.viewLife(); G.viewActs(); G.viewPeople(); G.viewMoney();
-      ['stats','ach','chal','rec','save'].forEach(v => { G.S.moreView=v; G.viewMore(); });
+      ['stats','ach','chal','goals','rec','save','shop','settings','help'].forEach(v => { G.S.moreView=v; G.viewMore(); });
       G.renderHeader();
     } catch(e) { bad.push(age + ':' + e.message); }
   });

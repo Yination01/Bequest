@@ -23,7 +23,7 @@
    bar calls that out and it is the mistake that makes keyboard use feel
    broken even when it works.                                             */
 
-const TAB_ORDER = ['life','act','ppl','money','more'];
+const TAB_ORDER = ['life','act','ppl','money'];
 
 /* The game also runs headless, in the test harness and in the research
    tools, where document is a stub with only the handful of methods those

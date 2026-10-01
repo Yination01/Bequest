@@ -112,3 +112,24 @@ Single build, M0 + M1 together:
 2. **Lifetime unlock alongside the subscription — yes or no?**
 
 Then say go and I'll start building.
+# Interface navigation decision — 2026-10-01
+
+The primary navigation is four bottom tabs: Life, Activities, People and Money.
+Secondary and account surfaces live behind a persistent hamburger menu: Profile,
+Awards, Goals, Records, Shop, Saves, Settings and Help.
+
+Settings is a dedicated page grouped into preferences, save and transfer,
+problem reports, and game controls. Profile begins with identity and summary,
+then uses collapsible groups for life/career, health/habits, traits/history and
+skills. The same rule applies elsewhere: primary pages show their core task
+first and move secondary detail into groups or menu pages.
+
+The opening tutorial is optional. It highlights the actual Age Up, tab and menu
+controls, then contextual tips teach systems when they become relevant. If a
+player skips the opening, the game explicitly asks whether later tips should
+remain enabled.
+
+Android Back closes the current in-game layer or returns toward Life before the
+app may minimize. Re-rendering a page preserves its scroll position. Interface
+tap sound and haptics fire only after a completed tap, never from a scrolling
+gesture.

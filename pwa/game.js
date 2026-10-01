@@ -3085,7 +3085,7 @@ function renderHeader(){
       <div class="kv"><span>Outgoings</span><b class="bbad">${money(ledgerTotal('spend'))}</b></div>
       <div class="kv"><span>Actions left</span><b>${S.actionsLeft}/${actionsPerYear()}</b></div>
       ${S.track?`<div class="kv"><span>${esc(TRACK(S.track.id).n)}</span><b>${esc(TRACK_RANK(S.track).n)}</b></div>`:''}
-      <button class="btn wide mt" onclick="toggleStats();setTab('more');setMore('stats')">Full details page</button>
+      <button class="btn wide mt" onclick="toggleStats();openMenuPage('stats')">Full profile</button>
     </div></div>
     <div class="statrow">${DATA.statKeys.map(k=>{
       const v=Math.round(S.stats[k]), c=v>=70?'g':v>=40?'a':'r';
@@ -3094,24 +3094,29 @@ function renderHeader(){
         <div class="sv">${Math.round(v)}</div>
         <div class="sbar"><i style="width:${v}%"></i></div></div>`;}).join('')}</div>`;
 }
+let LAST_PRIMARY='life';
 function setTab(t){
   /* The game navigation is hidden on the title and create screens, but stale
      taps can still arrive while a modal is closing. No life means no tab. */
   if(!S)return;
-  rememberScroll(); SCROLL[t]=0; app().dataset.tab=t;
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  a11ySyncTabs(t);
+  rememberScroll();
+  if(t!=='more') LAST_PRIMARY=t;
+  app().dataset.tab=t;
+  const primary=t==='more'?LAST_PRIMARY:t;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===primary));
+  a11ySyncTabs(primary);
   const m=document.getElementById('main'); if(m)m.classList.remove('in');
-  renderTab(t);
+  renderTab(t,true,true);
   if(m){ void m.offsetWidth; m.classList.add('in'); } }
 let SCROLL={};
 let DEATH_STATS=false;
 let SETTLEMENT=null;
-function renderTab(t,keepScroll){
+function renderTab(t,keepScroll,tabSwitch){
   const m=document.getElementById('main');
   const prev=m?m.scrollTop:0;
+  /* Repainting a page after a tap must not throw the reader back to its top. */
+  if(!tabSwitch && keepScroll!==false) SCROLL[t]=prev;
   m.innerHTML=({life:viewLife,act:viewActs,ppl:viewPeople,money:viewMoney,more:viewMore}[t]||viewLife)();
-  /* staying where you were is the whole point of a list of things to do */
   if(keepScroll!==false && SCROLL[t]!=null) m.scrollTop = SCROLL[t];
   else m.scrollTop = 0;
 }
@@ -4069,12 +4074,44 @@ function gotoGroup(g){
   setTimeout(()=>{ const el=document.getElementById('grp-'+g);
     if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'}); },40);
 }
+const MENU_PAGES=[
+  ['stats','Profile','Identity, health, skills and history'],
+  ['ach','Awards','Achievements earned across every life'],
+  ['goals','Goals','This life’s goals and challenges'],
+  ['rec','Records','Personal bests and milestones'],
+  ['shop','Shop','Legacy Points and Bequest Plus'],
+  ['save','Saves','Slots, backup files and cloud transfer'],
+  ['settings','Settings','Sound, reading, data and privacy'],
+  ['help','Help','Tutorial and contextual tips']
+];
+function viewMenu(){
+  return `<div class="sheet"><div class="menuhead"><div><div class="ptag">Bequest</div><div class="ph">Menu</div></div>
+    <button class="mini" onclick="closeMenu()" aria-label="Close menu">Close</button></div>
+    <div class="menugrid">${MENU_PAGES.map(([id,n,d])=>`<button class="menuitem" onclick="openMenuPage('${id}')"><b>${n}</b><span>${d}</span></button>`).join('')}</div></div>`;
+}
+function toggleMenu(){
+  if(!S)return;
+  const el=document.getElementById('modal');
+  if(el.dataset.menu==='1')return closeMenu();
+  el.dataset.menu='1'; el.className='modal show'; el.innerHTML=viewMenu();
+  const b=document.getElementById('menuBtn'); if(b)b.setAttribute('aria-expanded','true');
+  a11yDialogOpen('Menu');
+}
+function closeMenu(){
+  const el=document.getElementById('modal'); if(!el)return;
+  el.className='modal'; delete el.dataset.menu;
+  const b=document.getElementById('menuBtn'); if(b)b.setAttribute('aria-expanded','false');
+  a11yDialogClose();
+}
+function openMenuPage(v){ closeMenu(); setTab('more'); setMore(v); }
 function setMore(v){ if(!S)return; S.moreView=v; renderTab('more'); }
 function viewMore(){
   const v=S.moreView||'stats';
-  const seg=`<div class="seg">${[['stats','Stats'],['ach','Awards'],['goals','Goals'],['rec','Records'],['save','Saves'],['shop','Shop']]
-    .map(([k,l])=>`<button class="${v===k?'on':''}" onclick="setMore('${k}')">${l}</button>`).join('')}</div>`;
-  return seg+({ach:viewAch,chal:viewChal,goals:viewGoals,rec:viewRec,save:viewSaves,shop:viewShop,plus:viewShop}[v]||viewStats)();
+  const meta=MENU_PAGES.find(x=>x[0]===v)||MENU_PAGES[0];
+  const body=({ach:viewAch,chal:viewChal,goals:viewGoals,rec:viewRec,save:viewSaves,
+    shop:viewShop,plus:viewShop,settings:viewSettings,help:viewHelp}[v]||viewStats)();
+  return `<div class="card secthead"><button class="backbtn" onclick="toggleMenu()">☰ Menu</button>
+    <div class="secttitle">${meta[1]}</div><div class="hsub dim">${meta[2]}</div></div>`+body;
 }
 function viewAch(){
   const un=Object.keys(META.ach).length, tot=ACHIEVEMENTS.length;
@@ -4258,74 +4295,63 @@ function viewSaves(){
       <button class="mini" onclick="cloudPull()">Download</button></div></div>`;
   return h;
 }
+function profileRows(rows){
+  return rows.map(([k,v])=>`<div class="kv"><span>${k}</span><b>${esc(String(v))}</b></div>`).join('');
+}
 function viewStats(){
-  return `<div class="card"><div class="ct">Skills</div>
-   ${Object.keys(DATA.skills).map(k=>{const v=S.skills[k]||0;const t=v>=100?3:v>=75?2:v>=50?1:v>=25?0:-1;
-     return `<div class="sk">${bar(DATA.skills[k].name,v)}<div class="hsub dim">${t>=0?'Unlocked: '+DATA.skills[k].tiers[t]:'At 25: '+DATA.skills[k].tiers[0]}</div></div>`;}).join('')}</div>
-   <div class="card"><div class="ct">Habits</div>
-   ${Object.keys(DATA.habits).map(k=>{const h=DATA.habits[k],v=S.habits[k];
-     return `<div class="sk">${bar(h.name+(h.good?' ✓':''),v)}
-       <div class="hsub dim">${v>5?`${h.cost?money(Math.round(h.cost*v/100))+'/yr · ':''}${Object.entries(h.eff).map(([a,b])=>`${DATA.statNames[a]||a} ${b>0?'+':''}${Math.round(b*v/100*10)/10}`).join(', ')}`:'Not a habit.'}</div>
-       <div class="nact">${v>5&&!h.good?`<button onclick="quitHabit('${k}')">Try to quit</button>`:''}${h.good?`<button onclick="startHabit('${k}')">Do more</button>`:''}</div></div>`;}).join('')}</div>
-   <div class="card"><div class="ct">Profile</div>
-   ${[['Life stage',stage()],['Education',DATA.eduNames[S.edu]+(S.uniTier?' · '+(UNI_TIERS.find(t=>t.id===S.uniTier)||{}).n:'')],
-      ['School grade',S.age<19?gradeBand(Math.round(S.gpa==null?50:S.gpa)).n+' ('+Math.round(S.gpa==null?50:S.gpa)+')':'—'],
-      ['Work performance',S.job?perfBand(S.perf).n+' ('+Math.round(S.perf)+')':'—'],
-      ['Criminal record',S.record.length?S.record.map(r=>r.crime+' at '+r.age+(r.spent?' (spent)':'')).join(', '):'Clean'],
-      ['On parole',S.parole>0?S.parole+' years remaining':'No'],
-      ['Disabled',S.disabled?'Yes':'No'],['Followers',S.followers.toLocaleString()],
-      ['Traits',S.traits.map(traitName).join(', ')],
-      ['Conditions',S.conditions.length?S.conditions.map(k=>COND(k.id).n+(k.treated?' (managed)':'')).join(', '):'None'],['Crimes',S.crimesCommitted],
-      ['Special path',S.track?(TRACK(S.track.id).n+' \u00b7 '+TRACK_RANK(S.track).n):'None'],
-      ['Orientation',DATA.orientations.find(o=>o.id===S.orientation).n+(S.outTo?' (out)':'')],
-      ['Pets',petsAlive().length?petsAlive().map(p=>p.name+' the '+(DATA.petSpecies.find(x=>x.id===p.sp)||{}).n.toLowerCase()).join(', '):'None'],
-      ['Countries lived in',(S.countriesLived||[]).length],
-      ['Formative moments',(S.echoes&&S.echoes.length)?S.echoes.map(e=>e.n+' ('+e.age+')').join(', '):'None yet'],['Born',DATA.wealthTiers[S.birthTier].name]]
-     .map(([k,v])=>`<div class="kv"><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div>
-   <div class="card"><div class="ct">Reading</div>
-   <div class="hsub dim mb">This is a game made of text. Set it to a size you can read comfortably.</div>
-   <div class="grid3">
-     ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>
-       `<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}
-   </div></div>
-   <div class="card"><div class="ct">Problem reports</div>
-   <div class="hsub dim mb">If the game breaks, it keeps a note of what it was doing.
-     The note stays on this device. It never contains your name, anybody else's name,
-     or your save \u2014 only the shape of the life: age, country, difficulty, what was on
-     screen.</div>
-   <button class="row" onclick="setCrashOptIn(${crashOptIn()?'false':'true'})" data-switch="${crashOptIn()?'on':'off'}"><div>
-     <div class="rn">Allow reports to be sent</div>
-     <div class="hsub dim">${crashOptIn()?'Allowed \u2014 but there is nowhere to send them yet'
-       :'Off. Nothing leaves this device.'}</div></div>
-     <i>${crashOptIn()?'\u2713':'\u25CB'}</i></button>
-   ${crashLog().length?`<button class="row" onclick="crashScreen()"><div>
-     <div class="rn">See the last problem</div>
-     <div class="hsub dim">${crashLog().length} recorded</div></div><i>\u203a</i></button>
-   <button class="row" onclick="crashClear();renderAll()"><div>
-     <div class="rn">Delete the reports</div></div><i>\u203a</i></button>`
-     :'<div class="hsub dim">Nothing has gone wrong so far.</div>'}
-   </div>
-
-   <div class="card"><div class="ct">Sound and feel</div>
-   <div class="hsub dim mb">Cues are generated by the app, so they cost nothing to download and work offline.</div>
-   <button class="row" onclick="setSound(${soundOn()?'false':'true'})" data-switch="${soundOn()?'on':'off'}"><div><div class="rn">Sound</div>
-     <div class="hsub dim">${soundOn()?'On \u2014 years, events, outcomes':'Off \u2014 silent'}</div></div>
-     <i>${soundOn()?'\u2713':'\u25CB'}</i></button>
-   <button class="row" onclick="setHaptics(${hapticsOn()?'false':'true'})" data-switch="${hapticsOn()?'on':'off'}"><div><div class="rn">Vibration</div>
-     <div class="hsub dim">${hapticsOn()?'On':'Off'}</div></div>
-     <i>${hapticsOn()?'\u2713':'\u25CB'}</i></button>
-   ${soundOn()?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div>
-   <div class="grid3">
-     ${[['0.25','Quiet'],['0.5','Low'],['0.7','Normal'],['1','Loud']].map(([v,n])=>
-       `<button class="mini ${Math.abs(soundCfg().vol-parseFloat(v))<0.02?'on':''}" onclick="setVolume(${v})">${n}</button>`).join('')}
-   </div>`:''}</div>
-   <div class="card"><div class="ct">Game</div>
-   <button class="row" onclick="coachReplay()"><div><div class="rn">How to play</div>
-     <div class="hsub dim">Replay the introduction and bring the tips back</div></div><i>\u203a</i></button>
-   <button class="row" onclick="save();popupOK('Saved','Your life has been saved.')"><div class="rn">Save now</div><i>›</i></button>
-   <button class="row" onclick="lowerDiff()"><div><div class="rn">Lower the difficulty</div>
-     <div class="hsub dim">Currently ${diffDef(S.diff).n}${S.assisted?' · assisted':''} · Legacy Points \u00d7${lpMult().toFixed(2)}</div></div><i>\u203a</i></button>
-   <button class="row danger" onclick="confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();})"><div class="rn">Abandon life</div><i>›</i></button></div>`;
+  const identity=[
+    ['Life stage',stage()],['Age',S.age],['Location',S.city+', '+country().name],
+    ['Born',DATA.wealthTiers[S.birthTier].name],['Orientation',DATA.orientations.find(o=>o.id===S.orientation).n+(S.outTo?' (out)':'')]
+  ];
+  const life=[
+    ['Education',DATA.eduNames[S.edu]+(S.uniTier?' · '+(UNI_TIERS.find(t=>t.id===S.uniTier)||{}).n:'')],
+    ['School grade',S.age<19?gradeBand(Math.round(S.gpa==null?50:S.gpa)).n+' ('+Math.round(S.gpa==null?50:S.gpa)+')':'—'],
+    ['Work performance',S.job?perfBand(S.perf).n+' ('+Math.round(S.perf)+')':'—'],
+    ['Special path',S.track?(TRACK(S.track.id).n+' · '+TRACK_RANK(S.track).n):'None'],
+    ['Followers',S.followers.toLocaleString()],['Countries lived in',(S.countriesLived||[]).length]
+  ];
+  const health=[['Disabled',S.disabled?'Yes':'No'],
+    ['Conditions',S.conditions.length?S.conditions.map(k=>COND(k.id).n+(k.treated?' (managed)':'')).join(', '):'None'],
+    ['Habits',Object.keys(DATA.habits).filter(k=>(S.habits[k]||0)>5).map(k=>DATA.habits[k].name).join(', ')||'None']];
+  const history=[['Traits',S.traits.map(traitName).join(', ')],
+    ['Criminal record',S.record.length?S.record.map(r=>r.crime+' at '+r.age+(r.spent?' (spent)':'')).join(', '):'Clean'],
+    ['On parole',S.parole>0?S.parole+' years remaining':'No'],['Crimes',S.crimesCommitted],
+    ['Pets',petsAlive().length?petsAlive().map(p=>p.name+' the '+(DATA.petSpecies.find(x=>x.id===p.sp)||{}).n.toLowerCase()).join(', '):'None'],
+    ['Formative moments',(S.echoes&&S.echoes.length)?S.echoes.map(e=>e.n+' ('+e.age+')').join(', '):'None yet']];
+  return `<div class="card"><div class="profilehero"><div class="npcav">${avatarSVG(S,64)}</div><div>
+      <div class="ct">Profile</div><div class="ph">${esc(S.name)}</div><div class="hsub dim">${esc(occupation())}</div></div></div>
+      ${profileRows(identity)}</div>
+    <details class="card" open><summary>Life, education and career</summary><div class="detailbody">${profileRows(life)}</div></details>
+    <details class="card"><summary>Health and habits</summary><div class="detailbody">${profileRows(health)}</div></details>
+    <details class="card"><summary>Traits and history</summary><div class="detailbody">${profileRows(history)}</div></details>
+    <details class="card"><summary>Skills</summary><div class="detailbody">
+      ${Object.keys(DATA.skills).map(k=>{const v=S.skills[k]||0,t=v>=100?3:v>=75?2:v>=50?1:v>=25?0:-1;
+        return `<div class="sk">${bar(DATA.skills[k].name,v)}<div class="hsub dim">${t>=0?'Unlocked: '+DATA.skills[k].tiers[t]:'At 25: '+DATA.skills[k].tiers[0]}</div></div>`;}).join('')}</div></details>`;
+}
+function viewHelp(){
+  return `<div class="card"><div class="ct">Learn the interface</div>
+    <div class="hsub dim mb">Replay the optional button-and-tab tour. Contextual tips can remain on or be turned off independently.</div>
+    <button class="row" onclick="coachReplay()"><div><div class="rn">Replay interface tour</div><div class="hsub dim">Highlights Age Up, Life, Activities, People, Money and Menu</div></div><i>›</i></button>
+    <button class="row" onclick="coachSetTips(${META.tipsOff?'false':'true'})" data-switch="${META.tipsOff?'off':'on'}"><div><div class="rn">Contextual tips</div><div class="hsub dim">${META.tipsOff?'Off':'On · shown when a feature first matters'}</div></div><i>${META.tipsOff?'○':'✓'}</i></button></div>`;
+}
+function viewSettings(){
+  return `<div class="card"><div class="ct">Preferences</div>
+    <div class="hsub dim mb">Reading, sound and vibration apply across every life.</div>
+    <div class="hsub dim" style="margin:10px 0 6px">Text size</div><div class="grid3">
+      ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>`<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}</div>
+    <button class="row" onclick="setSound(${soundOn()?'false':'true'})" data-switch="${soundOn()?'on':'off'}"><div><div class="rn">Sound</div><div class="hsub dim">${soundOn()?'On · years, events and outcomes':'Off · silent'}</div></div><i>${soundOn()?'✓':'○'}</i></button>
+    <button class="row" onclick="setHaptics(${hapticsOn()?'false':'true'})" data-switch="${hapticsOn()?'on':'off'}"><div><div class="rn">Vibration</div><div class="hsub dim">${hapticsOn()?'On':'Off'}</div></div><i>${hapticsOn()?'✓':'○'}</i></button>
+    ${soundOn()?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div><div class="grid3">${[['0.25','Quiet'],['0.5','Low'],['0.7','Normal'],['1','Loud']].map(([v,n])=>`<button class="mini ${Math.abs(soundCfg().vol-parseFloat(v))<0.02?'on':''}" onclick="setVolume(${v})">${n}</button>`).join('')}</div>`:''}</div>
+    <div class="card"><div class="ct">Save and transfer</div><div class="hsub dim mb">Autosave is always on. Open the save page for slots, backup files and cloud transfer.</div>
+      <button class="row" onclick="setMore('save')"><div><div class="rn">Saves and backup</div><div class="hsub dim">Manage slots, export, import and sync</div></div><i>›</i></button>
+      <button class="row" onclick="save();popupOK('Saved','Your life has been saved.')"><div class="rn">Save now</div><i>✓</i></button></div>
+    <div class="card"><div class="ct">Problem reports</div><div class="hsub dim mb">Reports stay on this device and contain no names or saves.</div>
+      <button class="row" onclick="setCrashOptIn(${crashOptIn()?'false':'true'})" data-switch="${crashOptIn()?'on':'off'}"><div><div class="rn">Allow reports to be sent</div><div class="hsub dim">${crashOptIn()?'Allowed · no destination is configured':'Off · nothing leaves this device'}</div></div><i>${crashOptIn()?'✓':'○'}</i></button>
+      ${crashLog().length?`<button class="row" onclick="crashScreen()"><div><div class="rn">See the last problem</div><div class="hsub dim">${crashLog().length} recorded</div></div><i>›</i></button><button class="row" onclick="crashClear();renderAll()"><div class="rn">Delete reports</div><i>›</i></button>`:'<div class="hsub dim">Nothing has gone wrong so far.</div>'}</div>
+    <div class="card"><div class="ct">Game</div>
+      <button class="row" onclick="setMore('help')"><div><div class="rn">Tutorial and tips</div><div class="hsub dim">Replay or change tutorial guidance</div></div><i>›</i></button>
+      <button class="row" onclick="lowerDiff()"><div><div class="rn">Lower the difficulty</div><div class="hsub dim">Currently ${diffDef(S.diff).n}${S.assisted?' · assisted':''}</div></div><i>›</i></button>
+      <button class="row danger" onclick="confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();})"><div class="rn">Abandon life</div><i>›</i></button></div>`;
 }
 function lowerDiff(){
   const cur=S.diff==='custom'?customRank(S.mods):diffDef(S.diff).rank;
@@ -4515,12 +4541,36 @@ function startLife(){
 }
 function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('life'); renderAll(); if(!S.alive)showDeath(); } }
 
+/* Android's system Back belongs to the current in-game layer before it belongs
+   to the operating system. Return false only at the root, where minimizing is
+   less destructive than quitting the WebView. */
+function gameBack(){
+  const modal=document.getElementById('modal');
+  if(modal&&modal.dataset.menu==='1'){ closeMenu(); return true; }
+  if(S&&S.person){ closePerson(); return true; }
+  if(S&&S.section){ closeSection(); return true; }
+  if(S&&S.msection){ closeMoney(); return true; }
+  const t=app().dataset.tab||'life';
+  if(t==='more'){ setTab(LAST_PRIMARY||'life'); return true; }
+  if(t!=='life'){ setTab('life'); return true; }
+  return false;
+}
+function bindNativeBack(){
+  const cap=typeof window!=='undefined'&&window.Capacitor&&window.Capacitor.Plugins;
+  const nativeApp=cap&&cap.App;
+  if(!nativeApp||!nativeApp.addListener)return;
+  nativeApp.addListener('backButton',()=>{
+    if(!gameBack()&&nativeApp.minimizeApp)nativeApp.minimizeApp();
+  });
+}
+
 /* ---------------- boot ---------------- */
 if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener('DOMContentLoaded',()=>{
   installCrashHandlers();
   a11yInit();
   renderTitle();
   bindTapSounds();
+  bindNativeBack();
   document.getElementById('ageBtn').addEventListener('click',()=>{
     if(!S||!S.alive)return;
     if(S.actionsLeft>0&&!S.skipAgeWarning&&S.age>=5){

@@ -67,15 +67,15 @@ html = f"""<!doctype html>
   <div id="screen-title"></div>
   <div id="screen-create"></div>
   <div id="game">
+    <button id="menuBtn" class="menubtn" aria-label="Open menu" aria-expanded="false" onclick="toggleMenu()">☰</button>
     <div id="hdr"></div>
     <div id="main" role="tabpanel" aria-labelledby="tab-life" tabindex="-1"></div>
     <div id="agewrap"><button id="ageBtn" aria-describedby="ageHint">AGE UP</button><span id="ageHint" class="sronly"></span></div>
     <nav class="nav" role="tablist" aria-label="Sections">
       <button data-t="life" role="tab" id="tab-life" aria-controls="main" aria-selected="true" tabindex="0" class="on" onclick="setTab('life')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-7-4.7-9.2-9A5.4 5.4 0 0 1 12 6.6 5.4 5.4 0 0 1 21.2 12C19 16.3 12 21 12 21z"/></svg>Life</button>
-      <button data-t="act" role="tab" id="tab-act" aria-controls="main" aria-selected="false" tabindex="-1"  onclick="setTab('act')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>Do</button>
+      <button data-t="act" role="tab" id="tab-act" aria-controls="main" aria-selected="false" tabindex="-1"  onclick="setTab('act')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>Activities</button>
       <button data-t="ppl" role="tab" id="tab-ppl" aria-controls="main" aria-selected="false" tabindex="-1"  onclick="setTab('ppl')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0z"/><circle cx="17.5" cy="9.5" r="2.6"/></svg>People</button>
       <button data-t="money" role="tab" id="tab-money" aria-controls="main" aria-selected="false" tabindex="-1" onclick="setTab('money')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><circle cx="12" cy="12" r="3"/></svg>Money</button>
-      <button data-t="more" role="tab" id="tab-more" aria-controls="main" aria-selected="false" tabindex="-1" onclick="setTab('more')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>More</button>
     </nav>
   </div>
   <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Message"></div>

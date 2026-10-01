@@ -16,18 +16,18 @@
    game should not be taught it again on their second life.                  */
 
 const COACH_OPENING = [
-  { t:'One year at a time',
-    x:'Bequest is a life, lived a year at a time. Press AGE UP and a year passes: '
-     +'things happen to you, and you decide what to do about them. There is no winning. '
-     +'There is only the life you end up with, and what you leave behind.' },
-  { t:'Between the years, you act',
-    x:'A year is not only what happens to you. On the Do tab you get a handful of '
-     +'actions — study, train, work, see people, take a risk. Spend them or lose them. '
-     +'A skill you started at twelve is still paying you at fifty.' },
-  { t:'Nothing resets',
-    x:'Money, health, habits, reputation and the people who care about you all carry '
-     +'forward. One bad decade is survivable. Ignoring it for a second one usually is not. '
-     +'Five tabs along the bottom: Life, Do, People, Money, More.' }
+  { t:'Age Up moves time', target:'ageBtn',
+    x:'This is the clock. Tap AGE UP when you are ready to move to the next year. Unused actions disappear when you do.' },
+  { t:'Life shows what is happening', target:'tab-life',
+    x:'Life is your home screen: this year’s story, urgent notices, family, school, work and the next milestone.' },
+  { t:'Activities are your choices', target:'tab-act',
+    x:'Activities spends the limited actions you receive each year on study, work, health, skills, relationships and risks.' },
+  { t:'People need attention', target:'tab-ppl',
+    x:'People shows family, partners, friends and rivals. Relationships drift when you leave them alone.' },
+  { t:'Money explains the numbers', target:'tab-money',
+    x:'Money holds banking, bills, careers, homes, vehicles, businesses, shopping and investments.' },
+  { t:'The menu holds everything else', target:'menuBtn',
+    x:'Open Menu for your Profile, awards, goals, records, shop, saves, Settings and Help. You can replay this tour from Help.' }
 ];
 
 /* Each tip names one thing, points at where to do it, and then goes away.
@@ -42,7 +42,7 @@ const COACH_TIPS = [
 
   { id:'acts', to:9,
     t:'Your year is not only what happens to you',
-    x:'The Do tab gives you a few actions each year. Even as a child they matter — '
+    x:'The Activities tab gives you a few actions each year. Even as a child they matter — '
      +'studying, reading and sport now become grades, skills and options later.',
     go:["setTab('act')", 'Show me'],
     when:S => S.age>=5 },
@@ -50,9 +50,9 @@ const COACH_TIPS = [
   { id:'stats', to:13,
     t:'Everything compounds',
     x:'Health, happiness, looks, smarts, discipline and reputation move a little every '
-     +'year, in the direction you push them. More \u203a Stats shows where you stand and '
+     +'year, in the direction you push them. Menu \u203a Profile shows where you stand and '
      +'what is drifting.',
-    go:["setTab('more');setMore('stats')", 'Show me'],
+    go:["openMenuPage('stats')", 'Show me'],
     when:S => S.age>=9 },
 
   { id:'school', to:15,
@@ -104,7 +104,7 @@ function coachMark(id){
 /* One tip at a time, in list order. Anything whose moment has passed is
    retired unread, so a tip can never surface years after it was useful. */
 function coachTip(){
-  if(!S || !S.alive) return null;
+  if(!S || !S.alive || META.tipsOff) return null;
   COACH_TIPS.forEach(c => {
     if(!coachSeen(c.id) && c.to != null && S.age > c.to) coachMark(c.id);
   });
@@ -124,27 +124,45 @@ function coachDismiss(id){ coachMark(id); renderTab('life'); }
 /* ---- the opening ---- */
 let COACH_STEP = 0;
 function coachOpeningDue(){ return !(META.tips && META.tips.opening); }
+function coachClearTarget(){
+  if(typeof document==='undefined'||!document.querySelectorAll)return;
+  document.querySelectorAll('.coach-target').forEach(el=>el.classList.remove('coach-target'));
+}
+function coachTarget(id){
+  coachClearTarget();
+  const el=document.getElementById(id); if(el)el.classList.add('coach-target');
+}
 function openingShow(i){
   COACH_STEP = i;
   const p = COACH_OPENING[i], last = i === COACH_OPENING.length-1;
+  coachTarget(p.target);
   const el = document.getElementById('modal'); el.className = 'modal show';
   el.innerHTML = `<div class="sheet"><div class="phead">
-      <span class="ptag">How Bequest works</span>
+      <span class="ptag">Interface tour</span>
       <span class="hsub dim">${i+1} of ${COACH_OPENING.length}</span></div>
     <div class="ph">${esc(p.t)}</div><div class="pb">${esc(p.x)}</div>
     <div class="choices">
       <button class="choice ok" onclick="${last?'openingDone()':`openingShow(${i+1})`}">
-        <span>${last?'Begin':'Next'}</span><i>\u203a</i></button>
-      ${last?'':'<button class="choice" onclick="openingDone()"><span>Skip</span><i>\u203a</i></button>'}
+        <span>${last?'Start living':'Next'}</span><i>\u203a</i></button>
+      ${last?'':'<button class="choice" onclick="openingSkipPrompt()"><span>Skip tour</span><i>\u203a</i></button>'}
     </div></div>`;
 }
+function openingSkipPrompt(){
+  coachClearTarget();
+  const el=document.getElementById('modal'); el.className='modal show';
+  el.innerHTML=`<div class="sheet"><div class="ptag">Tutorials</div><div class="ph">Keep helpful tips?</div>
+    <div class="pb">Short tips normally appear later when school, work, bills and other systems first matter.</div>
+    <div class="choices"><button class="choice ok" onclick="coachSetTips(true);openingDone()"><span>Keep later tips</span><i>\u203a</i></button>
+    <button class="choice" onclick="coachSetTips(false);openingDone()"><span>Turn off later tips</span><i>\u203a</i></button></div></div>`;
+}
+function coachSetTips(on){ META.tipsOff=!on; saveMeta(); if(S)renderAll(); }
 function openingDone(){
-  coachMark('opening');
+  coachClearTarget(); coachMark('opening');
   document.getElementById('modal').className = 'modal';
   drain();
 }
 /* Replay it deliberately — also the escape hatch for anyone who skipped. */
 function coachReplay(){
-  META.tips = {}; saveMeta();
+  META.tips = {}; META.tipsOff=false; saveMeta();
   openingShow(0);
 }
