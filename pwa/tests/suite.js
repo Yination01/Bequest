@@ -55,6 +55,7 @@ module.exports={
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
+    get showPopup(){return showPopup}, set showPopup(v){showPopup=v},
     set AUTOCHOICE(v){AUTOCHOICE=v}, set AUTOCONFIRM(v){AUTOCONFIRM=v},
     set AUTOPLEA(v){AUTOPLEA=v}, set AUTOCOUNSEL(v){AUTOCOUNSEL=v} }
 };`;
@@ -4517,6 +4518,70 @@ t('refreshCurrentPage re-renders safely without throwing', () => {
   } catch(e) {
     return 'refreshCurrentPage threw: ' + e.message;
   }
+});
+
+t('orientation is undiscovered under age 12', () => {
+  G.newGame({});
+  G.S.age = 5;
+  const html = G.viewStats();
+  if (!html.includes('Undiscovered')) return 'did not display Undiscovered under age 12';
+  G.S.age = 15;
+  const html15 = G.viewStats();
+  if (html15.includes('Undiscovered')) return 'displayed Undiscovered at age 15';
+  return true;
+});
+
+t('restricted money hub and shop categories are age gated with lock status', () => {
+  G.newGame({});
+  G.S.age = 5;
+  const moneyHtml = G.viewMoney();
+  if (!moneyHtml.includes('locked')) return 'viewMoney did not lock restricted tiles for minor';
+  G.openMoney('shop:Tech');
+  if (G.S.msection === 'shop:Tech') return 'openMoney entered restricted shop Tech at age 5';
+  return true;
+});
+
+t('choice outcome is unshifted before subsequent events in queue', () => {
+  G.newGame({});
+  const ev1 = { id:'test1', t:'Test 1', c:[{ l:'Pick 1', out:'Chose 1', e:{ happiness: 5 } }] };
+  const ev2 = { id:'test2', t:'Test 2', c:[{ l:'Pick 2', out:'Chose 2', e:{ happiness: 5 } }] };
+  const shown = [];
+  const oldShowPopup = G.showPopup;
+  G.showPopup = function(p) { shown.push(p); };
+  try {
+    G.QUEUE.length = 0;
+    G.QUEUE.push({ type:'A', ev: ev2 });
+    G.resolveChoice(ev1, 0);
+    if (!shown.length || shown[0].type !== 'C' || shown[0].title !== 'Test 1') {
+      return 'outcome of choice was not shown immediately: got ' + JSON.stringify(shown[0]);
+    }
+    if (!G.QUEUE.length || G.QUEUE[0].type !== 'A' || G.QUEUE[0].ev.id !== 'test2') {
+      return 'subsequent event was not kept in queue behind choice outcome';
+    }
+    return true;
+  } finally {
+    G.showPopup = oldShowPopup;
+  }
+});
+
+t('out of reach housing options are marked locked and out-of-reach', () => {
+  G.newGame({});
+  G.S.age = 20;
+  G.S.job = null;
+  G.S.money = 0;
+  G.S.savings = 0;
+  const html = G.moneyLiving();
+  if (!html.includes('locked out-of-reach')) return 'housing does not mark unaffordable homes as locked out-of-reach';
+  return true;
+});
+
+t('details.card has flex-shrink 0 to prevent accordion shrinkage', () => {
+  const css = fs.readFileSync(path.join(DIR, 'style.css'), 'utf8');
+  const match = css.match(/details\.card\s*\{[^}]*\}/);
+  if (!match || !match[0].includes('flex-shrink:0')) {
+    return 'details.card selector is missing flex-shrink:0';
+  }
+  return true;
 });
 
 /* ================= REPORT ================= */

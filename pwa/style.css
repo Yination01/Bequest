@@ -27,9 +27,9 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior-y:auto;overscroll-
 .menuitem b{display:block;font-size:14px;margin-bottom:3px}.menuitem span{font-size:11px;color:var(--mut)}
 .profilehero{display:flex;align-items:center;gap:13px}
 .profilehero .npcav{flex:0 0 64px}
-details.card{padding:0;overflow:hidden}details.card>summary{list-style:none;cursor:pointer;padding:14px;font-weight:750}
-details.card>summary::-webkit-details-marker{display:none}details.card>summary:after{content:'›';float:right;color:var(--am)}
-details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbody{padding:0 14px 14px}
+details.card{padding:0;overflow:hidden;flex-shrink:0}details.card>summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:750;font-size:15px;line-height:1.4;display:flex;justify-content:space-between;align-items:center;user-select:none;-webkit-user-select:none;min-height:48px}
+details.card>summary::-webkit-details-marker{display:none}details.card>summary:after{content:'›';color:var(--am);font-size:20px;line-height:1;transition:transform .2s ease;margin-left:8px}
+details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbody{padding:0 16px 16px}
 .coach-target{position:relative;z-index:85!important;outline:3px solid var(--am)!important;outline-offset:3px!important;
   box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 24px var(--am)!important;
   animation:coach-pulse 1.3s ease-in-out infinite!important;pointer-events:auto!important}
@@ -98,7 +98,7 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 /* ---------- main ---------- */
 #main{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:11px 11px 4px;display:flex;flex-direction:column;gap:10px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 13px;flex-shrink:0}
 .ct{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--mut);margin-bottom:9px;font-weight:700}
 .news{background:linear-gradient(135deg,#1a2643,#131c2e);border-color:#2b3c60}
 .ni{font-size:13px;color:var(--am);margin-bottom:3px}
@@ -118,7 +118,8 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 .row:active{background:rgba(255,255,255,.03)}
 .row i{color:var(--dim);font-style:normal;font-size:17px;flex:0 0 auto}
 .row i.price{font-size:13px;color:var(--am);font-weight:700}
-.row.locked{opacity:.42;cursor:default}
+.row.locked{opacity:.45;cursor:pointer}
+.row.locked.out-of-reach{opacity:.48;filter:grayscale(.4)}
 .row.danger .rn{color:#f08a8e}
 .rn{font-size:14px;font-weight:600}
 .fieldhdr{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--am);
@@ -561,7 +562,8 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
 #app[data-tab="more"] .nav button.on{color:var(--mut);background:none}
 
 /* age-gated tiles */
-.hub.locked{opacity:.62;filter:grayscale(.35)}
+.hub.locked{opacity:.42;filter:grayscale(.55);background:rgba(14,21,36,.6)}
+.hub.locked:hover,.hub.locked:active{opacity:.55}
 .hub .lockpill{font-size:9px;font-weight:750;letter-spacing:.04em;text-transform:uppercase;
   padding:2px 6px;border-radius:5px;background:rgba(224,86,91,.18);color:var(--r);border:1px solid rgba(224,86,91,.32);margin-top:4px;display:inline-block}
 

@@ -133,3 +133,11 @@ Android Back closes the current in-game layer or returns toward Life before the
 app may minimize. Re-rendering a page preserves its scroll position. Interface
 tap sound and haptics fire only after a completed tap, never from a scrolling
 gesture.
+
+# Profile accordion resilience, restricted places display, event pacing, and minor orientation — 2026-10-02
+
+1. **Profile Accordion Layout**: Collapsible cards (`details.card` and `.card`) enforce `flex-shrink: 0` inside `#main`'s flex column to prevent vertical collapsing or squishing text when cards are closed. Summaries use flex layouts with rotating caret indicators, ample padding, and a minimum 48px touch target.
+2. **Infant & Child Orientation**: Characters under age 12 display orientation as 'Undiscovered' in Profile rather than assigning romantic preferences during early childhood.
+3. **Restricted Places Display**: Housing options beyond current income and age-gated money hub tiles/shop categories are visually dimmed with `.locked` and `.out-of-reach` (`opacity: .45; filter: grayscale(.4)`). Tapping restricted items triggers an informative modal explaining the exact age or income requirements.
+4. **Age Up Pacing**: Event outcomes are unshifted to the front of `QUEUE` upon choice resolution (`resolveChoice`), ensuring the immediate consequence of each decision is seen before any subsequent year event is presented (`Event -> Outcome -> Next Event`).
+

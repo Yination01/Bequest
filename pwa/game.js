@@ -1979,7 +1979,7 @@ function resolveChoice(ev,ci){
   const all=lines.concat(extra);
   logLine(`${ev.t}: ${ch.l}`);
   const outcomeText = ch.out ? tok(ch.out) : ch.l;
-  if(all.length)push({type:'C',title:tok(ev.t),text:outcomeText,res:all});
+  if(all.length)QUEUE.unshift({type:'C',title:tok(ev.t),text:outcomeText,res:all});
   checkAch(); drain();
 }
 
@@ -3550,9 +3550,12 @@ const MONEY_MIN_AGE={
 };
 function openMoney(sec){
   if(!S)return;
-  const req = MONEY_MIN_AGE[sec] || 0;
+  const isShop = sec.indexOf('shop:') === 0;
+  const shopCat = isShop ? sec.slice(5) : null;
+  const req = isShop ? (SHOP_MIN_AGE[shopCat] || 0) : (MONEY_MIN_AGE[sec] || 0);
   if(S.age < req){
-    const name = sec === 'cards' ? 'Credit cards'
+    const name = isShop ? (shopCat + ' shop')
+      : sec === 'cards' ? 'Credit cards'
       : sec.includes('vehicle') ? 'Vehicles'
       : (sec.includes('property') || sec === 'estate') ? 'Property'
       : sec === 'biz' ? 'Commercial businesses'
@@ -3661,6 +3664,8 @@ function moneyShop(cat){
 function moneyProperty(){ return moneyPropertyMarket(); }
 function setHome(id){
   const h=HOME(id), c=country();
+  if(h.id===S.home)
+    return popupOK('Current Home', `You already live in ${h.n.toLowerCase()}.`);
   const income=S.job?S.job.pay:(S.savings>50000?40000:0);
   if(h.need>income&&h.id!=='parents')
     return popupOK('Refused',`${h.n} needs about ${money(Math.round(h.need*c.col))} a year of income. You have ${money(Math.round(income))}.`);
@@ -3671,7 +3676,10 @@ function setHome(id){
   popupOK('Moved in',`${h.n}. ${dep>0?'Deposit of '+money(dep)+' paid.':''}`);
   save(); renderAll();
 }
-function setFood(id){ S.food=id; popupOK('Shopping',`You now ${FOODTIER(id).n.toLowerCase()}.`); save(); renderAll(); }
+function setFood(id){
+  if(id===S.food) return popupOK('Current Diet', `You already ${FOODTIER(id).n.toLowerCase()}.`);
+  S.food=id; popupOK('Shopping',`You now ${FOODTIER(id).n.toLowerCase()}.`); save(); renderAll();
+}
 function toggleSub(id){
   S.subs=S.subs||{};
   const sub=SUB(id);
@@ -3782,9 +3790,9 @@ function moneyLiving(){
       <i>${autopayOn()?'\u2713':'\u25CB'}</i></button>
   </div>
   <div class="card"><div class="ct">Where you live</div>
-    ${HOUSING.map(x=>{const cur=x.id===S.home, income=S.job?S.job.pay:0;
+    ${HOUSING.map(x=>{const cur=x.id===S.home, income=S.job?S.job.pay:(S.savings>50000?40000:0);
       const afford=x.need<=income||x.id==='parents';
-      return `<button class="row ${cur?'locked':''}" ${cur?'':`onclick="setHome('${x.id}')"`}>
+      return `<button class="row ${cur?'current':''} ${!afford?'locked out-of-reach':''}" onclick="setHome('${x.id}')">
         <div><div class="rn">${esc(x.n)}${cur?' <span class="owned">current</span>':''}</div>
         <div class="hsub dim">${x.cost?money(Math.round(x.cost*c.col))+'/yr':'free'}${x.dep?' \u00b7 '+money(Math.round(x.dep*c.col))+' deposit':''}
         ${x.need?' \u00b7 needs '+money(Math.round(x.need*c.col))+' income':''}${afford?'':' \u00b7 <span class="bad">out of reach</span>'}</div></div>
@@ -3792,7 +3800,7 @@ function moneyLiving(){
   </div>
   <div class="card"><div class="ct">How you eat</div>
     ${FOOD.map(x=>{const cur=x.id===S.food;
-      return `<button class="row ${cur?'locked':''}" ${cur?'':`onclick="setFood('${x.id}')"`}>
+      return `<button class="row ${cur?'current':''}" onclick="setFood('${x.id}')">
         <div><div class="rn">${esc(x.n)}${cur?' <span class="owned">current</span>':''}</div>
         <div class="hsub dim">${money(Math.round(x.cost*c.col))}/yr \u00b7 Health ${x.health>0?'+':''}${x.health}, Happiness ${x.happy>0?'+':''}${x.happy}</div></div>
         <i>${cur?'\u2713':'\u203a'}</i></button>`;}).join('')}
@@ -4199,7 +4207,9 @@ function viewMoney(){
   return `<div class="card"><div class="ctrow"><div class="ct">Money</div>
       <div class="hsub dim">${money(S.money)}</div></div>
     <div class="hubgrid">${tiles.map(([id,ic,n,d])=>{
-      const req = MONEY_MIN_AGE[id]||0;
+      const isShop = id.indexOf('shop:') === 0;
+      const shopCat = isShop ? id.slice(5) : null;
+      const req = isShop ? (SHOP_MIN_AGE[shopCat] || 0) : (MONEY_MIN_AGE[id] || 0);
       const locked = S.age < req;
       return `<button class="hub ${locked?'locked':''}" onclick="openMoney('${id}')"><div class="hubi">${ic}</div>
         <div class="hubn">${esc(n)}</div><div class="hubc">${esc(d)}</div>
@@ -4491,7 +4501,7 @@ function profileRows(rows){
 function viewStats(){
   const identity=[
     ['Life stage',stage()],['Age',S.age],['Location',S.city+', '+country().name],
-    ['Born',DATA.wealthTiers[S.birthTier].name],['Orientation',DATA.orientations.find(o=>o.id===S.orientation).n+(S.outTo?' (out)':'')]
+    ['Born',DATA.wealthTiers[S.birthTier].name],['Orientation',S.age<12?'Undiscovered':(DATA.orientations.find(o=>o.id===S.orientation).n+(S.outTo?' (out)':''))]
   ];
   const life=[
     ['Education',DATA.eduNames[S.edu]+(S.uniTier?' · '+(UNI_TIERS.find(t=>t.id===S.uniTier)||{}).n:'')],
