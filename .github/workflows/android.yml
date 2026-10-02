@@ -74,23 +74,42 @@ jobs:
 
       - name: Sign with a stable key so builds replace each other
         run: |
-          # Android refuses to upgrade an app signed by a different key. CI
-          # generates a fresh debug key each run, so we use a fixed one.
-          mkdir -p ~/.android
+          # Android refuses to upgrade an app signed by a different key.
+          # We use the permanent committed debug keystore from resources/.
+          mkdir -p ~/.android android/app
           if [ -n "${{ secrets.DEBUG_KEYSTORE_B64 }}" ]; then
-            echo "${{ secrets.DEBUG_KEYSTORE_B64 }}" | base64 -d > ~/.android/debug.keystore
-            echo "using the project debug keystore from secrets"
-          elif [ -f "resources/bequest-debug.keystore" ]; then
-            cp resources/bequest-debug.keystore ~/.android/debug.keystore
-            echo "using permanent debug keystore from resources/bequest-debug.keystore"
-          else
-            keytool -genkeypair -v -keystore ~/.android/debug.keystore \
-              -storepass android -keypass android -alias androiddebugkey \
-              -keyalg RSA -keysize 2048 -validity 10000 \
-              -dname "CN=Bequest Debug,O=Yination,C=GB" >/dev/null 2>&1
-            echo "::warning::No debug keystore found. This build is signed with a throwaway key and will NOT install over a previous build."
+            echo "${{ secrets.DEBUG_KEYSTORE_B64 }}" | base64 -d > resources/bequest-debug.keystore
           fi
-          keytool -list -v -keystore ~/.android/debug.keystore -storepass android | grep -E "Owner|SHA256"
+          cp resources/bequest-debug.keystore ~/.android/debug.keystore
+          cp resources/bequest-debug.keystore android/app/debug.keystore
+          echo "Installed permanent debug keystore in ~/.android/debug.keystore and android/app/debug.keystore"
+          keytool -list -v -keystore android/app/debug.keystore -storepass android | grep -E "Owner|SHA256"
+
+          # Explicitly configure signingConfigs in android/app/build.gradle so Gradle is forced to use the permanent keystore
+          node -e '
+            const fs = require("fs");
+            const bgPath = "android/app/build.gradle";
+            let bg = fs.readFileSync(bgPath, "utf8");
+            const signingBlock = `
+    signingConfigs {
+        debug {
+            storeFile file("debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+`;
+            if (!bg.includes("signingConfigs {")) {
+              bg = bg.replace(/buildTypes\s*\{/, signingBlock + "\n    buildTypes {");
+              bg = bg.replace(/buildTypes\s*\{\s*release/, "buildTypes {\n        debug {\n            signingConfig signingConfigs.debug\n        }\n        release");
+              fs.writeFileSync(bgPath, bg);
+              console.log("Configured signingConfigs.debug in " + bgPath);
+            }
+          '
+          grep -C 4 "signingConfigs" android/app/build.gradle
 
       - name: Sync web assets into Android
         run: npx cap sync android
@@ -98,13 +117,21 @@ jobs:
       - name: Assemble debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
 
-      # Verify APK signature fingerprint
-      - name: Verify APK signature fingerprint
+      - name: Verify APK signature fingerprint matches permanent keystore
         run: |
           APK=$(find android/app/build/outputs/apk/debug -name "*.apk" | head -1)
-          if [ -n "$APK" ]; then
-            keytool -printcert -jarfile "$APK" 2>/dev/null || true
+          if [ -z "$APK" ]; then
+            echo "Error: No APK found to verify"
+            exit 1
           fi
+          echo "Checking APK: $APK"
+          CERT_OUT=$(keytool -printcert -jarfile "$APK" 2>&1 || true)
+          echo "$CERT_OUT"
+          if ! echo "$CERT_OUT" | grep -q "54:51:2D:22:56:78:F0:76:D0:61:3E:AD:2C:07:86:08:A0:4A:D6:B3:46:88:E6:18:40:EF:77:D7:22:00:59:A5"; then
+            echo "ERROR: APK is NOT signed with the permanent debug keystore!"
+            exit 1
+          fi
+          echo "SUCCESS: Verified APK is signed with permanent debug keystore (54:51:2D:22...)"
 
       - uses: actions/upload-artifact@v4
         with:
