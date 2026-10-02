@@ -62,12 +62,58 @@ function soundCfg(){
 }
 function soundOn(){ return !!soundCfg().on; }
 function hapticsOn(){ return !!soundCfg().haptics; }
-function setSound(on){ soundCfg().on = !!on; saveMeta(); if(on){ audioResume(); sfx('open'); } renderAll(); }
-function setHaptics(on){ soundCfg().haptics = !!on; saveMeta(); if(on) haptic('light'); renderAll(); }
+function setSound(on){
+  soundCfg().on = !!on; saveMeta();
+  if(on){ audioResume(); sfx('open'); }
+  if(typeof document!=='undefined'&&document.querySelector){
+    const row=document.querySelector('[data-switch-id="sound"]');
+    if(row){
+      row.dataset.switch = on ? 'on' : 'off';
+      row.setAttribute('aria-checked', on ? 'true' : 'false');
+      const sub=row.querySelector('.hsub');
+      if(sub) sub.textContent = on ? 'On · years, events and outcomes' : 'Off · silent';
+      const icon=row.querySelector('.switch-icon');
+      if(icon) icon.textContent = on ? '✓' : '○';
+    }
+  }
+}
+function setHaptics(on){
+  soundCfg().haptics = !!on; saveMeta();
+  if(on) haptic('light');
+  if(typeof document!=='undefined'&&document.querySelector){
+    const row=document.querySelector('[data-switch-id="haptics"]');
+    if(row){
+      row.dataset.switch = on ? 'on' : 'off';
+      row.setAttribute('aria-checked', on ? 'true' : 'false');
+      const sub=row.querySelector('.hsub');
+      if(sub) sub.textContent = on ? 'On' : 'Off';
+      const icon=row.querySelector('.switch-icon');
+      if(icon) icon.textContent = on ? '✓' : '○';
+    }
+  }
+}
+function previewChime(vol){
+  const ac = audioResume();
+  if(!ac || !soundOn()) return;
+  try{
+    const t0 = ac.currentTime + 0.005;
+    tone(t0, NOTE.C5, 0.07, 0.12, 'triangle');
+    tone(t0 + 0.05, NOTE.E5, 0.07, 0.12, 'triangle');
+    tone(t0 + 0.10, NOTE.G5, 0.12, 0.14, 'triangle');
+  }catch(e){}
+}
 function setVolume(v){
   soundCfg().vol = Math.max(0, Math.min(1, v)); saveMeta();
-  if(MASTER && AC) MASTER.gain.setTargetAtTime(soundCfg().vol, AC.currentTime, 0.01);
-  sfx('tap'); renderAll();
+  const ac = audioResume();
+  const gainVal = Math.pow(soundCfg().vol, 2);
+  if(MASTER && ac) MASTER.gain.setTargetAtTime(gainVal, ac.currentTime, 0.01);
+  previewChime(soundCfg().vol);
+  if(typeof document!=='undefined'&&document.querySelectorAll){
+    document.querySelectorAll('.vol-btn').forEach(b=>{
+      const cur = parseFloat(b.dataset.vol);
+      b.classList.toggle('on', Math.abs(cur - soundCfg().vol) < 0.04);
+    });
+  }
 }
 
 /* ---- engine ---- */

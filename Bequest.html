@@ -29,7 +29,7 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 /* the two full-page screens must own the scrolling, not the fixed-height shell */
 #screen-title,#screen-create{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #game{display:flex;flex-direction:column;height:100%;min-height:0;position:relative}
-.menubtn{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;z-index:60;width:44px;height:44px;border-radius:12px;
+.menubtn{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;left:auto;z-index:60;width:44px;height:44px;border-radius:12px;
   border:1px solid var(--line);background:rgba(8,12,22,.92);color:var(--tx);font-size:22px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 .menubtn:active{background:var(--card2)}
@@ -44,9 +44,10 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 details.card{padding:0;overflow:hidden}details.card>summary{list-style:none;cursor:pointer;padding:14px;font-weight:750}
 details.card>summary::-webkit-details-marker{display:none}details.card>summary:after{content:'›';float:right;color:var(--am)}
 details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbody{padding:0 14px 14px}
-.coach-target{position:relative;z-index:55!important;outline:3px solid var(--am)!important;outline-offset:3px!important;
-  box-shadow:0 0 0 2px #080c16, 0 0 20px var(--am)!important;animation:coach-pulse 1.3s ease-in-out infinite!important}
-@keyframes coach-pulse{0%,100%{outline-color:var(--am);box-shadow:0 0 0 2px #080c16, 0 0 16px rgba(240,166,60,.7)}50%{outline-color:var(--am2);box-shadow:0 0 0 2px #080c16, 0 0 26px rgba(239,106,77,.9)}}
+.coach-target{position:relative;z-index:85!important;outline:3px solid var(--am)!important;outline-offset:3px!important;
+  box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 24px var(--am)!important;
+  animation:coach-pulse 1.3s ease-in-out infinite!important;pointer-events:auto!important}
+@keyframes coach-pulse{0%,100%{outline-color:var(--am);box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 20px rgba(240,166,60,.8)}50%{outline-color:var(--am2);box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 30px rgba(239,106,77,.95)}}
 .dim{color:var(--dim)}
 .bad{color:var(--r)}
 .ok{color:var(--g)}
@@ -173,10 +174,12 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 .modal{position:absolute;inset:0;background:rgba(4,7,14,.82);display:none;align-items:flex-end;justify-content:center;
   z-index:50;backdrop-filter:blur(4px)}
 .modal.show{display:flex}
-.modal.modal-tour{background:rgba(4,7,14,.72);backdrop-filter:blur(3px);padding:14px;z-index:58}
+.modal.modal-tour{background:transparent;backdrop-filter:none;padding:14px;z-index:90;pointer-events:none}
+.modal.modal-tour.card-at-top{align-items:flex-start;padding-top:calc(74px + env(safe-area-inset-top))}
+.modal.modal-tour.card-at-bottom{align-items:flex-end;padding-bottom:calc(74px + env(safe-area-inset-bottom))}
 .modal.modal-tour.tour-bottom{align-items:flex-start;padding-top:calc(74px + env(safe-area-inset-top))}
 .modal.modal-tour.tour-top{align-items:flex-end;padding-bottom:calc(74px + env(safe-area-inset-bottom))}
-.tour-card{border-radius:20px!important;border:1px solid var(--line)!important;box-shadow:0 14px 40px rgba(0,0,0,.7)!important;max-width:480px;z-index:59}
+.tour-card{pointer-events:auto;border-radius:20px!important;border:1px solid var(--line)!important;box-shadow:0 14px 40px rgba(0,0,0,.85)!important;max-width:480px;z-index:95}
 .sheet{width:100%;max-height:92%;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-bottom:0;
   border-radius:20px 20px 0 0;padding:18px 17px calc(18px + env(safe-area-inset-bottom));animation:up .24s cubic-bezier(.2,.8,.3,1)}
 @keyframes up{from{transform:translateY(30px);opacity:.3}to{transform:none;opacity:1}}
@@ -358,7 +361,7 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 :root{ --glow:0 0 0 1px rgba(255,255,255,.04), 0 8px 24px rgba(0,0,0,.35); }
 
 /* hero header */
-#hdr{padding:calc(12px + env(safe-area-inset-top)) 13px 10px 62px;background:
+#hdr{padding:calc(12px + env(safe-area-inset-top)) 64px 10px 14px;background:
   radial-gradient(120% 100% at 0% 0%, #1b2743 0%, #101829 55%, #0b1120 100%);
   border-bottom:1px solid var(--line)}
 .hero{display:flex;align-items:center;gap:12px}
@@ -541,14 +544,47 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
 .personhead{display:flex;gap:12px;align-items:center}
 .personhead .npcav{flex:0 0 54px;border-radius:15px;overflow:hidden;display:flex}
 
-/* accessibility and search */
-#app[data-text="s"]{font-size:13.5px}
-#app[data-text="m"]{font-size:15px}
-#app[data-text="l"]{font-size:16.5px}
-#app[data-text="xl"]{font-size:18.5px}
-#app[data-text="l"] .rn,#app[data-text="xl"] .rn{font-size:15.5px}
-#app[data-text="l"] .pb,#app[data-text="xl"] .pb{font-size:16px}
-#app[data-text="l"] .hsub,#app[data-text="xl"] .hsub{font-size:13px}
+/* accessibility, text scaling and search */
+:root{ --font-scale:1; }
+#app[data-text="s"]{--font-scale:.88;font-size:13.5px}
+#app[data-text="m"]{--font-scale:1;font-size:15px}
+#app[data-text="l"]{--font-scale:1.15;font-size:16.5px}
+#app[data-text="xl"]{--font-scale:1.30;font-size:18.5px}
+
+#app[data-text="s"] .ph,#app[data-text="s"] .secttitle{font-size:17px}
+#app[data-text="s"] .pb,#app[data-text="s"] .choice,#app[data-text="s"] .rn{font-size:13px}
+#app[data-text="s"] .hsub,#app[data-text="s"] .hubc{font-size:10.5px}
+
+#app[data-text="l"] .ph,#app[data-text="l"] .secttitle{font-size:22px}
+#app[data-text="l"] .pb,#app[data-text="l"] .choice,#app[data-text="l"] .rn{font-size:16px}
+#app[data-text="l"] .hsub,#app[data-text="l"] .hubc{font-size:13px}
+
+#app[data-text="xl"] .ph,#app[data-text="xl"] .secttitle{font-size:25px}
+#app[data-text="xl"] .pb,#app[data-text="xl"] .choice,#app[data-text="xl"] .rn{font-size:18px}
+#app[data-text="xl"] .hsub,#app[data-text="xl"] .hubc{font-size:14.5px}
+
+/* isolate menu and settings from main game shell */
+#app[data-tab="more"] #agewrap{display:none}
+#app[data-tab="more"] .nav button{opacity:.55}
+#app[data-tab="more"] .nav button.on{color:var(--mut);background:none}
+
+/* age-gated tiles */
+.hub.locked{opacity:.62;filter:grayscale(.35)}
+.hub .lockpill{font-size:9px;font-weight:750;letter-spacing:.04em;text-transform:uppercase;
+  padding:2px 6px;border-radius:5px;background:rgba(224,86,91,.18);color:var(--r);border:1px solid rgba(224,86,91,.32);margin-top:4px;display:inline-block}
+
+/* hold to confirm */
+.hold-danger{position:relative;overflow:hidden;user-select:none;-webkit-user-select:none}
+.hold-progress{position:absolute;left:0;top:0;bottom:0;width:0%;background:rgba(224,86,91,.38);transition:width .32s ease-out;pointer-events:none}
+.hold-danger.holding .hold-progress{width:100%}
+
+/* animated switch */
+.row[data-switch]{display:flex;justify-content:space-between;align-items:center}
+.switch-pill{width:44px;height:24px;border-radius:12px;background:var(--line);position:relative;transition:background .22s ease;flex-shrink:0}
+.switch-knob{width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform .22s cubic-bezier(.2,.8,.3,1);box-shadow:0 2px 5px rgba(0,0,0,.3)}
+.row[data-switch="on"] .switch-pill{background:var(--g)}
+.row[data-switch="on"] .switch-knob{transform:translateX(20px)}
+
 .search{width:100%;padding:11px 12px;border-radius:11px;border:1px solid var(--line);
   background:var(--bg2);color:var(--tx);font-size:14.5px;margin-bottom:8px}
 .mini.on{border-color:var(--am);color:var(--am);background:rgba(240,166,60,.1)}
@@ -4328,6 +4364,23 @@ const PERSON_ACTIONS = [
   { id:'datenight', n:'Take them out',     rel:'partner,spouse', cost:180,
     run(n){ const d=ri(9,18); n.r=clamp(n.r+d); applyEff({happiness:8});
       return `A good evening. +${d}.`; } },
+  { id:'propose',   n:'Propose marriage',  rel:'partner', min:18,
+    run(n){ if(n.r>=65){ n.rel='spouse'; applyEff({happiness:25});
+        return `You asked ${n.name.split(' ')[0]} to marry you. They said yes!`; }
+      n.r=clamp(n.r-12); applyEff({happiness:-8});
+      return `${n.name.split(' ')[0]} was not ready for marriage yet.`; } },
+  { id:'havebaby',  n:'Try for a baby',    rel:'partner,spouse', min:18,
+    run(n){ if(n.r>50){ applyEff({happiness:12});
+        if(typeof addNPC==='function'&&typeof nameFor==='function'&&typeof country==='function'){
+          const g=R()<0.5?'m':'f', reg=country().reg;
+          const baby=addNPC('child', nameFor(reg,g)+' '+(S.name?S.name.split(' ')[1]:'Bequest'), 0, 95);
+          if(baby) baby.gender=g;
+        }
+        return `You and ${n.name.split(' ')[0]} welcomed a new baby!`; }
+      return 'You tried for a baby, but nothing happened this year.'; } },
+  { id:'allowance', n:'Give allowance',    rel:'child', cost:250, min:6, max:17,
+    run(n){ n.r=clamp(n.r+12); applyEff({happiness:4});
+      return `You gave ${n.name.split(' ')[0]} pocket money. They were delighted.`; } },
   { id:'holiday',   n:'Go away together',  rel:'partner,spouse', cost:4200,
     run(n){ n.r=clamp(n.r+24); applyEff({happiness:20,health:3});
       return 'A week somewhere else. You both needed it.'; } },
@@ -5158,12 +5211,58 @@ function soundCfg(){
 }
 function soundOn(){ return !!soundCfg().on; }
 function hapticsOn(){ return !!soundCfg().haptics; }
-function setSound(on){ soundCfg().on = !!on; saveMeta(); if(on){ audioResume(); sfx('open'); } renderAll(); }
-function setHaptics(on){ soundCfg().haptics = !!on; saveMeta(); if(on) haptic('light'); renderAll(); }
+function setSound(on){
+  soundCfg().on = !!on; saveMeta();
+  if(on){ audioResume(); sfx('open'); }
+  if(typeof document!=='undefined'&&document.querySelector){
+    const row=document.querySelector('[data-switch-id="sound"]');
+    if(row){
+      row.dataset.switch = on ? 'on' : 'off';
+      row.setAttribute('aria-checked', on ? 'true' : 'false');
+      const sub=row.querySelector('.hsub');
+      if(sub) sub.textContent = on ? 'On · years, events and outcomes' : 'Off · silent';
+      const icon=row.querySelector('.switch-icon');
+      if(icon) icon.textContent = on ? '✓' : '○';
+    }
+  }
+}
+function setHaptics(on){
+  soundCfg().haptics = !!on; saveMeta();
+  if(on) haptic('light');
+  if(typeof document!=='undefined'&&document.querySelector){
+    const row=document.querySelector('[data-switch-id="haptics"]');
+    if(row){
+      row.dataset.switch = on ? 'on' : 'off';
+      row.setAttribute('aria-checked', on ? 'true' : 'false');
+      const sub=row.querySelector('.hsub');
+      if(sub) sub.textContent = on ? 'On' : 'Off';
+      const icon=row.querySelector('.switch-icon');
+      if(icon) icon.textContent = on ? '✓' : '○';
+    }
+  }
+}
+function previewChime(vol){
+  const ac = audioResume();
+  if(!ac || !soundOn()) return;
+  try{
+    const t0 = ac.currentTime + 0.005;
+    tone(t0, NOTE.C5, 0.07, 0.12, 'triangle');
+    tone(t0 + 0.05, NOTE.E5, 0.07, 0.12, 'triangle');
+    tone(t0 + 0.10, NOTE.G5, 0.12, 0.14, 'triangle');
+  }catch(e){}
+}
 function setVolume(v){
   soundCfg().vol = Math.max(0, Math.min(1, v)); saveMeta();
-  if(MASTER && AC) MASTER.gain.setTargetAtTime(soundCfg().vol, AC.currentTime, 0.01);
-  sfx('tap'); renderAll();
+  const ac = audioResume();
+  const gainVal = Math.pow(soundCfg().vol, 2);
+  if(MASTER && ac) MASTER.gain.setTargetAtTime(gainVal, ac.currentTime, 0.01);
+  previewChime(soundCfg().vol);
+  if(typeof document!=='undefined'&&document.querySelectorAll){
+    document.querySelectorAll('.vol-btn').forEach(b=>{
+      const cur = parseFloat(b.dataset.vol);
+      b.classList.toggle('on', Math.abs(cur - soundCfg().vol) < 0.04);
+    });
+  }
 }
 
 /* ---- engine ---- */
@@ -7791,7 +7890,10 @@ function openingShow(i){
   const p = COACH_OPENING[i], last = i === COACH_OPENING.length-1;
   coachTarget(p.target);
   const el = document.getElementById('modal');
-  el.className = 'modal show modal-tour' + (i === 5 ? ' tour-top' : ' tour-bottom');
+  // Steps 0-4 point to bottom targets (Age Up, tabs): place tour card at top.
+  // Step 5 points to top-right menuBtn: place tour card at bottom.
+  const posClass = i === 5 ? ' card-at-bottom tour-top' : ' card-at-top tour-bottom';
+  el.className = 'modal show modal-tour' + posClass;
   el.innerHTML = `<div class="sheet tour-card"><div class="phead">
       <span class="ptag">Interface tour</span>
       <span class="hsub dim">${i+1} of ${COACH_OPENING.length}</span></div>
@@ -10826,11 +10928,16 @@ function doAgeUp(){
   ageUp();
 }
 function setTextSize(k){
-  S.textSize=k;
+  if(S) S.textSize=k;
+  META.textSize=k; saveMeta();
   const el=document.getElementById('app');
-  if(el)el.dataset.text=k;
-  save(); renderAll();
-  popupOK('Text size','Set to '+({s:'smaller',m:'normal',l:'larger',xl:'largest'}[k]||k)+'.');
+  if(el) el.dataset.text=k;
+  if(S) save();
+  if(typeof document!=='undefined'&&document.querySelectorAll){
+    document.querySelectorAll('.text-size-btn').forEach(b=>{
+      b.classList.toggle('on', b.dataset.size===k);
+    });
+  }
 }
 function applyTextSize(){
   const el=document.getElementById('app');
@@ -10929,9 +11036,9 @@ function setTab(t){
   rememberScroll();
   if(t!=='more') LAST_PRIMARY=t;
   app().dataset.tab=t;
-  const primary=t==='more'?LAST_PRIMARY:t;
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===primary));
-  a11ySyncTabs(primary);
+  const primary=t==='more'?null:t;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',primary && b.dataset.t===primary));
+  if(primary) a11ySyncTabs(primary);
   const m=document.getElementById('main'); if(m)m.classList.remove('in');
   renderTab(t,true,true);
   if(m){ void m.offsetWidth; m.classList.add('in'); } }
@@ -11244,7 +11351,30 @@ function npcAct(id,what){
   save(); renderAll();
 }
 const SHOP_MIN_AGE={Tech:8,Self:6,Health:10,Lifestyle:12,Vehicle:16,'Black market':14,Assets:18};
-function openMoney(sec){ rememberScroll(); S.msection=sec; renderTab('money',false); }
+const MONEY_MIN_AGE={
+  mkt_vehicle: 16,
+  vehicles: 16,
+  mkt_property: 18,
+  estate: 18,
+  cards: 18,
+  biz: 18,
+  invest: 18,
+  will: 18
+};
+function openMoney(sec){
+  if(!S)return;
+  const req = MONEY_MIN_AGE[sec] || 0;
+  if(S.age < req){
+    const name = sec === 'cards' ? 'Credit cards'
+      : sec.includes('vehicle') ? 'Vehicles'
+      : (sec.includes('property') || sec === 'estate') ? 'Property'
+      : sec === 'biz' ? 'Commercial businesses'
+      : sec === 'invest' ? 'Investment markets'
+      : sec === 'will' ? 'Will and estate planning' : 'This section';
+    return popupOK('Age Requirement', `You must be at least ${req} years old to access ${name}. You are currently ${S.age}.`);
+  }
+  rememberScroll(); S.msection=sec; renderTab('money',false);
+}
 function closeMoney(){ S.msection=null; renderTab('money',false); }
 
 function moneyOverview(){
@@ -11666,10 +11796,17 @@ function moneyBusinesses(){
           `<button onclick="upgradeBusiness(${i},'${u.id}')">${esc(u.n)}</button>`).join('')}</div>
       </div>`;}).join('') :'<div class="hsub dim">You do not own a business.</div>'}</div>
     <div class="card"><div class="ct">Start something</div>
-    ${BUSINESSES.map(def=>`<button class="row" onclick="startBusiness('${def.id}')">
+    ${BUSINESSES.map(def=>`<button class="row" onclick="confirmStartBusiness('${def.id}')">
       <div><div class="rn">${esc(def.n)}</div>
       <div class="hsub dim">${money(Math.round(def.cost*country().col))} to start \u00b7 up to ${def.maxStaff} staff \u00b7 needs ${DATA.skills[def.skill].name}</div></div>
       <i>\u203a</i></button>`).join('')}</div>`;
+}
+function confirmStartBusiness(id){
+  const def=BIZ(id); if(!def)return;
+  const cost=Math.round(def.cost*country().col);
+  confirmDo(`Start a ${def.n}?`,
+    `Starting capital: ${money(cost)}.\nYour funds: ${money(S.money)}\nRemaining after: ${money(S.money-cost)}`,
+    ()=>{ startBusiness(id); });
 }
 /* ---------------- THE MARKET ---------------- */
 function marketRefresh(force){
@@ -11794,12 +11931,21 @@ function listingPage(l){
         <div class="hsub dim">${Math.round(p*100)}% below asking</div></div><i>\u203a</i></button>`).join('')}
     </div>`:''}
     <div class="card"><div class="ct">Buy it</div>
-      <button class="row" onclick="buyListing('${l.id}','cash')">
+      <button class="row" onclick="confirmBuyListing('${l.id}','cash')">
         <div><div class="rn">Pay in full</div><div class="hsub dim">${money(l.price)} now</div></div><i>\u203a</i></button>
-      ${canFin?`<button class="row" onclick="buyListing('${l.id}','finance')">
+      ${canFin?`<button class="row" onclick="confirmBuyListing('${l.id}','finance')">
         <div><div class="rn">Buy on finance</div>
         <div class="hsub dim">15% deposit, then yearly instalments. Your credit decides the rate.</div></div><i>\u203a</i></button>`:''}
     </div>`;
+}
+function confirmBuyListing(id, method){
+  const l=findListing(id); if(!l)return;
+  const name=listingName(l);
+  const cost=method==='cash' ? l.price : Math.round(l.price*0.15);
+  const costDesc=method==='cash' ? `${money(cost)} in full` : `${money(cost)} deposit (15%) + yearly finance`;
+  confirmDo(`Confirm Purchase: ${name}?`,
+    `You are buying ${name} for ${costDesc}.\nYour cash: ${money(S.money)}\nRemaining after: ${money(S.money-cost)}`,
+    ()=>{ buyListing(id, method); });
 }
 function marketView(kind,title){
   marketRefresh();
@@ -11857,9 +12003,14 @@ function viewMoney(){
     .concat(cats.map(c=>['shop:'+c,'\u25CF',c,'Shop']));
   return `<div class="card"><div class="ctrow"><div class="ct">Money</div>
       <div class="hsub dim">${money(S.money)}</div></div>
-    <div class="hubgrid">${tiles.map(([id,ic,n,d])=>
-      `<button class="hub" onclick="openMoney('${id}')"><div class="hubi">${ic}</div>
-        <div class="hubn">${esc(n)}</div><div class="hubc">${esc(d)}</div></button>`).join('')}</div></div>`;
+    <div class="hubgrid">${tiles.map(([id,ic,n,d])=>{
+      const req = MONEY_MIN_AGE[id]||0;
+      const locked = S.age < req;
+      return `<button class="hub ${locked?'locked':''}" onclick="openMoney('${id}')"><div class="hubi">${ic}</div>
+        <div class="hubn">${esc(n)}</div><div class="hubc">${esc(d)}</div>
+        ${locked?`<span class="lockpill">Unlocks age ${req}</span>`:''}
+      </button>`;
+    }).join('')}</div></div>`;
 }
 function applyJobId(id){ applyJob(DATA.jobs.find(x=>x.id===id)); save(); renderAll(); }
 function buy(id){
@@ -12174,13 +12325,20 @@ function viewHelp(){
     <button class="row" onclick="coachSetTips(${META.tipsOff?'false':'true'})" data-switch="${META.tipsOff?'off':'on'}"><div><div class="rn">Contextual tips</div><div class="hsub dim">${META.tipsOff?'Off':'On · shown when a feature first matters'}</div></div><i>${META.tipsOff?'○':'✓'}</i></button></div>`;
 }
 function viewSettings(){
+  const sOn = soundOn(), hOn = hapticsOn();
   return `<div class="card"><div class="ct">Preferences</div>
     <div class="hsub dim mb">Reading, sound and vibration apply across every life.</div>
     <div class="hsub dim" style="margin:10px 0 6px">Text size</div><div class="grid3">
-      ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>`<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}</div>
-    <button class="row" onclick="setSound(${soundOn()?'false':'true'})" data-switch="${soundOn()?'on':'off'}"><div><div class="rn">Sound</div><div class="hsub dim">${soundOn()?'On · years, events and outcomes':'Off · silent'}</div></div><i>${soundOn()?'✓':'○'}</i></button>
-    <button class="row" onclick="setHaptics(${hapticsOn()?'false':'true'})" data-switch="${hapticsOn()?'on':'off'}"><div><div class="rn">Vibration</div><div class="hsub dim">${hapticsOn()?'On':'Off'}</div></div><i>${hapticsOn()?'✓':'○'}</i></button>
-    ${soundOn()?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div><div class="grid3">${[['0.25','Quiet'],['0.5','Low'],['0.7','Normal'],['1','Loud']].map(([v,n])=>`<button class="mini ${Math.abs(soundCfg().vol-parseFloat(v))<0.02?'on':''}" onclick="setVolume(${v})">${n}</button>`).join('')}</div>`:''}</div>
+      ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>`<button class="mini text-size-btn ${(S.textSize||'m')===k?'on':''}" data-size="${k}" onclick="setTextSize('${k}')">${n}</button>`).join('')}</div>
+    <button class="row" data-switch-id="sound" role="switch" aria-checked="${sOn?'true':'false'}" onclick="setSound(${sOn?'false':'true'})" data-switch="${sOn?'on':'off'}">
+      <div><div class="rn">Sound</div><div class="hsub dim">${sOn?'On · years, events and outcomes':'Off · silent'}</div></div>
+      <div class="switch-pill"><div class="switch-knob"></div></div>
+    </button>
+    <button class="row" data-switch-id="haptics" role="switch" aria-checked="${hOn?'true':'false'}" onclick="setHaptics(${hOn?'false':'true'})" data-switch="${hOn?'on':'off'}">
+      <div><div class="rn">Vibration</div><div class="hsub dim">${hOn?'On':'Off'}</div></div>
+      <div class="switch-pill"><div class="switch-knob"></div></div>
+    </button>
+    ${sOn?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div><div class="grid3">${[['0.25','Quiet'],['0.5','Low'],['0.7','Normal'],['1','Loud']].map(([v,n])=>`<button class="mini vol-btn ${Math.abs(soundCfg().vol-parseFloat(v))<0.04?'on':''}" data-vol="${v}" onclick="setVolume(${v})">${n}</button>`).join('')}</div>`:''}</div>
     <div class="card"><div class="ct">Save and transfer</div><div class="hsub dim mb">Autosave is always on. Open the save page for slots, backup files and cloud transfer.</div>
       <button class="row" onclick="setMore('save')"><div><div class="rn">Saves and backup</div><div class="hsub dim">Manage slots, export, import and sync</div></div><i>›</i></button>
       <button class="row" onclick="save();popupOK('Saved','Your life has been saved.')"><div class="rn">Save now</div><i>✓</i></button></div>
@@ -12190,7 +12348,30 @@ function viewSettings(){
     <div class="card"><div class="ct">Game</div>
       <button class="row" onclick="setMore('help')"><div><div class="rn">Tutorial and tips</div><div class="hsub dim">Replay or change tutorial guidance</div></div><i>›</i></button>
       <button class="row" onclick="lowerDiff()"><div><div class="rn">Lower the difficulty</div><div class="hsub dim">Currently ${diffDef(S.diff).n}${S.assisted?' · assisted':''}</div></div><i>›</i></button>
-      <button class="row danger" onclick="confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();})"><div class="rn">Abandon life</div><i>›</i></button></div>`;
+      <button class="row danger hold-btn" id="abandonBtn" onpointerdown="startHoldAbandon(event)" onpointerup="cancelHoldAbandon(event)" onpointerleave="cancelHoldAbandon(event)" onclick="confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();})">
+        <div class="hold-progress" id="abandonProgress"></div>
+        <div><div class="rn">Abandon life</div><div class="hsub dim">Hold or tap to confirm</div></div><i>✕</i>
+      </button></div>`;
+}
+let ABANDON_TIMER=null;
+function startHoldAbandon(e){
+  const bar=document.getElementById('abandonProgress');
+  if(bar) bar.style.width='100%';
+  ABANDON_TIMER=setTimeout(()=>{
+    ABANDON_TIMER=null;
+    if(bar) bar.style.width='0%';
+    haptic('heavy');
+    localStorage.removeItem(SAVE_KEY); toTitle();
+  }, 900);
+}
+function cancelHoldAbandon(e){
+  if(ABANDON_TIMER){ clearTimeout(ABANDON_TIMER); ABANDON_TIMER=null; }
+  const bar=document.getElementById('abandonProgress');
+  if(bar) bar.style.width='0%';
+}
+function triggerAbandonPrompt(){
+  if(ABANDON_TIMER){ clearTimeout(ABANDON_TIMER); ABANDON_TIMER=null; }
+  confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();});
 }
 function lowerDiff(){
   const cur=S.diff==='custom'?customRank(S.mods):diffDef(S.diff).rank;
@@ -12386,21 +12567,65 @@ function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('l
    less destructive than quitting the WebView. */
 function gameBack(){
   const modal=document.getElementById('modal');
-  if(modal&&modal.dataset.menu==='1'){ closeMenu(); return true; }
+  const isModalShown = modal && ((modal.classList && modal.classList.contains && modal.classList.contains('show')) || (modal.className && modal.className.indexOf('show') >= 0));
+  if(modal && isModalShown){
+    if(modal.dataset && modal.dataset.exitPrompt==='1'){
+      dismissExitPrompt();
+      return true;
+    }
+    if(modal.dataset && modal.dataset.menu==='1'){ closeMenu(); return true; }
+    if((modal.classList && modal.classList.contains && modal.classList.contains('modal-tour')) || (modal.className && modal.className.indexOf('modal-tour') >= 0)){
+      openingDone();
+      return true;
+    }
+    modal.className='modal';
+    if(modal.dataset){
+      delete modal.dataset.menu;
+      delete modal.dataset.exitPrompt;
+    }
+    return true;
+  }
   if(S&&S.person){ closePerson(); return true; }
   if(S&&S.section){ closeSection(); return true; }
   if(S&&S.msection){ closeMoney(); return true; }
   const t=app().dataset.tab||'life';
   if(t==='more'){ setTab(LAST_PRIMARY||'life'); return true; }
   if(t!=='life'){ setTab('life'); return true; }
-  return false;
+  promptExitGame();
+  return true;
+}
+function promptExitGame(){
+  const modal=document.getElementById('modal');
+  if(!modal) return;
+  modal.dataset.exitPrompt='1';
+  modal.className='modal show';
+  modal.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">Bequest</span></div>
+    <div class="ph">Exit Bequest?</div>
+    <div class="pb">Your life is saved automatically. Are you sure you want to exit the game?</div>
+    <div class="choices">
+      <button class="choice ok" onclick="dismissExitPrompt()"><span>Keep playing</span><i>\u203a</i></button>
+      <button class="choice" onclick="confirmExitGame()"><span>Exit game</span><i>\u203a</i></button>
+    </div></div>`;
+}
+function dismissExitPrompt(){
+  const modal=document.getElementById('modal');
+  if(modal){ modal.className='modal'; delete modal.dataset.exitPrompt; }
+}
+function confirmExitGame(){
+  dismissExitPrompt();
+  const cap=typeof window!=='undefined'&&window.Capacitor&&window.Capacitor.Plugins;
+  const nativeApp=cap&&cap.App;
+  if(nativeApp){
+    if(nativeApp.exitApp) nativeApp.exitApp();
+    else if(nativeApp.minimizeApp) nativeApp.minimizeApp();
+  }
 }
 function bindNativeBack(){
   const cap=typeof window!=='undefined'&&window.Capacitor&&window.Capacitor.Plugins;
   const nativeApp=cap&&cap.App;
   if(!nativeApp||!nativeApp.addListener)return;
   nativeApp.addListener('backButton',()=>{
-    if(!gameBack()&&nativeApp.minimizeApp)nativeApp.minimizeApp();
+    gameBack();
   });
 }
 

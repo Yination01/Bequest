@@ -2999,11 +2999,16 @@ function doAgeUp(){
   ageUp();
 }
 function setTextSize(k){
-  S.textSize=k;
+  if(S) S.textSize=k;
+  META.textSize=k; saveMeta();
   const el=document.getElementById('app');
-  if(el)el.dataset.text=k;
-  save(); renderAll();
-  popupOK('Text size','Set to '+({s:'smaller',m:'normal',l:'larger',xl:'largest'}[k]||k)+'.');
+  if(el) el.dataset.text=k;
+  if(S) save();
+  if(typeof document!=='undefined'&&document.querySelectorAll){
+    document.querySelectorAll('.text-size-btn').forEach(b=>{
+      b.classList.toggle('on', b.dataset.size===k);
+    });
+  }
 }
 function applyTextSize(){
   const el=document.getElementById('app');
@@ -3102,9 +3107,9 @@ function setTab(t){
   rememberScroll();
   if(t!=='more') LAST_PRIMARY=t;
   app().dataset.tab=t;
-  const primary=t==='more'?LAST_PRIMARY:t;
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===primary));
-  a11ySyncTabs(primary);
+  const primary=t==='more'?null:t;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',primary && b.dataset.t===primary));
+  if(primary) a11ySyncTabs(primary);
   const m=document.getElementById('main'); if(m)m.classList.remove('in');
   renderTab(t,true,true);
   if(m){ void m.offsetWidth; m.classList.add('in'); } }
@@ -3417,7 +3422,30 @@ function npcAct(id,what){
   save(); renderAll();
 }
 const SHOP_MIN_AGE={Tech:8,Self:6,Health:10,Lifestyle:12,Vehicle:16,'Black market':14,Assets:18};
-function openMoney(sec){ rememberScroll(); S.msection=sec; renderTab('money',false); }
+const MONEY_MIN_AGE={
+  mkt_vehicle: 16,
+  vehicles: 16,
+  mkt_property: 18,
+  estate: 18,
+  cards: 18,
+  biz: 18,
+  invest: 18,
+  will: 18
+};
+function openMoney(sec){
+  if(!S)return;
+  const req = MONEY_MIN_AGE[sec] || 0;
+  if(S.age < req){
+    const name = sec === 'cards' ? 'Credit cards'
+      : sec.includes('vehicle') ? 'Vehicles'
+      : (sec.includes('property') || sec === 'estate') ? 'Property'
+      : sec === 'biz' ? 'Commercial businesses'
+      : sec === 'invest' ? 'Investment markets'
+      : sec === 'will' ? 'Will and estate planning' : 'This section';
+    return popupOK('Age Requirement', `You must be at least ${req} years old to access ${name}. You are currently ${S.age}.`);
+  }
+  rememberScroll(); S.msection=sec; renderTab('money',false);
+}
 function closeMoney(){ S.msection=null; renderTab('money',false); }
 
 function moneyOverview(){
@@ -3839,10 +3867,17 @@ function moneyBusinesses(){
           `<button onclick="upgradeBusiness(${i},'${u.id}')">${esc(u.n)}</button>`).join('')}</div>
       </div>`;}).join('') :'<div class="hsub dim">You do not own a business.</div>'}</div>
     <div class="card"><div class="ct">Start something</div>
-    ${BUSINESSES.map(def=>`<button class="row" onclick="startBusiness('${def.id}')">
+    ${BUSINESSES.map(def=>`<button class="row" onclick="confirmStartBusiness('${def.id}')">
       <div><div class="rn">${esc(def.n)}</div>
       <div class="hsub dim">${money(Math.round(def.cost*country().col))} to start \u00b7 up to ${def.maxStaff} staff \u00b7 needs ${DATA.skills[def.skill].name}</div></div>
       <i>\u203a</i></button>`).join('')}</div>`;
+}
+function confirmStartBusiness(id){
+  const def=BIZ(id); if(!def)return;
+  const cost=Math.round(def.cost*country().col);
+  confirmDo(`Start a ${def.n}?`,
+    `Starting capital: ${money(cost)}.\nYour funds: ${money(S.money)}\nRemaining after: ${money(S.money-cost)}`,
+    ()=>{ startBusiness(id); });
 }
 /* ---------------- THE MARKET ---------------- */
 function marketRefresh(force){
@@ -3967,12 +4002,21 @@ function listingPage(l){
         <div class="hsub dim">${Math.round(p*100)}% below asking</div></div><i>\u203a</i></button>`).join('')}
     </div>`:''}
     <div class="card"><div class="ct">Buy it</div>
-      <button class="row" onclick="buyListing('${l.id}','cash')">
+      <button class="row" onclick="confirmBuyListing('${l.id}','cash')">
         <div><div class="rn">Pay in full</div><div class="hsub dim">${money(l.price)} now</div></div><i>\u203a</i></button>
-      ${canFin?`<button class="row" onclick="buyListing('${l.id}','finance')">
+      ${canFin?`<button class="row" onclick="confirmBuyListing('${l.id}','finance')">
         <div><div class="rn">Buy on finance</div>
         <div class="hsub dim">15% deposit, then yearly instalments. Your credit decides the rate.</div></div><i>\u203a</i></button>`:''}
     </div>`;
+}
+function confirmBuyListing(id, method){
+  const l=findListing(id); if(!l)return;
+  const name=listingName(l);
+  const cost=method==='cash' ? l.price : Math.round(l.price*0.15);
+  const costDesc=method==='cash' ? `${money(cost)} in full` : `${money(cost)} deposit (15%) + yearly finance`;
+  confirmDo(`Confirm Purchase: ${name}?`,
+    `You are buying ${name} for ${costDesc}.\nYour cash: ${money(S.money)}\nRemaining after: ${money(S.money-cost)}`,
+    ()=>{ buyListing(id, method); });
 }
 function marketView(kind,title){
   marketRefresh();
@@ -4030,9 +4074,14 @@ function viewMoney(){
     .concat(cats.map(c=>['shop:'+c,'\u25CF',c,'Shop']));
   return `<div class="card"><div class="ctrow"><div class="ct">Money</div>
       <div class="hsub dim">${money(S.money)}</div></div>
-    <div class="hubgrid">${tiles.map(([id,ic,n,d])=>
-      `<button class="hub" onclick="openMoney('${id}')"><div class="hubi">${ic}</div>
-        <div class="hubn">${esc(n)}</div><div class="hubc">${esc(d)}</div></button>`).join('')}</div></div>`;
+    <div class="hubgrid">${tiles.map(([id,ic,n,d])=>{
+      const req = MONEY_MIN_AGE[id]||0;
+      const locked = S.age < req;
+      return `<button class="hub ${locked?'locked':''}" onclick="openMoney('${id}')"><div class="hubi">${ic}</div>
+        <div class="hubn">${esc(n)}</div><div class="hubc">${esc(d)}</div>
+        ${locked?`<span class="lockpill">Unlocks age ${req}</span>`:''}
+      </button>`;
+    }).join('')}</div></div>`;
 }
 function applyJobId(id){ applyJob(DATA.jobs.find(x=>x.id===id)); save(); renderAll(); }
 function buy(id){
@@ -4347,13 +4396,20 @@ function viewHelp(){
     <button class="row" onclick="coachSetTips(${META.tipsOff?'false':'true'})" data-switch="${META.tipsOff?'off':'on'}"><div><div class="rn">Contextual tips</div><div class="hsub dim">${META.tipsOff?'Off':'On · shown when a feature first matters'}</div></div><i>${META.tipsOff?'○':'✓'}</i></button></div>`;
 }
 function viewSettings(){
+  const sOn = soundOn(), hOn = hapticsOn();
   return `<div class="card"><div class="ct">Preferences</div>
     <div class="hsub dim mb">Reading, sound and vibration apply across every life.</div>
     <div class="hsub dim" style="margin:10px 0 6px">Text size</div><div class="grid3">
-      ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>`<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}</div>
-    <button class="row" onclick="setSound(${soundOn()?'false':'true'})" data-switch="${soundOn()?'on':'off'}"><div><div class="rn">Sound</div><div class="hsub dim">${soundOn()?'On · years, events and outcomes':'Off · silent'}</div></div><i>${soundOn()?'✓':'○'}</i></button>
-    <button class="row" onclick="setHaptics(${hapticsOn()?'false':'true'})" data-switch="${hapticsOn()?'on':'off'}"><div><div class="rn">Vibration</div><div class="hsub dim">${hapticsOn()?'On':'Off'}</div></div><i>${hapticsOn()?'✓':'○'}</i></button>
-    ${soundOn()?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div><div class="grid3">${[['0.25','Quiet'],['0.5','Low'],['0.7','Normal'],['1','Loud']].map(([v,n])=>`<button class="mini ${Math.abs(soundCfg().vol-parseFloat(v))<0.02?'on':''}" onclick="setVolume(${v})">${n}</button>`).join('')}</div>`:''}</div>
+      ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>`<button class="mini text-size-btn ${(S.textSize||'m')===k?'on':''}" data-size="${k}" onclick="setTextSize('${k}')">${n}</button>`).join('')}</div>
+    <button class="row" data-switch-id="sound" role="switch" aria-checked="${sOn?'true':'false'}" onclick="setSound(${sOn?'false':'true'})" data-switch="${sOn?'on':'off'}">
+      <div><div class="rn">Sound</div><div class="hsub dim">${sOn?'On · years, events and outcomes':'Off · silent'}</div></div>
+      <div class="switch-pill"><div class="switch-knob"></div></div>
+    </button>
+    <button class="row" data-switch-id="haptics" role="switch" aria-checked="${hOn?'true':'false'}" onclick="setHaptics(${hOn?'false':'true'})" data-switch="${hOn?'on':'off'}">
+      <div><div class="rn">Vibration</div><div class="hsub dim">${hOn?'On':'Off'}</div></div>
+      <div class="switch-pill"><div class="switch-knob"></div></div>
+    </button>
+    ${sOn?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div><div class="grid3">${[['0.25','Quiet'],['0.5','Low'],['0.7','Normal'],['1','Loud']].map(([v,n])=>`<button class="mini vol-btn ${Math.abs(soundCfg().vol-parseFloat(v))<0.04?'on':''}" data-vol="${v}" onclick="setVolume(${v})">${n}</button>`).join('')}</div>`:''}</div>
     <div class="card"><div class="ct">Save and transfer</div><div class="hsub dim mb">Autosave is always on. Open the save page for slots, backup files and cloud transfer.</div>
       <button class="row" onclick="setMore('save')"><div><div class="rn">Saves and backup</div><div class="hsub dim">Manage slots, export, import and sync</div></div><i>›</i></button>
       <button class="row" onclick="save();popupOK('Saved','Your life has been saved.')"><div class="rn">Save now</div><i>✓</i></button></div>
@@ -4363,7 +4419,30 @@ function viewSettings(){
     <div class="card"><div class="ct">Game</div>
       <button class="row" onclick="setMore('help')"><div><div class="rn">Tutorial and tips</div><div class="hsub dim">Replay or change tutorial guidance</div></div><i>›</i></button>
       <button class="row" onclick="lowerDiff()"><div><div class="rn">Lower the difficulty</div><div class="hsub dim">Currently ${diffDef(S.diff).n}${S.assisted?' · assisted':''}</div></div><i>›</i></button>
-      <button class="row danger" onclick="confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();})"><div class="rn">Abandon life</div><i>›</i></button></div>`;
+      <button class="row danger hold-btn" id="abandonBtn" onpointerdown="startHoldAbandon(event)" onpointerup="cancelHoldAbandon(event)" onpointerleave="cancelHoldAbandon(event)" onclick="confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();})">
+        <div class="hold-progress" id="abandonProgress"></div>
+        <div><div class="rn">Abandon life</div><div class="hsub dim">Hold or tap to confirm</div></div><i>✕</i>
+      </button></div>`;
+}
+let ABANDON_TIMER=null;
+function startHoldAbandon(e){
+  const bar=document.getElementById('abandonProgress');
+  if(bar) bar.style.width='100%';
+  ABANDON_TIMER=setTimeout(()=>{
+    ABANDON_TIMER=null;
+    if(bar) bar.style.width='0%';
+    haptic('heavy');
+    localStorage.removeItem(SAVE_KEY); toTitle();
+  }, 900);
+}
+function cancelHoldAbandon(e){
+  if(ABANDON_TIMER){ clearTimeout(ABANDON_TIMER); ABANDON_TIMER=null; }
+  const bar=document.getElementById('abandonProgress');
+  if(bar) bar.style.width='0%';
+}
+function triggerAbandonPrompt(){
+  if(ABANDON_TIMER){ clearTimeout(ABANDON_TIMER); ABANDON_TIMER=null; }
+  confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();});
 }
 function lowerDiff(){
   const cur=S.diff==='custom'?customRank(S.mods):diffDef(S.diff).rank;
@@ -4559,21 +4638,65 @@ function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('l
    less destructive than quitting the WebView. */
 function gameBack(){
   const modal=document.getElementById('modal');
-  if(modal&&modal.dataset.menu==='1'){ closeMenu(); return true; }
+  const isModalShown = modal && ((modal.classList && modal.classList.contains && modal.classList.contains('show')) || (modal.className && modal.className.indexOf('show') >= 0));
+  if(modal && isModalShown){
+    if(modal.dataset && modal.dataset.exitPrompt==='1'){
+      dismissExitPrompt();
+      return true;
+    }
+    if(modal.dataset && modal.dataset.menu==='1'){ closeMenu(); return true; }
+    if((modal.classList && modal.classList.contains && modal.classList.contains('modal-tour')) || (modal.className && modal.className.indexOf('modal-tour') >= 0)){
+      openingDone();
+      return true;
+    }
+    modal.className='modal';
+    if(modal.dataset){
+      delete modal.dataset.menu;
+      delete modal.dataset.exitPrompt;
+    }
+    return true;
+  }
   if(S&&S.person){ closePerson(); return true; }
   if(S&&S.section){ closeSection(); return true; }
   if(S&&S.msection){ closeMoney(); return true; }
   const t=app().dataset.tab||'life';
   if(t==='more'){ setTab(LAST_PRIMARY||'life'); return true; }
   if(t!=='life'){ setTab('life'); return true; }
-  return false;
+  promptExitGame();
+  return true;
+}
+function promptExitGame(){
+  const modal=document.getElementById('modal');
+  if(!modal) return;
+  modal.dataset.exitPrompt='1';
+  modal.className='modal show';
+  modal.innerHTML=`<div class="sheet"><div class="phead"><span class="ptag">Bequest</span></div>
+    <div class="ph">Exit Bequest?</div>
+    <div class="pb">Your life is saved automatically. Are you sure you want to exit the game?</div>
+    <div class="choices">
+      <button class="choice ok" onclick="dismissExitPrompt()"><span>Keep playing</span><i>\u203a</i></button>
+      <button class="choice" onclick="confirmExitGame()"><span>Exit game</span><i>\u203a</i></button>
+    </div></div>`;
+}
+function dismissExitPrompt(){
+  const modal=document.getElementById('modal');
+  if(modal){ modal.className='modal'; delete modal.dataset.exitPrompt; }
+}
+function confirmExitGame(){
+  dismissExitPrompt();
+  const cap=typeof window!=='undefined'&&window.Capacitor&&window.Capacitor.Plugins;
+  const nativeApp=cap&&cap.App;
+  if(nativeApp){
+    if(nativeApp.exitApp) nativeApp.exitApp();
+    else if(nativeApp.minimizeApp) nativeApp.minimizeApp();
+  }
 }
 function bindNativeBack(){
   const cap=typeof window!=='undefined'&&window.Capacitor&&window.Capacitor.Plugins;
   const nativeApp=cap&&cap.App;
   if(!nativeApp||!nativeApp.addListener)return;
   nativeApp.addListener('backButton',()=>{
-    if(!gameBack()&&nativeApp.minimizeApp)nativeApp.minimizeApp();
+    gameBack();
   });
 }
 

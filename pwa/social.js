@@ -69,6 +69,23 @@ const PERSON_ACTIONS = [
   { id:'datenight', n:'Take them out',     rel:'partner,spouse', cost:180,
     run(n){ const d=ri(9,18); n.r=clamp(n.r+d); applyEff({happiness:8});
       return `A good evening. +${d}.`; } },
+  { id:'propose',   n:'Propose marriage',  rel:'partner', min:18,
+    run(n){ if(n.r>=65){ n.rel='spouse'; applyEff({happiness:25});
+        return `You asked ${n.name.split(' ')[0]} to marry you. They said yes!`; }
+      n.r=clamp(n.r-12); applyEff({happiness:-8});
+      return `${n.name.split(' ')[0]} was not ready for marriage yet.`; } },
+  { id:'havebaby',  n:'Try for a baby',    rel:'partner,spouse', min:18,
+    run(n){ if(n.r>50){ applyEff({happiness:12});
+        if(typeof addNPC==='function'&&typeof nameFor==='function'&&typeof country==='function'){
+          const g=R()<0.5?'m':'f', reg=country().reg;
+          const baby=addNPC('child', nameFor(reg,g)+' '+(S.name?S.name.split(' ')[1]:'Bequest'), 0, 95);
+          if(baby) baby.gender=g;
+        }
+        return `You and ${n.name.split(' ')[0]} welcomed a new baby!`; }
+      return 'You tried for a baby, but nothing happened this year.'; } },
+  { id:'allowance', n:'Give allowance',    rel:'child', cost:250, min:6, max:17,
+    run(n){ n.r=clamp(n.r+12); applyEff({happiness:4});
+      return `You gave ${n.name.split(' ')[0]} pocket money. They were delighted.`; } },
   { id:'holiday',   n:'Go away together',  rel:'partner,spouse', cost:4200,
     run(n){ n.r=clamp(n.r+24); applyEff({happiness:20,health:3});
       return 'A week somewhere else. You both needed it.'; } },

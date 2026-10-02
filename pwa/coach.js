@@ -137,7 +137,10 @@ function openingShow(i){
   const p = COACH_OPENING[i], last = i === COACH_OPENING.length-1;
   coachTarget(p.target);
   const el = document.getElementById('modal');
-  el.className = 'modal show modal-tour' + (i === 5 ? ' tour-top' : ' tour-bottom');
+  // Steps 0-4 point to bottom targets (Age Up, tabs): place tour card at top.
+  // Step 5 points to top-right menuBtn: place tour card at bottom.
+  const posClass = i === 5 ? ' card-at-bottom tour-top' : ' card-at-top tour-bottom';
+  el.className = 'modal show modal-tour' + posClass;
   el.innerHTML = `<div class="sheet tour-card"><div class="phead">
       <span class="ptag">Interface tour</span>
       <span class="hsub dim">${i+1} of ${COACH_OPENING.length}</span></div>

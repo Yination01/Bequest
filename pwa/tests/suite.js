@@ -9,7 +9,7 @@ const DIR = path.join(__dirname, '..');
 
 /* ---------- headless browser shims ---------- */
 const stub = () => ({ innerHTML:'', className:'', dataset:{}, scrollTop:0, scrollHeight:0,
-  addEventListener(){}, classList:{toggle(){},add(){},remove(){}}, value:'', click(){}, files:[] });
+  addEventListener(){}, classList:{toggle(){},add(){},remove(){},contains(c){return false;}}, setAttribute(){}, value:'', click(){}, files:[] });
 global.document = { getElementById:()=>stub(), querySelectorAll:()=>[], addEventListener(){},
   createElement:()=>stub(), body:{appendChild(){},removeChild(){}} };
 global.window = undefined;
@@ -51,7 +51,7 @@ module.exports={
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,toggleMenu,closeMenu,openMenuPage,gameBack,bindNativeBack,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
     checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,viewStats,renderHeader,renderTitle,renderCreate,
-    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,livingFloor,livingRatio,livingTarget,tickLiving,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,i18nKey,T,setLocale,currentLocale,trackMissing,missingStrings,localiseData,pseudoLocale,variant,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingSkipPrompt,openingDone,coachSetTips,offerDirectDebit,viewStats,viewSettings,viewHelp,viewMenu,
+    rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,livingFloor,livingRatio,livingTarget,tickLiving,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,i18nKey,T,setLocale,currentLocale,trackMissing,missingStrings,localiseData,pseudoLocale,variant,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingSkipPrompt,openingDone,coachSetTips,offerDirectDebit,viewStats,viewSettings,viewHelp,viewMenu,confirmBuyListing,confirmStartBusiness,promptExitGame,dismissExitPrompt,confirmExitGame,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
     get LASTPOP(){return LASTPOP}, set LASTPOP(v){LASTPOP=v},
     get FIRED(){return FIRED}, set FIRED(v){FIRED=v},
@@ -4419,6 +4419,53 @@ t('event uniqueness within a life stays above 80%', () => {
   }
   const avg = ratios.reduce((a,b)=>a+b,0)/ratios.length;
   return avg >= 0.80 ? true : (avg*100).toFixed(1) + '%';
+});
+
+/* ================= 4q. V2.2 POLISH, SAFETY & MASTER CHECKLIST ================= */
+section('4q. v2.2 Polish, safety & master checklist');
+
+t('Android back asks for confirmation at root Life screen', () => {
+  fresh(); G.S.age = 20; G.S.alive = true;
+  const res = G.gameBack();
+  return res === true ? true : 'gameBack did not handle root screen';
+});
+
+t('market age gating blocks minors from real estate and vehicles', () => {
+  fresh(); G.S.age = 1; G.S.alive = true;
+  G.S.msection = null;
+  G.openMoney('mkt_property');
+  if (G.S.msection === 'mkt_property') return '1-year-old was allowed into property market';
+  G.openMoney('mkt_vehicle');
+  if (G.S.msection === 'mkt_vehicle') return '1-year-old was allowed into vehicle market';
+  G.S.age = 18;
+  G.openMoney('mkt_property');
+  return G.S.msection === 'mkt_property' ? true : '18-year-old was blocked from property market';
+});
+
+t('hamburger menu is positioned top right and clears the header', () => {
+  const css = fs.readFileSync(path.join(DIR, 'style.css'), 'utf8');
+  return /right:\s*12px/.test(css) && /left:\s*auto/.test(css) && /#hdr\{padding:calc\(12px \+ env\(safe-area-inset-top\)\) 64px 10px 14px/.test(css)
+    ? true : 'menu button or header padding not updated for top-right layout';
+});
+
+t('tutorial spotlight uses transparent cutout without blurring backdrop', () => {
+  const css = fs.readFileSync(path.join(DIR, 'style.css'), 'utf8');
+  return /\.modal\.modal-tour\{background:transparent;backdrop-filter:none/.test(css)
+    && /0 0 0 9999px rgba\(4,7,14/.test(css)
+    ? true : 'tutorial overlay still has dark blurred modal background';
+});
+
+t('menu and settings isolation hides age up button and deselects nav tabs', () => {
+  const css = fs.readFileSync(path.join(DIR, 'style.css'), 'utf8');
+  return /#app\[data-tab="more"\] #agewrap\{display:none\}/.test(css)
+    && /#app\[data-tab="more"\] \.nav button\.on\{color:var\(--mut\);background:none\}/.test(css)
+    ? true : 'settings isolation styles missing';
+});
+
+t('sound volume scales logarithmically and has preview chime', () => {
+  const sound = fs.readFileSync(path.join(DIR, 'sound.js'), 'utf8');
+  return /Math\.pow\(soundCfg\(\)\.vol,\s*2\)/.test(sound) && /previewChime/.test(sound)
+    ? true : 'volume does not use logarithmic curve or preview chime';
 });
 
 /* ================= 6. SAVES ================= */
