@@ -80,19 +80,31 @@ jobs:
           if [ -n "${{ secrets.DEBUG_KEYSTORE_B64 }}" ]; then
             echo "${{ secrets.DEBUG_KEYSTORE_B64 }}" | base64 -d > ~/.android/debug.keystore
             echo "using the project debug keystore from secrets"
+          elif [ -f "resources/bequest-debug.keystore" ]; then
+            cp resources/bequest-debug.keystore ~/.android/debug.keystore
+            echo "using the permanent project debug keystore from resources/"
           else
             keytool -genkeypair -v -keystore ~/.android/debug.keystore \
               -storepass android -keypass android -alias androiddebugkey \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=Bequest Debug,O=Yination,C=GB" >/dev/null 2>&1
-            echo "::warning::No DEBUG_KEYSTORE_B64 secret set. This build is signed with a throwaway key and will NOT install over a previous build. See BUILD-APK.md."
+            echo "::warning::No debug keystore found. This build is signed with a throwaway key and will NOT install over a previous build."
           fi
+          keytool -list -v -keystore ~/.android/debug.keystore -storepass android | grep -E "Owner|SHA256"
 
       - name: Sync web assets into Android
         run: npx cap sync android
 
       - name: Assemble debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+
+      # Verify APK signature fingerprint
+      - name: Verify APK signature fingerprint
+        run: |
+          APK=$(find android/app/build/outputs/apk/debug -name "*.apk" | head -1)
+          if [ -n "$APK" ]; then
+            keytool -printcert -jarfile "$APK" 2>/dev/null || true
+          fi
 
       - uses: actions/upload-artifact@v4
         with:

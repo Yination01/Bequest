@@ -12,6 +12,7 @@ ios/
 *.aab
 *.keystore
 *.jks
+!resources/bequest-debug.keystore
 
 # local runtime junk
 pwa/.cloud/
