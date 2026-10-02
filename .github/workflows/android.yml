@@ -82,7 +82,7 @@ jobs:
             echo "using the project debug keystore from secrets"
           elif [ -f "resources/bequest-debug.keystore" ]; then
             cp resources/bequest-debug.keystore ~/.android/debug.keystore
-            echo "using the permanent project debug keystore from resources/"
+            echo "using permanent debug keystore from resources/bequest-debug.keystore"
           else
             keytool -genkeypair -v -keystore ~/.android/debug.keystore \
               -storepass android -keypass android -alias androiddebugkey \

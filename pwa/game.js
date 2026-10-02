@@ -1977,7 +1977,8 @@ function resolveChoice(ev,ci){
   clampMinorMoney(); settleState();
   const all=lines.concat(extra);
   logLine(`${ev.t}: ${ch.l}`);
-  if(all.length)push({type:'C',title:tok(ev.t),text:ch.l,res:all});
+  const outcomeText = ch.out ? tok(ch.out) : ch.l;
+  if(all.length)push({type:'C',title:tok(ev.t),text:outcomeText,res:all});
   checkAch(); drain();
 }
 
@@ -2743,7 +2744,7 @@ function ACTS(){
     A('cartoons','Watch cartoons','Childhood','',()=>{applyEff({happiness:7,smarts:-2});popupOK('Cartoons','Happiness +7, Smarts −2.');});
     A('story','Ask for a story','Childhood','',()=>{applyEff({smarts:4,rel:{parents:3}});popupOK('Story time','Smarts +4.');});
   }
-  if(S.inSchool&&a>=6&&a<=21){
+  if(S.inSchool&&a>=5&&a<=21){
     A('study','Study harder','School',
       subjectsActive(S).length?`Pick a subject \u00b7 average ${Math.round(S.gpa==null?50:S.gpa)}`:`Grade ${Math.round(S.gpa==null?50:S.gpa)}/100`,
       ()=>{
@@ -4804,6 +4805,15 @@ function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('l
    to the operating system. Return false only at the root, where minimizing is
    less destructive than quitting the WebView. */
 function gameBack(){
+  const scr = typeof app === 'function' && app() && app().dataset.screen;
+  if(scr === 'create'){
+    toTitle();
+    return true;
+  }
+  if(scr === 'title'){
+    promptExitGame();
+    return true;
+  }
   const modal=document.getElementById('modal');
   const isModalShown = modal && ((modal.classList && modal.classList.contains && modal.classList.contains('show')) || (modal.className && modal.className.indexOf('show') >= 0));
   if(modal && isModalShown){
@@ -4861,10 +4871,22 @@ function confirmExitGame(){
 function bindNativeBack(){
   const cap=typeof window!=='undefined'&&window.Capacitor&&window.Capacitor.Plugins;
   const nativeApp=cap&&cap.App;
-  if(!nativeApp||!nativeApp.addListener)return;
-  nativeApp.addListener('backButton',()=>{
-    gameBack();
-  });
+  if(nativeApp&&nativeApp.addListener){
+    nativeApp.addListener('backButton',()=>{
+      gameBack();
+    });
+  }
+  if(typeof window!=='undefined'&&window.addEventListener){
+    try {
+      if(window.history && window.history.pushState){
+        window.history.pushState({page:'bequest'},'');
+        window.addEventListener('popstate',()=>{
+          window.history.pushState({page:'bequest'},'');
+          gameBack();
+        });
+      }
+    } catch(e){}
+  }
 }
 
 /* ---------------- boot ---------------- */

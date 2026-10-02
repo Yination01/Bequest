@@ -47,6 +47,7 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 .coach-target{position:relative;z-index:85!important;outline:3px solid var(--am)!important;outline-offset:3px!important;
   box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 24px var(--am)!important;
   animation:coach-pulse 1.3s ease-in-out infinite!important;pointer-events:auto!important}
+.menubtn.coach-target{position:absolute!important;top:calc(10px + env(safe-area-inset-top))!important;right:12px!important;left:auto!important}
 @keyframes coach-pulse{0%,100%{outline-color:var(--am);box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 20px rgba(240,166,60,.8)}50%{outline-color:var(--am2);box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 30px rgba(239,106,77,.95)}}
 .dim{color:var(--dim)}
 .bad{color:var(--r)}
@@ -1812,17 +1813,17 @@ const EVENTS = [
     {l:'Stay silent a while longer', e:{smarts:3,discipline:2}}]},
 {id:'i_steps', min:1,max:3,w:10, once:true, t:'First Steps',
  x:['You pull yourself up against the sofa and let go.'],
- c:[{l:'Charge across the room', e:{skill:{fitness:6},happiness:7,health:-1}},
-    {l:'Take it slowly', e:{discipline:4,happiness:4}}]},
+ c:[{l:'Charge across the room', out:'You dashed across the room at full tilt before stumbling over your own feet and tumbling onto the rug, bumping your knee.', e:{skill:{fitness:6},happiness:7,health:-1}},
+    {l:'Take it slowly', out:'You took cautious, trembling steps from cushion to coffee table, concentrating with every ounce of effort until you made it safely across.', e:{discipline:4,happiness:4}}]},
 {id:'i_night', min:0,max:3,w:9, t:'Nobody Is Sleeping',
  x:['You wake at three every morning and scream until somebody comes. This has been going on for four months.'],
  c:[{l:'Settle eventually', e:{rel:{parents:-3},health:2}},
     {l:'Keep the whole house awake for months', e:{rel:{parents:-9},happiness:3}}]},
 {id:'i_food', min:1,max:5,w:9, t:'You Will Not Eat It',
  x:['A spoon approaches. You have decided, firmly, against it.'],
- c:[{l:'Refuse everything green', e:{health:-3,happiness:3,habit:{junkfood:10}}},
-    {l:'Eat whatever you are given', e:{health:5,rel:{parents:6}}},
-    {l:'Throw it on the floor', e:{rel:{parents:-5},happiness:5}}]},
+ c:[{l:'Refuse everything green', out:'You clamped your lips shut and turned your face away, living purely off white bread and sweet purees.', e:{health:-3,happiness:3,habit:{junkfood:10}}},
+    {l:'Eat whatever you are given', out:'You chewed through every spoonful of mashed veg obediently, thriving on whatever was placed on your tray.', e:{health:5,rel:{parents:6}}},
+    {l:'Throw it on the floor', out:'You slapped the bowl with both hands. It splattered across the lino and made a magnificent mess.', e:{rel:{parents:-5},happiness:5}}]},
 {id:'i_stranger', min:1,max:4,w:8, t:'A Face You Do Not Know',
  x:['A relative you have never met reaches out to pick you up.'],
  c:[{l:'Scream the house down', e:{rel:{parents:-2},happiness:-2}},
@@ -1839,29 +1840,29 @@ const EVENTS = [
     {l:'Sit alone with the bricks', e:{smarts:5,happiness:-2}}]},
 {id:'i_climb', min:2,max:5,w:8, t:'You Got On Top of the Bookcase',
  x:['Nobody knows how. Everyone is very calm in a way that suggests panic.'],
- c:[{l:'Get down safely', e:{skill:{fitness:7},happiness:4}},
-    {l:'Fall', e:{health:-9,happiness:-5,rel:{parents:-2}}}]},
+ c:[{l:'Get down safely', out:'You eased yourself backwards rung by shelf, gripping tightly until your toes touched the carpet.', e:{skill:{fitness:7},happiness:4}},
+    {l:'Fall', out:'You lost your footing reaching for a higher shelf and plummeted, landing with a painful crash and bruised ribs.', e:{health:-9,happiness:-5,rel:{parents:-2}}}]},
 {id:'i_why', min:3,max:5,w:9, t:'But Why',
  x:['You have discovered the word \'why\' and have begun applying it to every sentence any adult says.'],
- c:[{l:'Ask about everything, endlessly', e:{smarts:7,rel:{parents:-3}}},
-    {l:'Accept the first answer', e:{happiness:3,discipline:3}}]},
+ c:[{l:'Ask about everything, endlessly', out:'Why is the sky blue? Why is water wet? You tested everyone\u2019s patience to its outer limits.', e:{smarts:7,rel:{parents:-3}}},
+    {l:'Accept the first answer', out:'You nodded solemnly at the first explanation offered and went happily back to playing.', e:{happiness:3,discipline:3}}]},
 {id:'i_tantrum', min:2,max:5,w:9, t:'In the Middle of the Shop',
  x:['You want it. You are not being given it. Everyone is watching.'],
- c:[{l:'Full meltdown', e:{rel:{parents:-8},happiness:2,reputation:-3}},
-    {l:'Sulk quietly instead', e:{discipline:5,happiness:-3}},
-    {l:'Negotiate', e:{skill:{charisma:8},smarts:3}}]},
+ c:[{l:'Full meltdown', out:'You threw yourself flat on the supermarket floor, screaming at the top of your lungs while onlookers stared.', e:{rel:{parents:-8},happiness:2,reputation:-3}},
+    {l:'Sulk quietly instead', out:'You crossed your arms, stared down at your shoes, and refused to utter a single syllable for two hours.', e:{discipline:5,happiness:-3}},
+    {l:'Negotiate', out:'You pointed, bargained with your limited vocabulary, and managed to secure a compromise biscuit.', e:{skill:{charisma:8},smarts:3}}]},
 {id:'i_tv', min:2,max:5,w:8, t:'The Same Programme Again',
  x:['You have watched this episode eleven times. You would like it once more.'],
- c:[{l:'Again', e:{happiness:6,smarts:-2}},
-    {l:'Let someone read to you instead', e:{smarts:6,rel:{parents:5}}}]},
+ c:[{l:'Again', out:'You sat mesmerised by the repeating colours and songs, oblivious to the rest of the world.', e:{happiness:6,smarts:-2}},
+    {l:'Let someone read to you instead', out:'You snuggled under a blanket while someone pointed at picture books and sounded out the words.', e:{smarts:6,rel:{parents:5}}}]},
 {id:'i_sick', min:0,max:4,w:8, t:'A Hot Little Forehead',
  x:['A fever arrives fast and your parents sit up all night with you.'],
- c:[{l:'Recover quickly', e:{health:-3,rel:{parents:5}}},
-    {l:'It drags on for weeks', e:{health:-8,happiness:-4}}]},
+ c:[{l:'Recover quickly', out:'A dose of fever syrup, a long sleep, and your temperature broke by morning.', e:{health:-3,rel:{parents:5}}},
+    {l:'It drags on for weeks', out:'Coughing and sleepless nights dragged on for weeks before the chest infection finally cleared.', e:{health:-8,happiness:-4}}]},
 {id:'i_pet_first', min:2,max:5,w:7, t:'Something With Fur',
  x:['The family animal has decided you are acceptable.'],
- c:[{l:'Follow it everywhere', e:{happiness:9,health:2}},
-    {l:'Pull its tail once, learn forever', e:{health:-3,smarts:4,discipline:3}}]},
+ c:[{l:'Follow it everywhere', out:'You toddled happily after the animal, giggling each time it turned to gently nuzzle you.', e:{happiness:9,health:2}},
+    {l:'Pull its tail once, learn forever', out:'You gave its tail a hearty yank. A sharp hiss and a warning swipe scratched your hand and taught you an instant lesson.', e:{health:-3,smarts:4,discipline:3}}]},
 {id:'i_music', min:2,max:5,w:7, t:'Music on the Radio',
  x:['Something comes on and your whole body responds before you decide to.'],
  c:[{l:'Dance without embarrassment', e:{happiness:8,skill:{music:6}}},
@@ -1895,22 +1896,22 @@ const EVENTS = [
     {l:'Go quiet when you see their face', e:{smarts:4,discipline:4}}]},
 {id:'i_park', min:2,max:5,w:8, t:'The Park',
  x:['Swings, a slide that is slightly too fast, and forty other children.'],
- c:[{l:'Throw yourself at all of it', e:{skill:{fitness:7},happiness:7,health:-2}},
-    {l:'Watch from the bench', e:{smarts:4,happiness:1}},
-    {l:'Make a friend on the roundabout', e:{happiness:6,skill:{charisma:5}}, friend:true}]},
+ c:[{l:'Throw yourself at all of it', out:'You threw yourself into the playground games, grazing your shins and scraping your knees in reckless joy.', e:{skill:{fitness:7},happiness:7,health:-2}},
+    {l:'Watch from the bench', out:'You watched safely from the wooden bench, observing the other kids without taking any spills.', e:{smarts:4,happiness:1}},
+    {l:'Make a friend on the roundabout', out:'You shared the roundabout with another kid, spinning until you were both giggling and dizzy.', e:{happiness:6,skill:{charisma:5}}, friend:true}]},
 {id:'i_hospital', min:0,max:5,w:6, t:'A Night in Hospital',
  x:['Something swallowed, something broken, or a cough that would not stop.'],
- c:[{l:'Let them treat you', e:{health:-6,rel:{parents:6}}, medical:true}]},
+ c:[{l:'Let them treat you', out:'Nurses and doctors patched you up through the night while your parents stayed by the bed.', e:{health:-6,rel:{parents:6}}, medical:true}]},
 {id:'i_sibling_rivalry', min:2,max:5,w:7, req:{sibling:true}, t:'They Were Here First',
  x:['{sibling} has made it clear whose house this is.'],
- c:[{l:'Fight back', e:{skill:{combat:6},rel:{parents:-4}}},
-    {l:'Copy everything they do', e:{smarts:4,skill:{charisma:4}}},
-    {l:'Tell on them', e:{rel:{parents:3},reputation:-3}}]},
+ c:[{l:'Fight back', out:'You wrestled furiously over the toy, standing your ground despite scuffs and tears.', e:{skill:{combat:6},rel:{parents:-4}}},
+    {l:'Copy everything they do', out:'You mirrored every single move they made until they gave up in mild exasperation.', e:{smarts:4,skill:{charisma:4}}},
+    {l:'Tell on them', out:'You ran crying to your parents, pointing an accusing finger at {sibling}.', e:{rel:{parents:3},reputation:-3}}]},
 {id:'i_money_first', min:3,max:5,w:6, t:'A Coin',
  x:['Somebody has given you a coin and explained, badly, what money is.'],
- c:[{l:'Put it in a jar', e:{discipline:6,money:5}},
-    {l:'Try to eat it', e:{health:-4,happiness:2}},
-    {l:'Swap it for sweets immediately', e:{happiness:6,habit:{junkfood:6}}}]},
+ c:[{l:'Put it in a jar', out:'You dropped the coin into a glass jar, fascinated by its shiny metallic clink.', e:{discipline:6,money:5}},
+    {l:'Try to eat it', out:'You popped the coin straight into your mouth, gagging and choking until a panicked adult dislodged it.', e:{health:-4,happiness:2}},
+    {l:'Swap it for sweets immediately', out:'You traded the coin for a bag of penny sweets and ate the whole lot in ten minutes.', e:{happiness:6,habit:{junkfood:6}}}]},
 {id:'i_lang', min:3,max:5,w:7, t:'Another Language at Home',
  x:['One side of the family speaks something else entirely, and expects you to keep up.'],
  c:[{l:'Learn it properly', e:{smarts:8,skill:{charisma:5},rel:{parents:6}}},
@@ -7798,7 +7799,7 @@ const COACH_OPENING = [
   { t:'Money explains the numbers', target:'tab-money',
     x:'Money holds banking, bills, careers, homes, vehicles, businesses, shopping and investments.' },
   { t:'The menu holds everything else', target:'menuBtn',
-    x:'Open Menu for your Profile, awards, goals, records, shop, saves, Settings and Help. You can replay this tour from Help.' }
+    x:'Tap the ☰ menu in the top-right corner for your Profile, awards, goals, records, shop, saves, Settings and Help. You can replay this tour from Help.' }
 ];
 
 /* Each tip names one thing, points at where to do it, and then goes away.
@@ -9924,7 +9925,8 @@ function resolveChoice(ev,ci){
   clampMinorMoney(); settleState();
   const all=lines.concat(extra);
   logLine(`${ev.t}: ${ch.l}`);
-  if(all.length)push({type:'C',title:tok(ev.t),text:ch.l,res:all});
+  const outcomeText = ch.out ? tok(ch.out) : ch.l;
+  if(all.length)push({type:'C',title:tok(ev.t),text:outcomeText,res:all});
   checkAch(); drain();
 }
 
@@ -10690,7 +10692,7 @@ function ACTS(){
     A('cartoons','Watch cartoons','Childhood','',()=>{applyEff({happiness:7,smarts:-2});popupOK('Cartoons','Happiness +7, Smarts −2.');});
     A('story','Ask for a story','Childhood','',()=>{applyEff({smarts:4,rel:{parents:3}});popupOK('Story time','Smarts +4.');});
   }
-  if(S.inSchool&&a>=6&&a<=21){
+  if(S.inSchool&&a>=5&&a<=21){
     A('study','Study harder','School',
       subjectsActive(S).length?`Pick a subject \u00b7 average ${Math.round(S.gpa==null?50:S.gpa)}`:`Grade ${Math.round(S.gpa==null?50:S.gpa)}/100`,
       ()=>{
@@ -12751,6 +12753,15 @@ function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('l
    to the operating system. Return false only at the root, where minimizing is
    less destructive than quitting the WebView. */
 function gameBack(){
+  const scr = typeof app === 'function' && app() && app().dataset.screen;
+  if(scr === 'create'){
+    toTitle();
+    return true;
+  }
+  if(scr === 'title'){
+    promptExitGame();
+    return true;
+  }
   const modal=document.getElementById('modal');
   const isModalShown = modal && ((modal.classList && modal.classList.contains && modal.classList.contains('show')) || (modal.className && modal.className.indexOf('show') >= 0));
   if(modal && isModalShown){
@@ -12808,10 +12819,22 @@ function confirmExitGame(){
 function bindNativeBack(){
   const cap=typeof window!=='undefined'&&window.Capacitor&&window.Capacitor.Plugins;
   const nativeApp=cap&&cap.App;
-  if(!nativeApp||!nativeApp.addListener)return;
-  nativeApp.addListener('backButton',()=>{
-    gameBack();
-  });
+  if(nativeApp&&nativeApp.addListener){
+    nativeApp.addListener('backButton',()=>{
+      gameBack();
+    });
+  }
+  if(typeof window!=='undefined'&&window.addEventListener){
+    try {
+      if(window.history && window.history.pushState){
+        window.history.pushState({page:'bequest'},'');
+        window.addEventListener('popstate',()=>{
+          window.history.pushState({page:'bequest'},'');
+          gameBack();
+        });
+      }
+    } catch(e){}
+  }
 }
 
 /* ---------------- boot ---------------- */

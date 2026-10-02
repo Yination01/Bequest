@@ -33,6 +33,7 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 .coach-target{position:relative;z-index:85!important;outline:3px solid var(--am)!important;outline-offset:3px!important;
   box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 24px var(--am)!important;
   animation:coach-pulse 1.3s ease-in-out infinite!important;pointer-events:auto!important}
+.menubtn.coach-target{position:absolute!important;top:calc(10px + env(safe-area-inset-top))!important;right:12px!important;left:auto!important}
 @keyframes coach-pulse{0%,100%{outline-color:var(--am);box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 20px rgba(240,166,60,.8)}50%{outline-color:var(--am2);box-shadow:0 0 0 3px #080c16, 0 0 0 9999px rgba(4,7,14,.68), 0 0 30px rgba(239,106,77,.95)}}
 .dim{color:var(--dim)}
 .bad{color:var(--r)}

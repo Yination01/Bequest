@@ -27,7 +27,7 @@ const COACH_OPENING = [
   { t:'Money explains the numbers', target:'tab-money',
     x:'Money holds banking, bills, careers, homes, vehicles, businesses, shopping and investments.' },
   { t:'The menu holds everything else', target:'menuBtn',
-    x:'Open Menu for your Profile, awards, goals, records, shop, saves, Settings and Help. You can replay this tour from Help.' }
+    x:'Tap the ☰ menu in the top-right corner for your Profile, awards, goals, records, shop, saves, Settings and Help. You can replay this tour from Help.' }
 ];
 
 /* Each tip names one thing, points at where to do it, and then goes away.
