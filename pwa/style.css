@@ -5,7 +5,7 @@
   --am:#f0a63c; --am2:#ef6a4d; --g:#42c98a; --r:#e0565b; --a:#e8b73f;
 }
 html,body{height:100%}
-body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
+body{background:var(--bg);color:var(--tx);overscroll-behavior-y:auto;overscroll-behavior-x:none;
   font:15px/1.45 ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
 #app{max-width:520px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;
   background:var(--bg);position:relative;overflow:hidden}
@@ -524,8 +524,13 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
 .hubn{font-size:14px;font-weight:700;margin-top:3px}
 .hubc{font-size:11px;color:var(--dim)}
 .secthead{background:linear-gradient(145deg,#1a2540,#131c2e)}
-.backbtn{background:none;border:0;color:var(--am);font-size:12.5px;font-weight:650;cursor:pointer;
-  padding:0 0 8px}
+.secthead-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px}
+.backbtn{background:none;border:0;color:var(--am);font-size:13px;font-weight:650;cursor:pointer;
+  padding:6px 0;min-height:36px;display:inline-flex;align-items:center}
+.refreshbtn{background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--tx);font-size:12px;font-weight:650;
+  padding:5px 11px;min-height:34px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;
+  touch-action:manipulation;transition:all .15s ease}
+.refreshbtn:active{background:var(--card2);border-color:var(--am);color:var(--am);transform:scale(.96)}
 .secttitle{font-size:19px;font-weight:750}
 .personhead{display:flex;gap:12px;align-items:center}
 .personhead .npcav{flex:0 0 54px;border-radius:15px;overflow:hidden;display:flex}
@@ -574,3 +579,16 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
 .search{width:100%;padding:11px 12px;border-radius:11px;border:1px solid var(--line);
   background:var(--bg2);color:var(--tx);font-size:14.5px;margin-bottom:8px}
 .mini.on{border-color:var(--am);color:var(--am);background:rgba(240,166,60,.1)}
+
+/* local save cards & buttons */
+.save-card{width:100%;max-width:380px;background:linear-gradient(145deg,#152035,#0d1525);border:1px solid var(--line);
+  border-radius:16px;padding:14px 16px;text-align:left;box-shadow:0 8px 24px rgba(0,0,0,.32);margin:6px 0}
+.save-card-label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--am);font-weight:750;margin-bottom:4px}
+.save-card-name{font-size:17px;font-weight:800;color:var(--tx)}
+.save-card-meta{font-size:12px;color:var(--mut);margin-top:3px;margin-bottom:12px;line-height:1.45}
+.save-card-actions{display:flex;gap:8px}
+.save-status-box{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:9px}
+.save-status-title{font-size:14px;font-weight:750;color:var(--tx)}
+.btn.danger{background:#e0565b;border-color:#e0565b;color:#fff}
+.btn.danger-outline{background:transparent;border:1px solid rgba(224,86,91,.5);color:#f08a8e}
+.btn.danger-outline:active{background:rgba(224,86,91,.15);border-color:#e0565b}

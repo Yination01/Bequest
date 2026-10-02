@@ -86,13 +86,92 @@ function loadMeta(){
 function saveMeta(){ try{localStorage.setItem(META_KEY,JSON.stringify(META));}catch(e){ softFail('saveMeta',e); } }
 const slotKey=n=>'bequest.slot'+n;
 function save(){ if(!S)return; try{
+    S.lastSaved = Date.now();
     const blob=JSON.stringify(S);
     localStorage.setItem(slotKey(S.slot||1),blob);
     localStorage.setItem(SAVE_KEY,blob);                 // autosave / quick-continue
     localStorage.setItem('bequest.lastslot',String(S.slot||1));
     if(CLOUD.on&&CLOUD.code)cloudPush(true);
   }catch(e){ softFail('save',e); } }
-function hasSave(){ try{return !!localStorage.getItem(SAVE_KEY);}catch(e){ softFail('hasSave',e); return false;} }
+function hasSave(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw)return false;
+    const d=JSON.parse(raw);
+    return !!(d&&d.name);
+  }catch(e){ softFail('hasSave',e); return false;}
+}
+function currentSaveInfo(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw)return null;
+    const d=JSON.parse(raw);
+    if(!d||!d.name)return null;
+    return {name:d.name,age:d.age!=null?d.age:0,alive:d.alive!==false,
+      job:d.job?d.job.t:(d.inSchool?'Student':'Unemployed'),
+      country:(DATA.countries.find(c=>c.id===d.country)||{}).name||'',
+      diff:d.diff||'normal',money:d.money||0,slot:d.slot||1,
+      lastSaved:d.lastSaved||null};
+  }catch(e){ return null; }
+}
+function saveGameLocally(){
+  if(!S)return;
+  save();
+  haptic('medium');
+  cue('good','light');
+  popupOK('Game Saved',`Saved locally to your device storage at ${new Date().toLocaleTimeString()} (Slot ${S.slot||1}).`);
+  renderAll();
+}
+function deleteLocalSave(slotNum){
+  const targetSlot = slotNum || (S ? S.slot : 1) || 1;
+  confirmDo('Delete local save?', 'This will permanently remove this saved life from your device storage so you can start fresh.', ()=>{
+    try {
+      localStorage.removeItem(slotKey(targetSlot));
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem('bequest.lastslot');
+    } catch(e){}
+    if (S && (!slotNum || S.slot === targetSlot)) {
+      S = null;
+      toTitle();
+    } else {
+      renderTitle();
+    }
+    popupOK('Save Deleted', 'Your local save has been cleared.');
+  });
+}
+function clearAllTestData(){
+  confirmDo('Wipe all local data?', 'This will delete ALL local saves, achievements, and stats for a completely clean testing environment. This cannot be undone.', ()=>{
+    try {
+      for(let i=1; i<=SLOTS; i++) localStorage.removeItem(slotKey(i));
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(META_KEY);
+      localStorage.removeItem('bequest.lastslot');
+      localStorage.removeItem('bequest.cloud');
+      localStorage.removeItem('bequest.sound');
+      localStorage.removeItem('bequest.crash.v1');
+    } catch(e){}
+    S = null;
+    META = {lives:0, lp:0, ach:{}, done:{}, eggs:{}, rec:{}, countriesPlayed:{}, perks:{}, tipsOff:false, premium:{plus:false, lifetime:false, protoUnlocked:false}};
+    toTitle();
+    popupOK('Reset Complete', 'All local save data and progress have been wiped.');
+  });
+}
+function refreshCurrentPage(){
+  haptic('light');
+  if(S){
+    save();
+    renderAll();
+  } else {
+    renderTitle();
+  }
+  popupOK('Refreshed', 'Page and state have been refreshed.');
+}
+function reloadApp(){
+  if(S) save();
+  if(typeof window!=='undefined' && window.location && window.location.reload){
+    window.location.reload();
+  }
+}
 function load(){ try{ S=JSON.parse(localStorage.getItem(SAVE_KEY)); if(!S)return false;
   RNG=mulberry32((S.seed+S.age*7919)>>>0); migrate(); return true; }catch(e){ softFail('load',e); return false;} }
 function migrate(){
@@ -154,7 +233,23 @@ function loadSlot(n){
 }
 function deleteSlot(n){
   confirmDo('Delete slot '+n+'?','This cannot be undone.',()=>{
-    localStorage.removeItem(slotKey(n)); popupOK('Deleted',`Slot ${n} is now empty.`); renderAll(); });
+    try {
+      localStorage.removeItem(slotKey(n));
+      const last = localStorage.getItem('bequest.lastslot');
+      if(last === String(n) || (S && S.slot === n)){
+        localStorage.removeItem(SAVE_KEY);
+        localStorage.removeItem('bequest.lastslot');
+        if(S && S.slot === n){
+          S = null;
+          toTitle();
+          popupOK('Deleted', `Slot ${n} and active save deleted.`);
+          return;
+        }
+      }
+    }catch(e){}
+    popupOK('Deleted',`Slot ${n} is now empty.`);
+    renderAll();
+  });
 }
 function exportSave(){
   const payload={v:2,exported:new Date().toISOString(),meta:META,slots:{}};
@@ -651,7 +746,9 @@ function drain(){
   if(!QUEUE.length){
     const el=document.getElementById('modal');
     if(el&&el.className.indexOf('show')>=0){ el.className='modal'; a11yDialogClose(); }
-    renderAll(); save(); return;
+    if(S){ renderAll(); save(); }
+    else if(typeof app==='function'&&app()&&app().dataset.screen==='title'){ renderTitle(); }
+    return;
   }
   showPopup(QUEUE.shift());
 }
@@ -2242,7 +2339,15 @@ function continueAs(which){
   SETTLEMENT=null;
   renderAll(); save();
 }
-function toTitle(){ closeMenu(); coachClearTarget(); document.getElementById('modal').className='modal'; document.getElementById('app').dataset.screen='title'; renderTitle(); }
+function toTitle(){
+  closeMenu();
+  if(typeof coachClearTarget==='function') coachClearTarget();
+  if(typeof document!=='undefined'){
+    const m=document.getElementById('modal'); if(m) m.className='modal';
+    const a=document.getElementById('app'); if(a&&a.dataset) a.dataset.screen='title';
+  }
+  renderTitle();
+}
 
 /* ---------------- popups ---------------- */
 function popupOK(t,x,res){
@@ -3288,7 +3393,10 @@ function viewActs(){
   if(S.section && groups[S.section]){
     const m=groupMeta(S.section);
     return `<div class="card secthead">
-        <button class="backbtn" onclick="closeSection()">\u2039 All sections</button>
+        <div class="secthead-bar">
+          <button class="backbtn" onclick="closeSection()">\u2039 All sections</button>
+          <button class="refreshbtn" title="Refresh this page" onclick="refreshCurrentPage()">⟳ Refresh</button>
+        </div>
         <div class="secttitle">${m.i} ${esc(S.section)}</div>
         <div class="hsub dim">${esc(m.d)}</div>
         <div class="acthead" style="margin-top:9px"><div class="pips">${Array.from({length:max},(_,i)=>
@@ -3364,7 +3472,11 @@ function personPage(n){
     o.retired?'retired':null].filter(Boolean);
   const acts=personActions(n);
   const spent=n.lastSeen===S.age;
-  return `<div class="card secthead"><button class="backbtn" onclick="closePerson()">\u2039 Everyone</button>
+  return `<div class="card secthead">
+      <div class="secthead-bar">
+        <button class="backbtn" onclick="closePerson()">\u2039 Everyone</button>
+        <button class="refreshbtn" title="Refresh this page" onclick="refreshCurrentPage()">⟳ Refresh</button>
+      </div>
       <div class="personhead"><div class="npcav">${avatarMini(n,54)}</div>
         <div><div class="secttitle">${esc(n.name)}</div>
         <div class="hsub dim">Your ${esc(n.rel)} \u00b7 ${n.age} \u00b7 ${P.n}</div></div></div>
@@ -3986,7 +4098,11 @@ function buyListing(id,method){
 function listingPage(l){
   const canFin=l.kind!=='item'||l.price>2000;
   const m=MOTIVES.find(x=>x.id===l.motive)||MOTIVES[0];
-  return `<div class="card secthead"><button class="backbtn" onclick="closeListing()">\u2039 Back to the market</button>
+  return `<div class="card secthead">
+      <div class="secthead-bar">
+        <button class="backbtn" onclick="closeListing()">\u2039 Back to the market</button>
+        <button class="refreshbtn" title="Refresh this page" onclick="refreshCurrentPage()">⟳ Refresh</button>
+      </div>
       <div class="secttitle">${esc(listingName(l))}</div>
       <div class="hsub dim">${listingDetail(l)}</div>
       <div class="budgetbar"><div><div class="hlbl">Asking</div><div>${money(l.ask)}</div></div>
@@ -4055,7 +4171,11 @@ function viewMoney(){
       : sec==='will'?'Your will' : sec==='invest'?'Investments'
       : sec==='mkt_vehicle'?'Vehicle market' : sec==='mkt_property'?'Property market' : sec==='mkt_item'?'Marketplace'
       : sec.slice(5);
-    return `<div class="card secthead"><button class="backbtn" onclick="closeMoney()">\u2039 Money</button>
+    return `<div class="card secthead">
+      <div class="secthead-bar">
+        <button class="backbtn" onclick="closeMoney()">\u2039 Money</button>
+        <button class="refreshbtn" title="Refresh this page" onclick="refreshCurrentPage()">⟳ Refresh</button>
+      </div>
       <div class="secttitle">${esc(title)}</div></div>` + body;
   }
   const tiles=[['overview','\u25A6','Budget','In, out and net worth'],
@@ -4152,6 +4272,7 @@ function toggleMenu(){
   a11yDialogOpen('Menu');
 }
 function closeMenu(){
+  if(typeof document==='undefined') return;
   const el=document.getElementById('modal'); if(!el)return;
   el.className='modal'; delete el.dataset.menu;
   const b=document.getElementById('menuBtn');
@@ -4171,7 +4292,11 @@ function viewMore(){
   const meta=MENU_PAGES.find(x=>x[0]===v)||MENU_PAGES[0];
   const body=({ach:viewAch,chal:viewChal,goals:viewGoals,rec:viewRec,save:viewSaves,
     shop:viewShop,plus:viewShop,settings:viewSettings,help:viewHelp}[v]||viewStats)();
-  return `<div class="card secthead"><button class="backbtn" onclick="toggleMenu()">☰ Menu</button>
+  return `<div class="card secthead">
+    <div class="secthead-bar">
+      <button class="backbtn" onclick="toggleMenu()">☰ Menu</button>
+      <button class="refreshbtn" title="Refresh this page" onclick="refreshCurrentPage()">⟳ Refresh</button>
+    </div>
     <div class="secttitle">${meta[1]}</div><div class="hsub dim">${meta[2]}</div></div>`+body;
 }
 function viewAch(){
@@ -4410,9 +4535,31 @@ function viewSettings(){
       <div class="switch-pill"><div class="switch-knob"></div></div>
     </button>
     ${sOn?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div><div class="grid3">${[['0.25','Quiet'],['0.5','Low'],['0.7','Normal'],['1','Loud']].map(([v,n])=>`<button class="mini vol-btn ${Math.abs(soundCfg().vol-parseFloat(v))<0.04?'on':''}" data-vol="${v}" onclick="setVolume(${v})">${n}</button>`).join('')}</div>`:''}</div>
-    <div class="card"><div class="ct">Save and transfer</div><div class="hsub dim mb">Autosave is always on. Open the save page for slots, backup files and cloud transfer.</div>
+    <div class="card"><div class="ct">Save and transfer</div>
+      <div class="hsub dim mb">Local save data for testing and offline play. Autosave updates after every decision.</div>
+      ${S ? `
+        <div class="save-status-box">
+          <div class="save-status-title"><b>Current Life:</b> ${esc(S.name)}, Age ${S.age}</div>
+          <div class="hsub dim">${esc(occupation())} · ${money(S.money)} cash · Net worth ${money(netWorth())}</div>
+          <div class="hsub dim" style="margin-top:4px">${S.lastSaved ? 'Last saved: ' + new Date(S.lastSaved).toLocaleTimeString() : 'Autosaved'} · Slot ${S.slot||1}</div>
+        </div>
+        <div class="grid2 mt">
+          <button class="btn mini primary" onclick="saveGameLocally()">💾 Save now</button>
+          <button class="btn mini danger" onclick="deleteLocalSave(${S.slot||1})">🗑 Delete save</button>
+        </div>
+      ` : `
+        <div class="hsub dim">No character currently active in memory.</div>
+      `}
       <button class="row" onclick="setMore('save')"><div><div class="rn">Saves and backup</div><div class="hsub dim">Manage slots, export, import and sync</div></div><i>›</i></button>
-      <button class="row" onclick="save();popupOK('Saved','Your life has been saved.')"><div class="rn">Save now</div><i>✓</i></button></div>
+      <button class="row danger" onclick="clearAllTestData()"><div><div class="rn">Wipe all test data</div><div class="hsub dim">Reset all slots, records, and achievements for a fresh run</div></div><i>✕</i></button>
+    </div>
+    <div class="card"><div class="ct">Refresh & Diagnostics</div>
+      <div class="hsub dim mb">Re-render the interface in-place or reload the application if something is unresponsive.</div>
+      <div class="grid2">
+        <button class="btn mini" onclick="refreshCurrentPage()">⟳ Refresh page</button>
+        <button class="btn mini" onclick="reloadApp()">🔄 Reload app</button>
+      </div>
+    </div>
     <div class="card"><div class="ct">Problem reports</div><div class="hsub dim mb">Reports stay on this device and contain no names or saves.</div>
       <button class="row" onclick="setCrashOptIn(${crashOptIn()?'false':'true'})" data-switch="${crashOptIn()?'on':'off'}"><div><div class="rn">Allow reports to be sent</div><div class="hsub dim">${crashOptIn()?'Allowed · no destination is configured':'Off · nothing leaves this device'}</div></div><i>${crashOptIn()?'✓':'○'}</i></button>
       ${crashLog().length?`<button class="row" onclick="crashScreen()"><div><div class="rn">See the last problem</div><div class="hsub dim">${crashLog().length} recorded</div></div><i>›</i></button><button class="row" onclick="crashClear();renderAll()"><div class="rn">Delete reports</div><i>›</i></button>`:'<div class="hsub dim">Nothing has gone wrong so far.</div>'}</div>
@@ -4491,11 +4638,31 @@ function tapLogo(){
   renderTitle();
 }
 function renderTitle(){
-  document.getElementById('screen-title').innerHTML=`<div class="title">
+  const sInfo = currentSaveInfo();
+  if(typeof document==='undefined') return;
+  const st = document.getElementById('screen-title');
+  if(!st) return;
+  st.innerHTML=`<div class="title">
     <img class="logo" src="ICON" alt="" onclick="tapLogo()">
     <h1>BEQUEST</h1><p class="tag">One year at a time.</p>
-    <div class="tbtns"><button class="btn primary" onclick="showCreate()">New life</button>
-      ${hasSave()?'<button class="btn" onclick="resume()">Continue</button>':''}</div>
+    ${sInfo ? `
+      <div class="save-card">
+        <div class="save-card-label">Active Local Save</div>
+        <div class="save-card-name">${esc(sInfo.name)}, Age ${sInfo.age}${sInfo.alive?'':' (deceased)'}</div>
+        <div class="save-card-meta">${esc(sInfo.job)} · ${esc(sInfo.country)} · ${diffDef(sInfo.diff).n} · ${money(sInfo.money)}</div>
+        <div class="save-card-actions">
+          <button class="btn primary" onclick="resume()">Continue life</button>
+          <button class="btn danger-outline" onclick="deleteLocalSave(${sInfo.slot||1})">Delete save</button>
+        </div>
+      </div>
+      <div class="tbtns" style="margin-top:6px">
+        <button class="btn" onclick="showCreate()">Start new life</button>
+      </div>
+    ` : `
+      <div class="tbtns">
+        <button class="btn primary" onclick="showCreate()">New life</button>
+      </div>
+    `}
     <div class="meta">${META.lives} lives · ${META.lp} Legacy Points<br>
       ${Object.keys(META.ach).length}/${ACHIEVEMENTS.length} achievements · ${Object.keys(META.done).length}/${CHALLENGES.length} challenges</div>
     <div class="note">Prototype build${Object.keys(META.eggs||{}).length?` \u00b7 ${Object.keys(META.eggs).length}/${EGGS.length} found`:''}</div></div>`;
