@@ -29,9 +29,11 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 /* the two full-page screens must own the scrolling, not the fixed-height shell */
 #screen-title,#screen-create{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #game{display:flex;flex-direction:column;height:100%;min-height:0;position:relative}
-.menubtn{position:absolute;top:10px;left:10px;z-index:35;width:40px;height:40px;border-radius:12px;
-  border:1px solid var(--line);background:rgba(8,12,22,.88);color:var(--tx);font-size:22px;cursor:pointer}
+.menubtn{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;z-index:60;width:44px;height:44px;border-radius:12px;
+  border:1px solid var(--line);background:rgba(8,12,22,.92);color:var(--tx);font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;touch-action:manipulation}
 .menubtn:active{background:var(--card2)}
+.menubtn.on{background:var(--card2);border-color:var(--am);color:var(--am)}
 .menuhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .menugrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .menuitem{min-height:76px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:13px;
@@ -42,7 +44,9 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 details.card{padding:0;overflow:hidden}details.card>summary{list-style:none;cursor:pointer;padding:14px;font-weight:750}
 details.card>summary::-webkit-details-marker{display:none}details.card>summary:after{content:'›';float:right;color:var(--am)}
 details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbody{padding:0 14px 14px}
-.coach-target{position:relative;z-index:81!important;box-shadow:0 0 0 4px var(--am),0 0 0 9999px rgba(4,7,14,.72)!important}
+.coach-target{position:relative;z-index:55!important;outline:3px solid var(--am)!important;outline-offset:3px!important;
+  box-shadow:0 0 0 2px #080c16, 0 0 20px var(--am)!important;animation:coach-pulse 1.3s ease-in-out infinite!important}
+@keyframes coach-pulse{0%,100%{outline-color:var(--am);box-shadow:0 0 0 2px #080c16, 0 0 16px rgba(240,166,60,.7)}50%{outline-color:var(--am2);box-shadow:0 0 0 2px #080c16, 0 0 26px rgba(239,106,77,.9)}}
 .dim{color:var(--dim)}
 .bad{color:var(--r)}
 .ok{color:var(--g)}
@@ -169,6 +173,10 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 .modal{position:absolute;inset:0;background:rgba(4,7,14,.82);display:none;align-items:flex-end;justify-content:center;
   z-index:50;backdrop-filter:blur(4px)}
 .modal.show{display:flex}
+.modal.modal-tour{background:rgba(4,7,14,.72);backdrop-filter:blur(3px);padding:14px;z-index:58}
+.modal.modal-tour.tour-bottom{align-items:flex-start;padding-top:calc(74px + env(safe-area-inset-top))}
+.modal.modal-tour.tour-top{align-items:flex-end;padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+.tour-card{border-radius:20px!important;border:1px solid var(--line)!important;box-shadow:0 14px 40px rgba(0,0,0,.7)!important;max-width:480px;z-index:59}
 .sheet{width:100%;max-height:92%;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-bottom:0;
   border-radius:20px 20px 0 0;padding:18px 17px calc(18px + env(safe-area-inset-bottom));animation:up .24s cubic-bezier(.2,.8,.3,1)}
 @keyframes up{from{transform:translateY(30px);opacity:.3}to{transform:none;opacity:1}}
@@ -350,7 +358,7 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 :root{ --glow:0 0 0 1px rgba(255,255,255,.04), 0 8px 24px rgba(0,0,0,.35); }
 
 /* hero header */
-#hdr{padding:12px 13px 10px 58px;background:
+#hdr{padding:calc(12px + env(safe-area-inset-top)) 13px 10px 62px;background:
   radial-gradient(120% 100% at 0% 0%, #1b2743 0%, #101829 55%, #0b1120 100%);
   border-bottom:1px solid var(--line)}
 .hero{display:flex;align-items:center;gap:12px}
@@ -7782,8 +7790,9 @@ function openingShow(i){
   COACH_STEP = i;
   const p = COACH_OPENING[i], last = i === COACH_OPENING.length-1;
   coachTarget(p.target);
-  const el = document.getElementById('modal'); el.className = 'modal show';
-  el.innerHTML = `<div class="sheet"><div class="phead">
+  const el = document.getElementById('modal');
+  el.className = 'modal show modal-tour' + (i === 5 ? ' tour-top' : ' tour-bottom');
+  el.innerHTML = `<div class="sheet tour-card"><div class="phead">
       <span class="ptag">Interface tour</span>
       <span class="hsub dim">${i+1} of ${COACH_OPENING.length}</span></div>
     <div class="ph">${esc(p.t)}</div><div class="pb">${esc(p.x)}</div>
@@ -7795,8 +7804,8 @@ function openingShow(i){
 }
 function openingSkipPrompt(){
   coachClearTarget();
-  const el=document.getElementById('modal'); el.className='modal show';
-  el.innerHTML=`<div class="sheet"><div class="ptag">Tutorials</div><div class="ph">Keep helpful tips?</div>
+  const el=document.getElementById('modal'); el.className='modal show modal-tour tour-bottom';
+  el.innerHTML=`<div class="sheet tour-card"><div class="ptag">Tutorials</div><div class="ph">Keep helpful tips?</div>
     <div class="pb">Short tips normally appear later when school, work, bills and other systems first matter.</div>
     <div class="choices"><button class="choice ok" onclick="coachSetTips(true);openingDone()"><span>Keep later tips</span><i>\u203a</i></button>
     <button class="choice" onclick="coachSetTips(false);openingDone()"><span>Turn off later tips</span><i>\u203a</i></button></div></div>`;
@@ -7804,7 +7813,8 @@ function openingSkipPrompt(){
 function coachSetTips(on){ META.tipsOff=!on; saveMeta(); if(S)renderAll(); }
 function openingDone(){
   coachClearTarget(); coachMark('opening');
-  document.getElementById('modal').className = 'modal';
+  const el = document.getElementById('modal');
+  if(el){ el.className = 'modal'; delete el.dataset.menu; }
   drain();
 }
 /* Replay it deliberately — also the escape hatch for anyone who skipped. */
@@ -10059,7 +10069,7 @@ function continueAs(which){
   SETTLEMENT=null;
   renderAll(); save();
 }
-function toTitle(){ document.getElementById('modal').className='modal'; document.getElementById('app').dataset.screen='title'; renderTitle(); }
+function toTitle(){ closeMenu(); coachClearTarget(); document.getElementById('modal').className='modal'; document.getElementById('app').dataset.screen='title'; renderTitle(); }
 
 /* ---------------- popups ---------------- */
 function popupOK(t,x,res){
@@ -11909,18 +11919,30 @@ function viewMenu(){
 function toggleMenu(){
   if(!S)return;
   const el=document.getElementById('modal');
-  if(el.dataset.menu==='1')return closeMenu();
-  el.dataset.menu='1'; el.className='modal show'; el.innerHTML=viewMenu();
-  const b=document.getElementById('menuBtn'); if(b)b.setAttribute('aria-expanded','true');
+  if(!el)return;
+  if(el.dataset.menu==='1' && el.classList.contains('show')) return closeMenu();
+  if(!coachSeen('opening')) coachMark('opening');
+  coachClearTarget();
+  el.dataset.menu='1'; el.className='modal show modal-menu'; el.innerHTML=viewMenu();
+  const b=document.getElementById('menuBtn');
+  if(b && b.setAttribute){ b.setAttribute('aria-expanded','true'); }
+  if(b && b.classList){ b.classList.add('on'); b.textContent='✕'; }
   a11yDialogOpen('Menu');
 }
 function closeMenu(){
   const el=document.getElementById('modal'); if(!el)return;
   el.className='modal'; delete el.dataset.menu;
-  const b=document.getElementById('menuBtn'); if(b)b.setAttribute('aria-expanded','false');
+  const b=document.getElementById('menuBtn');
+  if(b && b.setAttribute){ b.setAttribute('aria-expanded','false'); }
+  if(b && b.classList){ b.classList.remove('on'); b.textContent='☰'; }
   a11yDialogClose();
 }
-function openMenuPage(v){ closeMenu(); setTab('more'); setMore(v); }
+function openMenuPage(v){
+  closeMenu();
+  if(!S)return;
+  S.moreView=v;
+  setTab('more');
+}
 function setMore(v){ if(!S)return; S.moreView=v; renderTab('more'); }
 function viewMore(){
   const v=S.moreView||'stats';
@@ -12350,6 +12372,7 @@ function countryChanged(v){
   renderCreate();
 }
 function startLife(){
+  closeMenu(); coachClearTarget();
   newGame({name:CREATE.name,typed:CREATE.typed,gender:CREATE.gender||null,country:CREATE.country||null,diff:CREATE.diff,mods:CREATE.mods});
   app().dataset.screen='game'; setTab('life'); renderAll();
   cue('born','medium');
@@ -12389,6 +12412,14 @@ if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener(
   bindTapSounds();
   bindNativeBack();
   document.getElementById('ageBtn').addEventListener('click',()=>{
+    const modal=document.getElementById('modal');
+    if(modal && modal.classList.contains('show')){
+      // Modal dialog, menu or tour is active: do NOT age up the character!
+      if(!coachSeen('opening') && typeof COACH_STEP !== 'undefined' && COACH_STEP === 0){
+        openingShow(1);
+      }
+      return;
+    }
     if(!S||!S.alive)return;
     if(S.actionsLeft>0&&!S.skipAgeWarning&&S.age>=5){
       return confirmDo(`Age up with ${S.actionsLeft} action${S.actionsLeft>1?'s':''} left?`,
@@ -12396,6 +12427,14 @@ if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener(
     }
     doAgeUp();
   });
+  const modalEl = document.getElementById('modal');
+  if(modalEl){
+    modalEl.addEventListener('click', e => {
+      if(e.target === modalEl && modalEl.dataset.menu === '1'){
+        closeMenu();
+      }
+    });
+  }
   const topLevelHttp = (location.protocol==='http:'||location.protocol==='https:') && window.top===window.self;
   if(topLevelHttp && !/[?&]nosw/.test(location.search) && 'serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').then(reg=>{

@@ -136,8 +136,9 @@ function openingShow(i){
   COACH_STEP = i;
   const p = COACH_OPENING[i], last = i === COACH_OPENING.length-1;
   coachTarget(p.target);
-  const el = document.getElementById('modal'); el.className = 'modal show';
-  el.innerHTML = `<div class="sheet"><div class="phead">
+  const el = document.getElementById('modal');
+  el.className = 'modal show modal-tour' + (i === 5 ? ' tour-top' : ' tour-bottom');
+  el.innerHTML = `<div class="sheet tour-card"><div class="phead">
       <span class="ptag">Interface tour</span>
       <span class="hsub dim">${i+1} of ${COACH_OPENING.length}</span></div>
     <div class="ph">${esc(p.t)}</div><div class="pb">${esc(p.x)}</div>
@@ -149,8 +150,8 @@ function openingShow(i){
 }
 function openingSkipPrompt(){
   coachClearTarget();
-  const el=document.getElementById('modal'); el.className='modal show';
-  el.innerHTML=`<div class="sheet"><div class="ptag">Tutorials</div><div class="ph">Keep helpful tips?</div>
+  const el=document.getElementById('modal'); el.className='modal show modal-tour tour-bottom';
+  el.innerHTML=`<div class="sheet tour-card"><div class="ptag">Tutorials</div><div class="ph">Keep helpful tips?</div>
     <div class="pb">Short tips normally appear later when school, work, bills and other systems first matter.</div>
     <div class="choices"><button class="choice ok" onclick="coachSetTips(true);openingDone()"><span>Keep later tips</span><i>\u203a</i></button>
     <button class="choice" onclick="coachSetTips(false);openingDone()"><span>Turn off later tips</span><i>\u203a</i></button></div></div>`;
@@ -158,7 +159,8 @@ function openingSkipPrompt(){
 function coachSetTips(on){ META.tipsOff=!on; saveMeta(); if(S)renderAll(); }
 function openingDone(){
   coachClearTarget(); coachMark('opening');
-  document.getElementById('modal').className = 'modal';
+  const el = document.getElementById('modal');
+  if(el){ el.className = 'modal'; delete el.dataset.menu; }
   drain();
 }
 /* Replay it deliberately — also the escape hatch for anyone who skipped. */

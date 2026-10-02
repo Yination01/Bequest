@@ -2242,7 +2242,7 @@ function continueAs(which){
   SETTLEMENT=null;
   renderAll(); save();
 }
-function toTitle(){ document.getElementById('modal').className='modal'; document.getElementById('app').dataset.screen='title'; renderTitle(); }
+function toTitle(){ closeMenu(); coachClearTarget(); document.getElementById('modal').className='modal'; document.getElementById('app').dataset.screen='title'; renderTitle(); }
 
 /* ---------------- popups ---------------- */
 function popupOK(t,x,res){
@@ -4092,18 +4092,30 @@ function viewMenu(){
 function toggleMenu(){
   if(!S)return;
   const el=document.getElementById('modal');
-  if(el.dataset.menu==='1')return closeMenu();
-  el.dataset.menu='1'; el.className='modal show'; el.innerHTML=viewMenu();
-  const b=document.getElementById('menuBtn'); if(b)b.setAttribute('aria-expanded','true');
+  if(!el)return;
+  if(el.dataset.menu==='1' && el.classList.contains('show')) return closeMenu();
+  if(!coachSeen('opening')) coachMark('opening');
+  coachClearTarget();
+  el.dataset.menu='1'; el.className='modal show modal-menu'; el.innerHTML=viewMenu();
+  const b=document.getElementById('menuBtn');
+  if(b && b.setAttribute){ b.setAttribute('aria-expanded','true'); }
+  if(b && b.classList){ b.classList.add('on'); b.textContent='✕'; }
   a11yDialogOpen('Menu');
 }
 function closeMenu(){
   const el=document.getElementById('modal'); if(!el)return;
   el.className='modal'; delete el.dataset.menu;
-  const b=document.getElementById('menuBtn'); if(b)b.setAttribute('aria-expanded','false');
+  const b=document.getElementById('menuBtn');
+  if(b && b.setAttribute){ b.setAttribute('aria-expanded','false'); }
+  if(b && b.classList){ b.classList.remove('on'); b.textContent='☰'; }
   a11yDialogClose();
 }
-function openMenuPage(v){ closeMenu(); setTab('more'); setMore(v); }
+function openMenuPage(v){
+  closeMenu();
+  if(!S)return;
+  S.moreView=v;
+  setTab('more');
+}
 function setMore(v){ if(!S)return; S.moreView=v; renderTab('more'); }
 function viewMore(){
   const v=S.moreView||'stats';
@@ -4533,6 +4545,7 @@ function countryChanged(v){
   renderCreate();
 }
 function startLife(){
+  closeMenu(); coachClearTarget();
   newGame({name:CREATE.name,typed:CREATE.typed,gender:CREATE.gender||null,country:CREATE.country||null,diff:CREATE.diff,mods:CREATE.mods});
   app().dataset.screen='game'; setTab('life'); renderAll();
   cue('born','medium');
@@ -4572,6 +4585,14 @@ if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener(
   bindTapSounds();
   bindNativeBack();
   document.getElementById('ageBtn').addEventListener('click',()=>{
+    const modal=document.getElementById('modal');
+    if(modal && modal.classList.contains('show')){
+      // Modal dialog, menu or tour is active: do NOT age up the character!
+      if(!coachSeen('opening') && typeof COACH_STEP !== 'undefined' && COACH_STEP === 0){
+        openingShow(1);
+      }
+      return;
+    }
     if(!S||!S.alive)return;
     if(S.actionsLeft>0&&!S.skipAgeWarning&&S.age>=5){
       return confirmDo(`Age up with ${S.actionsLeft} action${S.actionsLeft>1?'s':''} left?`,
@@ -4579,6 +4600,14 @@ if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener(
     }
     doAgeUp();
   });
+  const modalEl = document.getElementById('modal');
+  if(modalEl){
+    modalEl.addEventListener('click', e => {
+      if(e.target === modalEl && modalEl.dataset.menu === '1'){
+        closeMenu();
+      }
+    });
+  }
   const topLevelHttp = (location.protocol==='http:'||location.protocol==='https:') && window.top===window.self;
   if(topLevelHttp && !/[?&]nosw/.test(location.search) && 'serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').then(reg=>{
