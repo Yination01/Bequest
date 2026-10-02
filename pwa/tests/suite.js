@@ -1762,8 +1762,8 @@ t('the shell carries the roles a screen reader needs', () => {
   const missing = Object.keys(need).filter(k => built.indexOf(k) < 0).map(k => need[k]);
   if (missing.length) return missing.join(' | ');
   const tabs = (built.match(/role="tab"/g) || []).length;
-  if (tabs < 5) return 'only ' + tabs + ' tabs are labelled, expected 5';
-  if ((built.match(/aria-selected=/g) || []).length < 5) return 'tabs do not report which is selected';
+  if (tabs < 4) return 'only ' + tabs + ' tabs are labelled, expected 4';
+  if ((built.match(/aria-selected=/g) || []).length < 4) return 'tabs do not report which is selected';
   // decorative icons must be hidden, or every tab is read twice
   const svgs = (built.match(/<svg /g) || []).length;
   const hidden = (built.match(/<svg [^>]*aria-hidden="true"/g) || []).length;
@@ -1780,7 +1780,7 @@ t('exactly one tab is selected, and it is the one that is shown', () => {
   const zero = (built.match(/role="tab"[^>]*tabindex="0"/g) || []).length;
   const minus = (built.match(/role="tab"[^>]*tabindex="-1"/g) || []).length;
   if (zero !== 1) return zero + ' tabs are keyboard stops, expected 1';
-  if (minus !== 4) return 'the other tabs are not removed from the tab order';
+  if (minus !== 3) return 'the other tabs are not removed from the tab order';
   return true;
 });
 

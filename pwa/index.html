@@ -28,7 +28,21 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 #app[data-screen="game"] #screen-title,#app[data-screen="game"] #screen-create{display:none}
 /* the two full-page screens must own the scrolling, not the fixed-height shell */
 #screen-title,#screen-create{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-#game{display:flex;flex-direction:column;height:100%;min-height:0}
+#game{display:flex;flex-direction:column;height:100%;min-height:0;position:relative}
+.menubtn{position:absolute;top:10px;left:10px;z-index:35;width:40px;height:40px;border-radius:12px;
+  border:1px solid var(--line);background:rgba(8,12,22,.88);color:var(--tx);font-size:22px;cursor:pointer}
+.menubtn:active{background:var(--card2)}
+.menuhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.menugrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.menuitem{min-height:76px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:13px;
+  background:var(--bg2);color:var(--tx)}
+.menuitem b{display:block;font-size:14px;margin-bottom:3px}.menuitem span{font-size:11px;color:var(--mut)}
+.profilehero{display:flex;align-items:center;gap:13px}
+.profilehero .npcav{flex:0 0 64px}
+details.card{padding:0;overflow:hidden}details.card>summary{list-style:none;cursor:pointer;padding:14px;font-weight:750}
+details.card>summary::-webkit-details-marker{display:none}details.card>summary:after{content:'›';float:right;color:var(--am)}
+details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbody{padding:0 14px 14px}
+.coach-target{position:relative;z-index:81!important;box-shadow:0 0 0 4px var(--am),0 0 0 9999px rgba(4,7,14,.72)!important}
 .dim{color:var(--dim)}
 .bad{color:var(--r)}
 .ok{color:var(--g)}
@@ -145,7 +159,7 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
   letter-spacing:.14em;cursor:pointer;background:linear-gradient(90deg,var(--am),var(--am2));
   box-shadow:0 6px 24px rgba(239,106,77,.28)}
 #ageBtn:active{transform:scale(.99)}
-.nav{flex:0 0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;
+.nav{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
   padding:7px 7px calc(7px + env(safe-area-inset-bottom));background:var(--bg2);border-top:1px solid var(--line)}
 .nav button{padding:8px 2px;border:0;background:none;color:var(--mut);font-size:10.5px;font-weight:650;
   cursor:pointer;border-radius:9px;letter-spacing:.02em}
@@ -336,7 +350,7 @@ body{background:var(--bg);color:var(--tx);overscroll-behavior:none;
 :root{ --glow:0 0 0 1px rgba(255,255,255,.04), 0 8px 24px rgba(0,0,0,.35); }
 
 /* hero header */
-#hdr{padding:12px 13px 10px;background:
+#hdr{padding:12px 13px 10px 58px;background:
   radial-gradient(120% 100% at 0% 0%, #1b2743 0%, #101829 55%, #0b1120 100%);
   border-bottom:1px solid var(--line)}
 .hero{display:flex;align-items:center;gap:12px}
@@ -538,15 +552,15 @@ i.dim2{font-style:normal;font-size:11px;color:var(--dim);font-weight:700}
   <div id="screen-title"></div>
   <div id="screen-create"></div>
   <div id="game">
+    <button id="menuBtn" class="menubtn" aria-label="Open menu" aria-expanded="false" onclick="toggleMenu()">☰</button>
     <div id="hdr"></div>
     <div id="main" role="tabpanel" aria-labelledby="tab-life" tabindex="-1"></div>
     <div id="agewrap"><button id="ageBtn" aria-describedby="ageHint">AGE UP</button><span id="ageHint" class="sronly"></span></div>
     <nav class="nav" role="tablist" aria-label="Sections">
       <button data-t="life" role="tab" id="tab-life" aria-controls="main" aria-selected="true" tabindex="0" class="on" onclick="setTab('life')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-7-4.7-9.2-9A5.4 5.4 0 0 1 12 6.6 5.4 5.4 0 0 1 21.2 12C19 16.3 12 21 12 21z"/></svg>Life</button>
-      <button data-t="act" role="tab" id="tab-act" aria-controls="main" aria-selected="false" tabindex="-1"  onclick="setTab('act')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>Do</button>
+      <button data-t="act" role="tab" id="tab-act" aria-controls="main" aria-selected="false" tabindex="-1"  onclick="setTab('act')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>Activities</button>
       <button data-t="ppl" role="tab" id="tab-ppl" aria-controls="main" aria-selected="false" tabindex="-1"  onclick="setTab('ppl')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0z"/><circle cx="17.5" cy="9.5" r="2.6"/></svg>People</button>
       <button data-t="money" role="tab" id="tab-money" aria-controls="main" aria-selected="false" tabindex="-1" onclick="setTab('money')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><circle cx="12" cy="12" r="3"/></svg>Money</button>
-      <button data-t="more" role="tab" id="tab-more" aria-controls="main" aria-selected="false" tabindex="-1" onclick="setTab('more')"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>More</button>
     </nav>
   </div>
   <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Message"></div>
@@ -5231,13 +5245,24 @@ function cue(id, h){ const a = sfx(id); const b = haptic(h || 'light'); return a
    One quiet tick on any button that does not already make a noise of its
    own, bound once at the document level so nothing else has to think
    about it. */
+const TAP_MOVE = 10;
 function bindTapSounds(){
   const D = (typeof document !== 'undefined') ? document : null;
   if(!D || !D.addEventListener) return;
+  let gesture = null;
   D.addEventListener('pointerdown', e => {
     audioResume();                                   // unlocks audio on gesture one
     const el = e.target && e.target.closest && e.target.closest('button,.row,.choice');
-    if(!el || el.dataset.noSfx) return;
+    gesture = el && !el.dataset.noSfx ? { el, x:e.clientX, y:e.clientY, moved:false } : null;
+  }, { passive: true });
+  D.addEventListener('pointermove', e => {
+    if(gesture && (Math.abs(e.clientX-gesture.x)>TAP_MOVE || Math.abs(e.clientY-gesture.y)>TAP_MOVE))
+      gesture.moved = true;
+  }, { passive: true });
+  D.addEventListener('pointercancel', () => { gesture=null; }, { passive:true });
+  D.addEventListener('pointerup', e => {
+    const g=gesture; gesture=null;
+    if(!g || g.moved || !(g.el===e.target || (g.el.contains&&g.el.contains(e.target)))) return;
     sfx('tap'); haptic('light');
   }, { passive: true });
 }
@@ -7362,7 +7387,7 @@ function saveFlag(slot){ return (META.flags || {})[slot] || null; }
    bar calls that out and it is the mistake that makes keyboard use feel
    broken even when it works.                                             */
 
-const TAB_ORDER = ['life','act','ppl','money','more'];
+const TAB_ORDER = ['life','act','ppl','money'];
 
 /* The game also runs headless, in the test harness and in the research
    tools, where document is a stub with only the handful of methods those
@@ -7637,18 +7662,18 @@ function pseudoLocale(strings){
    game should not be taught it again on their second life.                  */
 
 const COACH_OPENING = [
-  { t:'One year at a time',
-    x:'Bequest is a life, lived a year at a time. Press AGE UP and a year passes: '
-     +'things happen to you, and you decide what to do about them. There is no winning. '
-     +'There is only the life you end up with, and what you leave behind.' },
-  { t:'Between the years, you act',
-    x:'A year is not only what happens to you. On the Do tab you get a handful of '
-     +'actions — study, train, work, see people, take a risk. Spend them or lose them. '
-     +'A skill you started at twelve is still paying you at fifty.' },
-  { t:'Nothing resets',
-    x:'Money, health, habits, reputation and the people who care about you all carry '
-     +'forward. One bad decade is survivable. Ignoring it for a second one usually is not. '
-     +'Five tabs along the bottom: Life, Do, People, Money, More.' }
+  { t:'Age Up moves time', target:'ageBtn',
+    x:'This is the clock. Tap AGE UP when you are ready to move to the next year. Unused actions disappear when you do.' },
+  { t:'Life shows what is happening', target:'tab-life',
+    x:'Life is your home screen: this year’s story, urgent notices, family, school, work and the next milestone.' },
+  { t:'Activities are your choices', target:'tab-act',
+    x:'Activities spends the limited actions you receive each year on study, work, health, skills, relationships and risks.' },
+  { t:'People need attention', target:'tab-ppl',
+    x:'People shows family, partners, friends and rivals. Relationships drift when you leave them alone.' },
+  { t:'Money explains the numbers', target:'tab-money',
+    x:'Money holds banking, bills, careers, homes, vehicles, businesses, shopping and investments.' },
+  { t:'The menu holds everything else', target:'menuBtn',
+    x:'Open Menu for your Profile, awards, goals, records, shop, saves, Settings and Help. You can replay this tour from Help.' }
 ];
 
 /* Each tip names one thing, points at where to do it, and then goes away.
@@ -7663,7 +7688,7 @@ const COACH_TIPS = [
 
   { id:'acts', to:9,
     t:'Your year is not only what happens to you',
-    x:'The Do tab gives you a few actions each year. Even as a child they matter — '
+    x:'The Activities tab gives you a few actions each year. Even as a child they matter — '
      +'studying, reading and sport now become grades, skills and options later.',
     go:["setTab('act')", 'Show me'],
     when:S => S.age>=5 },
@@ -7671,9 +7696,9 @@ const COACH_TIPS = [
   { id:'stats', to:13,
     t:'Everything compounds',
     x:'Health, happiness, looks, smarts, discipline and reputation move a little every '
-     +'year, in the direction you push them. More \u203a Stats shows where you stand and '
+     +'year, in the direction you push them. Menu \u203a Profile shows where you stand and '
      +'what is drifting.',
-    go:["setTab('more');setMore('stats')", 'Show me'],
+    go:["openMenuPage('stats')", 'Show me'],
     when:S => S.age>=9 },
 
   { id:'school', to:15,
@@ -7725,7 +7750,7 @@ function coachMark(id){
 /* One tip at a time, in list order. Anything whose moment has passed is
    retired unread, so a tip can never surface years after it was useful. */
 function coachTip(){
-  if(!S || !S.alive) return null;
+  if(!S || !S.alive || META.tipsOff) return null;
   COACH_TIPS.forEach(c => {
     if(!coachSeen(c.id) && c.to != null && S.age > c.to) coachMark(c.id);
   });
@@ -7745,28 +7770,46 @@ function coachDismiss(id){ coachMark(id); renderTab('life'); }
 /* ---- the opening ---- */
 let COACH_STEP = 0;
 function coachOpeningDue(){ return !(META.tips && META.tips.opening); }
+function coachClearTarget(){
+  if(typeof document==='undefined'||!document.querySelectorAll)return;
+  document.querySelectorAll('.coach-target').forEach(el=>el.classList.remove('coach-target'));
+}
+function coachTarget(id){
+  coachClearTarget();
+  const el=document.getElementById(id); if(el)el.classList.add('coach-target');
+}
 function openingShow(i){
   COACH_STEP = i;
   const p = COACH_OPENING[i], last = i === COACH_OPENING.length-1;
+  coachTarget(p.target);
   const el = document.getElementById('modal'); el.className = 'modal show';
   el.innerHTML = `<div class="sheet"><div class="phead">
-      <span class="ptag">How Bequest works</span>
+      <span class="ptag">Interface tour</span>
       <span class="hsub dim">${i+1} of ${COACH_OPENING.length}</span></div>
     <div class="ph">${esc(p.t)}</div><div class="pb">${esc(p.x)}</div>
     <div class="choices">
       <button class="choice ok" onclick="${last?'openingDone()':`openingShow(${i+1})`}">
-        <span>${last?'Begin':'Next'}</span><i>\u203a</i></button>
-      ${last?'':'<button class="choice" onclick="openingDone()"><span>Skip</span><i>\u203a</i></button>'}
+        <span>${last?'Start living':'Next'}</span><i>\u203a</i></button>
+      ${last?'':'<button class="choice" onclick="openingSkipPrompt()"><span>Skip tour</span><i>\u203a</i></button>'}
     </div></div>`;
 }
+function openingSkipPrompt(){
+  coachClearTarget();
+  const el=document.getElementById('modal'); el.className='modal show';
+  el.innerHTML=`<div class="sheet"><div class="ptag">Tutorials</div><div class="ph">Keep helpful tips?</div>
+    <div class="pb">Short tips normally appear later when school, work, bills and other systems first matter.</div>
+    <div class="choices"><button class="choice ok" onclick="coachSetTips(true);openingDone()"><span>Keep later tips</span><i>\u203a</i></button>
+    <button class="choice" onclick="coachSetTips(false);openingDone()"><span>Turn off later tips</span><i>\u203a</i></button></div></div>`;
+}
+function coachSetTips(on){ META.tipsOff=!on; saveMeta(); if(S)renderAll(); }
 function openingDone(){
-  coachMark('opening');
+  coachClearTarget(); coachMark('opening');
   document.getElementById('modal').className = 'modal';
   drain();
 }
 /* Replay it deliberately — also the escape hatch for anyone who skipped. */
 function coachReplay(){
-  META.tips = {}; saveMeta();
+  META.tips = {}; META.tipsOff=false; saveMeta();
   openingShow(0);
 }
 
@@ -10859,7 +10902,7 @@ function renderHeader(){
       <div class="kv"><span>Outgoings</span><b class="bbad">${money(ledgerTotal('spend'))}</b></div>
       <div class="kv"><span>Actions left</span><b>${S.actionsLeft}/${actionsPerYear()}</b></div>
       ${S.track?`<div class="kv"><span>${esc(TRACK(S.track.id).n)}</span><b>${esc(TRACK_RANK(S.track).n)}</b></div>`:''}
-      <button class="btn wide mt" onclick="toggleStats();setTab('more');setMore('stats')">Full details page</button>
+      <button class="btn wide mt" onclick="toggleStats();openMenuPage('stats')">Full profile</button>
     </div></div>
     <div class="statrow">${DATA.statKeys.map(k=>{
       const v=Math.round(S.stats[k]), c=v>=70?'g':v>=40?'a':'r';
@@ -10868,20 +10911,29 @@ function renderHeader(){
         <div class="sv">${Math.round(v)}</div>
         <div class="sbar"><i style="width:${v}%"></i></div></div>`;}).join('')}</div>`;
 }
-function setTab(t){ rememberScroll(); SCROLL[t]=0; app().dataset.tab=t;
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  a11ySyncTabs(t);
+let LAST_PRIMARY='life';
+function setTab(t){
+  /* The game navigation is hidden on the title and create screens, but stale
+     taps can still arrive while a modal is closing. No life means no tab. */
+  if(!S)return;
+  rememberScroll();
+  if(t!=='more') LAST_PRIMARY=t;
+  app().dataset.tab=t;
+  const primary=t==='more'?LAST_PRIMARY:t;
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===primary));
+  a11ySyncTabs(primary);
   const m=document.getElementById('main'); if(m)m.classList.remove('in');
-  renderTab(t);
+  renderTab(t,true,true);
   if(m){ void m.offsetWidth; m.classList.add('in'); } }
 let SCROLL={};
 let DEATH_STATS=false;
 let SETTLEMENT=null;
-function renderTab(t,keepScroll){
+function renderTab(t,keepScroll,tabSwitch){
   const m=document.getElementById('main');
   const prev=m?m.scrollTop:0;
+  /* Repainting a page after a tap must not throw the reader back to its top. */
+  if(!tabSwitch && keepScroll!==false) SCROLL[t]=prev;
   m.innerHTML=({life:viewLife,act:viewActs,ppl:viewPeople,money:viewMoney,more:viewMore}[t]||viewLife)();
-  /* staying where you were is the whole point of a list of things to do */
   if(keepScroll!==false && SCROLL[t]!=null) m.scrollTop = SCROLL[t];
   else m.scrollTop = 0;
 }
@@ -11839,12 +11891,44 @@ function gotoGroup(g){
   setTimeout(()=>{ const el=document.getElementById('grp-'+g);
     if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'}); },40);
 }
-function setMore(v){ S.moreView=v; renderTab('more'); }
+const MENU_PAGES=[
+  ['stats','Profile','Identity, health, skills and history'],
+  ['ach','Awards','Achievements earned across every life'],
+  ['goals','Goals','This life’s goals and challenges'],
+  ['rec','Records','Personal bests and milestones'],
+  ['shop','Shop','Legacy Points and Bequest Plus'],
+  ['save','Saves','Slots, backup files and cloud transfer'],
+  ['settings','Settings','Sound, reading, data and privacy'],
+  ['help','Help','Tutorial and contextual tips']
+];
+function viewMenu(){
+  return `<div class="sheet"><div class="menuhead"><div><div class="ptag">Bequest</div><div class="ph">Menu</div></div>
+    <button class="mini" onclick="closeMenu()" aria-label="Close menu">Close</button></div>
+    <div class="menugrid">${MENU_PAGES.map(([id,n,d])=>`<button class="menuitem" onclick="openMenuPage('${id}')"><b>${n}</b><span>${d}</span></button>`).join('')}</div></div>`;
+}
+function toggleMenu(){
+  if(!S)return;
+  const el=document.getElementById('modal');
+  if(el.dataset.menu==='1')return closeMenu();
+  el.dataset.menu='1'; el.className='modal show'; el.innerHTML=viewMenu();
+  const b=document.getElementById('menuBtn'); if(b)b.setAttribute('aria-expanded','true');
+  a11yDialogOpen('Menu');
+}
+function closeMenu(){
+  const el=document.getElementById('modal'); if(!el)return;
+  el.className='modal'; delete el.dataset.menu;
+  const b=document.getElementById('menuBtn'); if(b)b.setAttribute('aria-expanded','false');
+  a11yDialogClose();
+}
+function openMenuPage(v){ closeMenu(); setTab('more'); setMore(v); }
+function setMore(v){ if(!S)return; S.moreView=v; renderTab('more'); }
 function viewMore(){
   const v=S.moreView||'stats';
-  const seg=`<div class="seg">${[['stats','Stats'],['ach','Awards'],['goals','Goals'],['rec','Records'],['save','Saves'],['shop','Shop']]
-    .map(([k,l])=>`<button class="${v===k?'on':''}" onclick="setMore('${k}')">${l}</button>`).join('')}</div>`;
-  return seg+({ach:viewAch,chal:viewChal,goals:viewGoals,rec:viewRec,save:viewSaves,shop:viewShop,plus:viewShop}[v]||viewStats)();
+  const meta=MENU_PAGES.find(x=>x[0]===v)||MENU_PAGES[0];
+  const body=({ach:viewAch,chal:viewChal,goals:viewGoals,rec:viewRec,save:viewSaves,
+    shop:viewShop,plus:viewShop,settings:viewSettings,help:viewHelp}[v]||viewStats)();
+  return `<div class="card secthead"><button class="backbtn" onclick="toggleMenu()">☰ Menu</button>
+    <div class="secttitle">${meta[1]}</div><div class="hsub dim">${meta[2]}</div></div>`+body;
 }
 function viewAch(){
   const un=Object.keys(META.ach).length, tot=ACHIEVEMENTS.length;
@@ -12028,74 +12112,63 @@ function viewSaves(){
       <button class="mini" onclick="cloudPull()">Download</button></div></div>`;
   return h;
 }
+function profileRows(rows){
+  return rows.map(([k,v])=>`<div class="kv"><span>${k}</span><b>${esc(String(v))}</b></div>`).join('');
+}
 function viewStats(){
-  return `<div class="card"><div class="ct">Skills</div>
-   ${Object.keys(DATA.skills).map(k=>{const v=S.skills[k]||0;const t=v>=100?3:v>=75?2:v>=50?1:v>=25?0:-1;
-     return `<div class="sk">${bar(DATA.skills[k].name,v)}<div class="hsub dim">${t>=0?'Unlocked: '+DATA.skills[k].tiers[t]:'At 25: '+DATA.skills[k].tiers[0]}</div></div>`;}).join('')}</div>
-   <div class="card"><div class="ct">Habits</div>
-   ${Object.keys(DATA.habits).map(k=>{const h=DATA.habits[k],v=S.habits[k];
-     return `<div class="sk">${bar(h.name+(h.good?' ✓':''),v)}
-       <div class="hsub dim">${v>5?`${h.cost?money(Math.round(h.cost*v/100))+'/yr · ':''}${Object.entries(h.eff).map(([a,b])=>`${DATA.statNames[a]||a} ${b>0?'+':''}${Math.round(b*v/100*10)/10}`).join(', ')}`:'Not a habit.'}</div>
-       <div class="nact">${v>5&&!h.good?`<button onclick="quitHabit('${k}')">Try to quit</button>`:''}${h.good?`<button onclick="startHabit('${k}')">Do more</button>`:''}</div></div>`;}).join('')}</div>
-   <div class="card"><div class="ct">Profile</div>
-   ${[['Life stage',stage()],['Education',DATA.eduNames[S.edu]+(S.uniTier?' · '+(UNI_TIERS.find(t=>t.id===S.uniTier)||{}).n:'')],
-      ['School grade',S.age<19?gradeBand(Math.round(S.gpa==null?50:S.gpa)).n+' ('+Math.round(S.gpa==null?50:S.gpa)+')':'—'],
-      ['Work performance',S.job?perfBand(S.perf).n+' ('+Math.round(S.perf)+')':'—'],
-      ['Criminal record',S.record.length?S.record.map(r=>r.crime+' at '+r.age+(r.spent?' (spent)':'')).join(', '):'Clean'],
-      ['On parole',S.parole>0?S.parole+' years remaining':'No'],
-      ['Disabled',S.disabled?'Yes':'No'],['Followers',S.followers.toLocaleString()],
-      ['Traits',S.traits.map(traitName).join(', ')],
-      ['Conditions',S.conditions.length?S.conditions.map(k=>COND(k.id).n+(k.treated?' (managed)':'')).join(', '):'None'],['Crimes',S.crimesCommitted],
-      ['Special path',S.track?(TRACK(S.track.id).n+' \u00b7 '+TRACK_RANK(S.track).n):'None'],
-      ['Orientation',DATA.orientations.find(o=>o.id===S.orientation).n+(S.outTo?' (out)':'')],
-      ['Pets',petsAlive().length?petsAlive().map(p=>p.name+' the '+(DATA.petSpecies.find(x=>x.id===p.sp)||{}).n.toLowerCase()).join(', '):'None'],
-      ['Countries lived in',(S.countriesLived||[]).length],
-      ['Formative moments',(S.echoes&&S.echoes.length)?S.echoes.map(e=>e.n+' ('+e.age+')').join(', '):'None yet'],['Born',DATA.wealthTiers[S.birthTier].name]]
-     .map(([k,v])=>`<div class="kv"><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div>
-   <div class="card"><div class="ct">Reading</div>
-   <div class="hsub dim mb">This is a game made of text. Set it to a size you can read comfortably.</div>
-   <div class="grid3">
-     ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>
-       `<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}
-   </div></div>
-   <div class="card"><div class="ct">Problem reports</div>
-   <div class="hsub dim mb">If the game breaks, it keeps a note of what it was doing.
-     The note stays on this device. It never contains your name, anybody else's name,
-     or your save \u2014 only the shape of the life: age, country, difficulty, what was on
-     screen.</div>
-   <button class="row" onclick="setCrashOptIn(${crashOptIn()?'false':'true'})" data-switch="${crashOptIn()?'on':'off'}"><div>
-     <div class="rn">Allow reports to be sent</div>
-     <div class="hsub dim">${crashOptIn()?'Allowed \u2014 but there is nowhere to send them yet'
-       :'Off. Nothing leaves this device.'}</div></div>
-     <i>${crashOptIn()?'\u2713':'\u25CB'}</i></button>
-   ${crashLog().length?`<button class="row" onclick="crashScreen()"><div>
-     <div class="rn">See the last problem</div>
-     <div class="hsub dim">${crashLog().length} recorded</div></div><i>\u203a</i></button>
-   <button class="row" onclick="crashClear();renderAll()"><div>
-     <div class="rn">Delete the reports</div></div><i>\u203a</i></button>`
-     :'<div class="hsub dim">Nothing has gone wrong so far.</div>'}
-   </div>
-
-   <div class="card"><div class="ct">Sound and feel</div>
-   <div class="hsub dim mb">Cues are generated by the app, so they cost nothing to download and work offline.</div>
-   <button class="row" onclick="setSound(${soundOn()?'false':'true'})" data-switch="${soundOn()?'on':'off'}"><div><div class="rn">Sound</div>
-     <div class="hsub dim">${soundOn()?'On \u2014 years, events, outcomes':'Off \u2014 silent'}</div></div>
-     <i>${soundOn()?'\u2713':'\u25CB'}</i></button>
-   <button class="row" onclick="setHaptics(${hapticsOn()?'false':'true'})" data-switch="${hapticsOn()?'on':'off'}"><div><div class="rn">Vibration</div>
-     <div class="hsub dim">${hapticsOn()?'On':'Off'}</div></div>
-     <i>${hapticsOn()?'\u2713':'\u25CB'}</i></button>
-   ${soundOn()?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div>
-   <div class="grid3">
-     ${[['0.25','Quiet'],['0.5','Low'],['0.7','Normal'],['1','Loud']].map(([v,n])=>
-       `<button class="mini ${Math.abs(soundCfg().vol-parseFloat(v))<0.02?'on':''}" onclick="setVolume(${v})">${n}</button>`).join('')}
-   </div>`:''}</div>
-   <div class="card"><div class="ct">Game</div>
-   <button class="row" onclick="coachReplay()"><div><div class="rn">How to play</div>
-     <div class="hsub dim">Replay the introduction and bring the tips back</div></div><i>\u203a</i></button>
-   <button class="row" onclick="save();popupOK('Saved','Your life has been saved.')"><div class="rn">Save now</div><i>›</i></button>
-   <button class="row" onclick="lowerDiff()"><div><div class="rn">Lower the difficulty</div>
-     <div class="hsub dim">Currently ${diffDef(S.diff).n}${S.assisted?' · assisted':''} · Legacy Points \u00d7${lpMult().toFixed(2)}</div></div><i>\u203a</i></button>
-   <button class="row danger" onclick="confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();})"><div class="rn">Abandon life</div><i>›</i></button></div>`;
+  const identity=[
+    ['Life stage',stage()],['Age',S.age],['Location',S.city+', '+country().name],
+    ['Born',DATA.wealthTiers[S.birthTier].name],['Orientation',DATA.orientations.find(o=>o.id===S.orientation).n+(S.outTo?' (out)':'')]
+  ];
+  const life=[
+    ['Education',DATA.eduNames[S.edu]+(S.uniTier?' · '+(UNI_TIERS.find(t=>t.id===S.uniTier)||{}).n:'')],
+    ['School grade',S.age<19?gradeBand(Math.round(S.gpa==null?50:S.gpa)).n+' ('+Math.round(S.gpa==null?50:S.gpa)+')':'—'],
+    ['Work performance',S.job?perfBand(S.perf).n+' ('+Math.round(S.perf)+')':'—'],
+    ['Special path',S.track?(TRACK(S.track.id).n+' · '+TRACK_RANK(S.track).n):'None'],
+    ['Followers',S.followers.toLocaleString()],['Countries lived in',(S.countriesLived||[]).length]
+  ];
+  const health=[['Disabled',S.disabled?'Yes':'No'],
+    ['Conditions',S.conditions.length?S.conditions.map(k=>COND(k.id).n+(k.treated?' (managed)':'')).join(', '):'None'],
+    ['Habits',Object.keys(DATA.habits).filter(k=>(S.habits[k]||0)>5).map(k=>DATA.habits[k].name).join(', ')||'None']];
+  const history=[['Traits',S.traits.map(traitName).join(', ')],
+    ['Criminal record',S.record.length?S.record.map(r=>r.crime+' at '+r.age+(r.spent?' (spent)':'')).join(', '):'Clean'],
+    ['On parole',S.parole>0?S.parole+' years remaining':'No'],['Crimes',S.crimesCommitted],
+    ['Pets',petsAlive().length?petsAlive().map(p=>p.name+' the '+(DATA.petSpecies.find(x=>x.id===p.sp)||{}).n.toLowerCase()).join(', '):'None'],
+    ['Formative moments',(S.echoes&&S.echoes.length)?S.echoes.map(e=>e.n+' ('+e.age+')').join(', '):'None yet']];
+  return `<div class="card"><div class="profilehero"><div class="npcav">${avatarSVG(S,64)}</div><div>
+      <div class="ct">Profile</div><div class="ph">${esc(S.name)}</div><div class="hsub dim">${esc(occupation())}</div></div></div>
+      ${profileRows(identity)}</div>
+    <details class="card" open><summary>Life, education and career</summary><div class="detailbody">${profileRows(life)}</div></details>
+    <details class="card"><summary>Health and habits</summary><div class="detailbody">${profileRows(health)}</div></details>
+    <details class="card"><summary>Traits and history</summary><div class="detailbody">${profileRows(history)}</div></details>
+    <details class="card"><summary>Skills</summary><div class="detailbody">
+      ${Object.keys(DATA.skills).map(k=>{const v=S.skills[k]||0,t=v>=100?3:v>=75?2:v>=50?1:v>=25?0:-1;
+        return `<div class="sk">${bar(DATA.skills[k].name,v)}<div class="hsub dim">${t>=0?'Unlocked: '+DATA.skills[k].tiers[t]:'At 25: '+DATA.skills[k].tiers[0]}</div></div>`;}).join('')}</div></details>`;
+}
+function viewHelp(){
+  return `<div class="card"><div class="ct">Learn the interface</div>
+    <div class="hsub dim mb">Replay the optional button-and-tab tour. Contextual tips can remain on or be turned off independently.</div>
+    <button class="row" onclick="coachReplay()"><div><div class="rn">Replay interface tour</div><div class="hsub dim">Highlights Age Up, Life, Activities, People, Money and Menu</div></div><i>›</i></button>
+    <button class="row" onclick="coachSetTips(${META.tipsOff?'false':'true'})" data-switch="${META.tipsOff?'off':'on'}"><div><div class="rn">Contextual tips</div><div class="hsub dim">${META.tipsOff?'Off':'On · shown when a feature first matters'}</div></div><i>${META.tipsOff?'○':'✓'}</i></button></div>`;
+}
+function viewSettings(){
+  return `<div class="card"><div class="ct">Preferences</div>
+    <div class="hsub dim mb">Reading, sound and vibration apply across every life.</div>
+    <div class="hsub dim" style="margin:10px 0 6px">Text size</div><div class="grid3">
+      ${[['s','Smaller'],['m','Normal'],['l','Larger'],['xl','Largest']].map(([k,n])=>`<button class="mini ${(S.textSize||'m')===k?'on':''}" onclick="setTextSize('${k}')">${n}</button>`).join('')}</div>
+    <button class="row" onclick="setSound(${soundOn()?'false':'true'})" data-switch="${soundOn()?'on':'off'}"><div><div class="rn">Sound</div><div class="hsub dim">${soundOn()?'On · years, events and outcomes':'Off · silent'}</div></div><i>${soundOn()?'✓':'○'}</i></button>
+    <button class="row" onclick="setHaptics(${hapticsOn()?'false':'true'})" data-switch="${hapticsOn()?'on':'off'}"><div><div class="rn">Vibration</div><div class="hsub dim">${hapticsOn()?'On':'Off'}</div></div><i>${hapticsOn()?'✓':'○'}</i></button>
+    ${soundOn()?`<div class="hsub dim" style="margin:10px 0 6px">Volume</div><div class="grid3">${[['0.25','Quiet'],['0.5','Low'],['0.7','Normal'],['1','Loud']].map(([v,n])=>`<button class="mini ${Math.abs(soundCfg().vol-parseFloat(v))<0.02?'on':''}" onclick="setVolume(${v})">${n}</button>`).join('')}</div>`:''}</div>
+    <div class="card"><div class="ct">Save and transfer</div><div class="hsub dim mb">Autosave is always on. Open the save page for slots, backup files and cloud transfer.</div>
+      <button class="row" onclick="setMore('save')"><div><div class="rn">Saves and backup</div><div class="hsub dim">Manage slots, export, import and sync</div></div><i>›</i></button>
+      <button class="row" onclick="save();popupOK('Saved','Your life has been saved.')"><div class="rn">Save now</div><i>✓</i></button></div>
+    <div class="card"><div class="ct">Problem reports</div><div class="hsub dim mb">Reports stay on this device and contain no names or saves.</div>
+      <button class="row" onclick="setCrashOptIn(${crashOptIn()?'false':'true'})" data-switch="${crashOptIn()?'on':'off'}"><div><div class="rn">Allow reports to be sent</div><div class="hsub dim">${crashOptIn()?'Allowed · no destination is configured':'Off · nothing leaves this device'}</div></div><i>${crashOptIn()?'✓':'○'}</i></button>
+      ${crashLog().length?`<button class="row" onclick="crashScreen()"><div><div class="rn">See the last problem</div><div class="hsub dim">${crashLog().length} recorded</div></div><i>›</i></button><button class="row" onclick="crashClear();renderAll()"><div class="rn">Delete reports</div><i>›</i></button>`:'<div class="hsub dim">Nothing has gone wrong so far.</div>'}</div>
+    <div class="card"><div class="ct">Game</div>
+      <button class="row" onclick="setMore('help')"><div><div class="rn">Tutorial and tips</div><div class="hsub dim">Replay or change tutorial guidance</div></div><i>›</i></button>
+      <button class="row" onclick="lowerDiff()"><div><div class="rn">Lower the difficulty</div><div class="hsub dim">Currently ${diffDef(S.diff).n}${S.assisted?' · assisted':''}</div></div><i>›</i></button>
+      <button class="row danger" onclick="confirmDo('Abandon this life?','Your character will be lost.',()=>{localStorage.removeItem(SAVE_KEY);toTitle();})"><div class="rn">Abandon life</div><i>›</i></button></div>`;
 }
 function lowerDiff(){
   const cur=S.diff==='custom'?customRank(S.mods):diffDef(S.diff).rank;
@@ -12285,12 +12358,36 @@ function startLife(){
 }
 function resume(){ if(load()){ migrate(); app().dataset.screen='game'; setTab('life'); renderAll(); if(!S.alive)showDeath(); } }
 
+/* Android's system Back belongs to the current in-game layer before it belongs
+   to the operating system. Return false only at the root, where minimizing is
+   less destructive than quitting the WebView. */
+function gameBack(){
+  const modal=document.getElementById('modal');
+  if(modal&&modal.dataset.menu==='1'){ closeMenu(); return true; }
+  if(S&&S.person){ closePerson(); return true; }
+  if(S&&S.section){ closeSection(); return true; }
+  if(S&&S.msection){ closeMoney(); return true; }
+  const t=app().dataset.tab||'life';
+  if(t==='more'){ setTab(LAST_PRIMARY||'life'); return true; }
+  if(t!=='life'){ setTab('life'); return true; }
+  return false;
+}
+function bindNativeBack(){
+  const cap=typeof window!=='undefined'&&window.Capacitor&&window.Capacitor.Plugins;
+  const nativeApp=cap&&cap.App;
+  if(!nativeApp||!nativeApp.addListener)return;
+  nativeApp.addListener('backButton',()=>{
+    if(!gameBack()&&nativeApp.minimizeApp)nativeApp.minimizeApp();
+  });
+}
+
 /* ---------------- boot ---------------- */
 if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener('DOMContentLoaded',()=>{
   installCrashHandlers();
   a11yInit();
   renderTitle();
   bindTapSounds();
+  bindNativeBack();
   document.getElementById('ageBtn').addEventListener('click',()=>{
     if(!S||!S.alive)return;
     if(S.actionsLeft>0&&!S.skipAgeWarning&&S.age>=5){
