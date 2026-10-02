@@ -91,7 +91,9 @@ function tickSubjects(s, notes){
        of each year, so ability and effort separate people instead of time. */
     const apt  = (s.aptitude && s.aptitude[id]) || 0;
     const kept = s.options && s.options.indexOf(id) >= 0;
+    const diffMod = s.diff === 'brutal' ? -6 : s.diff === 'hard' ? -3 : s.diff === 'easy' ? 4 : 0;
     const ceiling = clamp(40
+          + diffMod
           + (s.stats.smarts - 50) * 0.42
           + apt * 0.85
           + s.stats.discipline * 0.14
@@ -198,7 +200,8 @@ function studySubject(id){
   const before = subjectGrade(s, id);
   /* effort beats the ceiling, but with diminishing returns near the top */
   const room = Math.max(0, 100 - s.subjects[id]);
-  const gain = Math.max(1, Math.round((ri(5, 12) + ((s.aptitude && s.aptitude[id]) || 0) / 10) * (room / 100 + 0.25)));
+  const diffEff = s.diff === 'brutal' ? 0.75 : s.diff === 'hard' ? 0.88 : s.diff === 'easy' ? 1.15 : 1.0;
+  const gain = Math.max(1, Math.round((ri(5, 12) + ((s.aptitude && s.aptitude[id]) || 0) / 10) * (room / 100 + 0.25) * diffEff));
   s.subjects[id] = clamp(s.subjects[id] + gain);
   s.gpa = gpaFrom(s);
   applyEff({ smarts: 3, happiness: -3, discipline: 3 });

@@ -725,7 +725,8 @@ function applyEff(e){
   }
   if(e.habit) for(const k in e.habit){ let d=e.habit[k]; if(d>0)d=sc(d); if(d>0&&S.traits.includes('addictive'))d=Math.round(d*1.5); if(d>0)d=Math.round(d*M('habitGrip')); else d=Math.round(d/M('habitGrip')); S.habits[k]=clamp(S.habits[k]+d); out.push(`${DATA.habits[k].name} ${d>0?'+':''}${d}`); }
   if(e.rel) for(const who in e.rel){
-    const d=e.rel[who];
+    let d=e.rel[who];
+    if(d<0&&M('relDecay')>1) d=Math.round(d*Math.min(1.4, M('relDecay')));
     let t = who==='parents'?S.npcs.filter(n=>(n.rel==='mother'||n.rel==='father')&&n.alive)
       : who==='partner'?S.npcs.filter(n=>(n.rel==='partner'||n.rel==='spouse')&&n.alive)
       : who==='friends'?anyOf('friend')
@@ -2787,19 +2788,21 @@ function ACTS(){
     A('homework','Do your homework properly','School','Raises your grade',()=>{
       applyEff({smarts:3,discipline:3}); S.gpa=clamp(S.gpa+ri(4,9));
       popupOK('Homework',`Your grade is now ${Math.round(S.gpa)}/100 (${gradeBand(S.gpa).n}).`);});
-    A('skipschool','Skip class','School','Fun now, costs you later',()=>{
-      applyEff({happiness:7,discipline:-4}); S.gpa=clamp(S.gpa-ri(5,11));
-      let t=`Grade down to ${Math.round(S.gpa)}/100.`;
-      if(R()<0.35){ applyEff({rel:{parents:-8}}); t+=' The school called home.'; }
-      popupOK('Skipped',t);});
+    if(a>=11){
+      A('skipschool','Skip class','School','Fun now, costs you later',()=>{
+        applyEff({happiness:7,discipline:-4}); S.gpa=clamp(S.gpa-ri(5,11));
+        let t=`Grade down to ${Math.round(S.gpa)}/100.`;
+        if(R()<0.35){ applyEff({rel:{parents:-8}}); t+=' The school called home.'; }
+        popupOK('Skipped',t);});
+      A('exam','Revise for exams','School','',()=>{
+        applyEff({smarts:5,discipline:4,happiness:-3}); S.gpa=clamp(S.gpa+ri(6,12));
+        popupOK('Revision',`Hard work. Grade ${Math.round(S.gpa)}/100 (${gradeBand(S.gpa).n}).`);});
+    }
     A('teacherhelp','Ask a teacher for help','School','',()=>{
       const t=anyOf('teacher')[0];
       if(!t)return popupOK('No one to ask','You have no teacher you know well enough.');
       applyEff({smarts:4}); S.gpa=clamp(S.gpa+ri(3,7)); t.r=clamp(t.r+ri(5,12));
       popupOK('Extra help',`${t.name} stayed behind with you. Grade ${Math.round(S.gpa)}/100.`);});
-    A('exam','Revise for exams','School','',()=>{
-      applyEff({smarts:5,discipline:4,happiness:-3}); S.gpa=clamp(S.gpa+ri(6,12));
-      popupOK('Revision',`Hard work. Grade ${Math.round(S.gpa)}/100 (${gradeBand(S.gpa).n}).`);});
     A('read','Read books','School','',()=>{applyEff({smarts:4,skill:{writing:4},habit:{reading:8}});popupOK('Reading','Smarts +4, Writing +4.');});
     A('music','Practice an instrument','School','',()=>{applyEff({discipline:4,happiness:3,skill:{music:7}});popupOK('Practice','Music +7.');});
     A('draw','Draw and paint','School','',()=>{applyEff({happiness:4,skill:{art:7}});popupOK('Art','Art +7.');});
@@ -3175,7 +3178,7 @@ function renderHeader(){
         <div class="hloc">${esc(S.city)}, ${esc(country().name)}</div>
         <div class="chips">
           <span class="ch act">${S.actionsLeft}/${actionsPerYear()} actions</span>
-          <span class="ch" style="color:${diffDef(S.diff).colour}">${diffDef(S.diff).n}</span>
+          <span class="ch" style="color:${diffDef(S.diff).colour}" title="${esc(diffDef(S.diff).blurb)}">${diffDef(S.diff).n}${S.diff==='brutal'?' · Harsh World':S.diff==='hard'?' · Austere World':''}</span>
           ${S.jailLeft>0?`<span class="ch bad">Prison ${S.jailLeft}y</span>`:''}
           ${S.parole>0?'<span class="ch bad">Parole</span>':''}
           ${S.conditions.length?`<span class="ch bad">${S.conditions.length} condition${S.conditions.length>1?'s':''}</span>`:''}
