@@ -396,6 +396,7 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 .stat .si svg[stroke]{fill:none}
 .stat.g{color:var(--g)} .stat.a{color:var(--a)} .stat.r{color:var(--r)}
 .stat .sv{font-size:13px;font-weight:800;color:var(--tx);line-height:1.2}
+.stat .sl{font-size:8px;font-weight:700;color:var(--dim);letter-spacing:.02em;line-height:1.1;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat .sbar{height:3px;border-radius:2px;background:rgba(0,0,0,.35);overflow:hidden;margin-top:3px}
 .stat .sbar i{display:block;height:100%;background:currentColor;transition:width .55s cubic-bezier(.2,.8,.3,1)}
 
@@ -6833,13 +6834,16 @@ const ASSET = id => ASSETS.find(a => a.id === id) || ASSETS[0];
 
 function investBirth(s){
   s.holdings = {};
-  s.market = { last:0, year:0 };
+  s.stockMarket = { last:0, year:0 };
   s.investIn = 0;      /* everything ever put in  */
   s.investOut = 0;     /* everything ever taken out */
 }
 function investMigrate(s){
   if(!s.holdings) s.holdings = {};
-  if(!s.market) s.market = { last:0, year:0 };
+  /* The mood used to live on s.market, which belongs to the property and
+     vehicle marketplace in game.js. Move it off, and never recreate it there. */
+  if(!s.stockMarket) s.stockMarket = { last:(s.market && s.market.last) || 0, year:0 };
+  if(s.market && s.market.last !== undefined) delete s.market.last;
   if(s.investIn == null) s.investIn = 0;
   if(s.investOut == null) s.investOut = 0;
 }
@@ -6862,9 +6866,14 @@ function tickInvest(s, notes){
   let mkt = gauss() * 0.13;
   if(R() < 0.055) mkt = -0.22 - R() * 0.26;          /* a crash */
   else if(R() < 0.05) mkt = 0.20 + R() * 0.18;       /* a run */
-  mkt += (typeof newsMod === 'function' ? newsMod('crypto') * 0.3 : 0);
-  s.market.last = mkt;
-  s.market.year = s.age;
+  /* The investment market keeps its own record. It used to write into S.market,
+     which is the property/vehicle/item marketplace in game.js: the mood tick set
+     S.market.year = S.age every year, and marketRefresh() then saw the year as
+     already handled and returned before generating a single listing, so both
+     marketplaces were permanently empty. Separate objects, separate concerns. */
+  if(!s.stockMarket) s.stockMarket = { last: 0, year: -1 };
+  s.stockMarket.last = mkt;
+  s.stockMarket.year = s.age;
 
   const held = Object.keys(s.holdings).filter(k => s.holdings[k] > 0);
   if(!held.length) return;
@@ -6939,7 +6948,7 @@ function moneyInvest(){
   if(S.age < 18) return '<div class="card"><div class="muted">Investing opens at 18.</div></div>';
   investMigrate(S);
   const tot = holdingsValue(S);
-  const m = S.market.last || 0;
+  const m = (S.stockMarket && S.stockMarket.last) || 0;
   const mood = m <= -0.22 ? 'a very bad year' : m < -0.06 ? 'a poor year'
     : m > 0.18 ? 'a very good year' : m > 0.05 ? 'a good year' : 'a flat year';
 
@@ -8164,6 +8173,15 @@ function migrate(){
   if(!S.lean){const T=['i','c','t','y','a','o','s','w','m','r','h','x','f','b'].sort(()=>R()-0.5);S.lean=T.slice(0,4);S.away=T.slice(4,7);}
   if(!S.conditions)S.conditions=[]; if(!S.record)S.record=[]; if(!S.loans)S.loans=[];
   if(S.actionsLeft==null)S.actionsLeft=3; if(!S.actLog)S.actLog={}; if(S.perf==null)S.perf=60; if(S.gpa==null)S.gpa=50; if(S.parole==null)S.parole=0;
+  /* The investment mood and the property/vehicle/item marketplace used to share
+     S.market. The mood wrote S.market.year = age every year, so marketRefresh()
+     thought the year was already dealt with and both marketplaces stayed empty.
+     Move any old mood figures onto their own object and leave the marketplace
+     the shape it needs. */
+  if(!S.stockMarket) S.stockMarket={last:(S.market&&S.market.last)||0, year:-1};
+  if(S.market) delete S.market.last;
+  if(!S.market||!S.market.vehicle||!S.market.property||!S.market.item)
+    S.market={year:(S.market&&S.market.year!=null)?S.market.year:-1, vehicle:[], property:[], item:[]};
   S.npcs.forEach(n=>{ if(!n.pers)n.pers=pick(PERSONALITIES).id; if(!n.mem)n.mem=[]; });
   Object.keys(DATA.skills).forEach(k=>{ if(S.skills[k]==null)S.skills[k]=0; });
   Object.keys(DATA.habits).forEach(k=>{ if(S.habits[k]==null)S.habits[k]=0; });
@@ -9932,7 +9950,7 @@ function resolveChoice(ev,ci){
   const all=lines.concat(extra);
   logLine(`${ev.t}: ${ch.l}`);
   const outcomeText = ch.out ? tok(ch.out) : ch.l;
-  if(all.length)QUEUE.unshift({type:'C',title:tok(ev.t),text:outcomeText,res:all});
+  if(all.length)push({type:'C',title:tok(ev.t),text:outcomeText,res:all});
   checkAch(); drain();
 }
 
@@ -10711,7 +10729,7 @@ function ACTS(){
       applyEff({smarts:-3,happiness:6,discipline:-3});
       const before=S.gpa==null?50:S.gpa; S.gpa=clamp(before-ri(3,8));
       popupOK('Slacking',`Happiness +6.\nYour grade slipped from ${Math.round(before)} to ${Math.round(S.gpa)}.`);});
-    A('club','Join a school club','School','Pick which one',()=>{ chooseFrom('Which club?',[
+    A('club','Join a school club','School',S.club?('You are in '+S.club):'Pick which one',()=>{ chooseFrom(S.club?'Join a different club?':'Which club?',[
         ['Debating','skill:charisma',{skill:{charisma:12},smarts:4}],
         ['Chess club','smarts',{smarts:9,skill:{gaming:5}}],
         ['Drama','confidence',{skill:{charisma:9},looks:3,happiness:6}],
@@ -10721,11 +10739,12 @@ function ACTS(){
         ['Student council','standing',{reputation:9,skill:{charisma:7},discipline:4}]
       ],(name,eff)=>{
         applyEff(eff); S.gpa=clamp((S.gpa==null?50:S.gpa)+2);
+        S.club=name;
         let t=`You joined ${name}.`;
         if(R()<0.55){const f=addNPC('friend',null,S.age);t+=` You met ${f.name} there.`;}
         popupOK(name,t);
       }); });
-    A('sports','Play a sport','School','Pick which one',()=>{ chooseFrom('Which sport?',[
+    A('sports','Play a sport','School',S.sport?('You play '+S.sport):'Pick which one',()=>{ chooseFrom(S.sport?'Take up a different sport?':'Which sport?',[
         ['Football','team',{skill:{fitness:10},happiness:6,reputation:4}],
         ['Athletics','solo',{skill:{fitness:13},discipline:5}],
         ['Swimming','endurance',{skill:{fitness:11},health:6}],
@@ -10733,7 +10752,7 @@ function ACTS(){
         ['Boxing','contact',{skill:{fitness:8,combat:11},health:-3}],
         ['Tennis','solo',{skill:{fitness:9},discipline:4,reputation:3}]
       ],(name,eff)=>{
-        applyEff(eff); applyEff({health:3});
+        applyEff(eff); applyEff({health:3}); S.sport=name;
         let t=`You took up ${name.toLowerCase()}.`;
         if(R()<0.35){ t+=' The coach thinks you have something.'; S.flags.sport_talent=true; applyEff({skill:{fitness:5}}); }
         popupOK(name,t);
@@ -11002,20 +11021,66 @@ function chooseFrom(title,options,cb){
   push({type:'CHOOSE',title,options});
   drain();
 }
+/* A price is paid out of the pots you actually hold. It used to be counted
+   against one pot only: the household money under 18, your cash over it, and
+   savings never. So a teenager with 90,000 of their own was refused a 5,000
+   present because the household pot held 200, and a confirmed business never
+   opened because the cost was tested against the wrong pocket. */
+function potList(){
+  const out=[['cash','Cash',Math.max(0,Math.round(S.money||0))],
+             ['savings','Savings',Math.max(0,Math.round(S.savings||0))]];
+  if(S.age<18)out.push(['household','The household pot',Math.max(0,Math.round(S.familyMoney||0))]);
+  return out;
+}
+function potTotal(){ return potList().reduce((n,p)=>n+p[2],0); }
+function potOf(k){ const p=potList().find(x=>x[0]===k); return p?p[2]:0; }
+function potName(k){ const p=potList().find(x=>x[0]===k); return p?p[1]:k; }
+/* Under 18 the family pays first, as it always has, then your own money.
+   Adults pay cash first, then savings. */
+function payOrder(){ return S.age<18 ? ['household','cash','savings'] : ['cash','savings']; }
 function afford(c){
   if(c<=0)return true;
-  if(S.age<18){
-    if(S.familyMoney>=c){ S.familyMoney-=c; S.paidByFamily=c; return true; }
-    ACT_BLOCKED=true; cue('denied','denied');
-    popupOK('Your family cannot afford it',
-      `That costs ${money(c)}. Your household has ${money(S.familyMoney)}.`);
-    return false;
-  }
-  if(S.money<c){ ACT_BLOCKED=true; cue('denied','denied'); popupOK('Not enough money',`You need ${money(c)} and have ${money(S.money)}.`); return false; }
+  if(potTotal()>=c)return true;
+  ACT_BLOCKED=true; cue('denied','denied');
+  const held=potList().filter(p=>p[2]>0).map(p=>money(p[2])+' in '+p[1].toLowerCase()).join(', ')||'nothing';
+  popupOK('Not enough money',`That costs ${money(c)}. You hold ${held}.`);
+  return false;
+}
+/* charge() draws the amount in the recommended order, or from one named pot
+   when the player has chosen one. Returns a readable account of what moved. */
+function charge(c, from){
+  let left=c; const used=[];
+  const order=(from?[from]:[]).concat(payOrder()).filter((k,i,a)=>k&&a.indexOf(k)===i);
+  order.forEach(k=>{
+    if(left<=0)return;
+    const take=Math.min(left, potOf(k));
+    if(take<=0)return;
+    if(k==='cash')S.money-=take;
+    else if(k==='savings')S.savings-=take;
+    else { S.familyMoney-=take; S.paidByFamily=(S.paidByFamily||0)+take; }
+    left-=take; used.push(money(take)+' from '+potName(k).toLowerCase());
+  });
+  return used.join(' and ');
+}
+/* payFor() is the door every deliberate purchase goes through. When two pots
+   could each cover the whole price the player is asked which should pay, with
+   the usual order offered first; otherwise the amount is drawn silently in the
+   recommended order. Returns false only when the money is not there. */
+function payFor(c, what, onPaid){
+  if(c<=0){ if(onPaid)onPaid('cash',''); return true; }
+  if(potTotal()<c){ afford(c); return false; }
+  const cover=payOrder().filter(k=>potOf(k)>=c);
+  if(cover.length<2){ const used=charge(c); if(onPaid)onPaid((cover[0]||payOrder()[0]),used); return true; }
+  const label=what?('Pay '+money(c)+' for '+what+'.'):('Pay '+money(c)+'.');
+  chooseFrom(label,
+    cover.map(k=>[potName(k)+' \u00b7 '+money(potOf(k)),
+      k===payOrder()[0]?'the usual order':(k==='savings'?'leaves your cash alone':'leaves the rest alone'),
+      {pot:k}]),
+    (name,eff)=>{ const pot=(eff&&eff.pot)||cover[0];
+      const used=charge(c,pot);
+      if(onPaid)onPaid(pot,used); });
   return true;
 }
-/* charge() pairs with afford(): adults pay from their own pocket, children do not */
-function charge(c){ if(S.age<18){ S.paidByFamily=null; return; } S.money-=c; }
 function doAct(id){
   rememberScroll();
   const a=ACTS().find(x=>x.id===id); if(!a)return;
@@ -11094,10 +11159,14 @@ function actionsPerYear(){
 }
 /* Repeating the same thing yields less and less. Resting every year for
    sixty years should not make you the happiest person alive.               */
+/* Repeating an action within a few years of itself gives less. The window used
+   to be eight years, so a habit people kept up sat at the floor almost for ever
+   and the percentage beside it never moved. Three years recovers fast enough to
+   see: miss it for four years and the action is back to full value. */
 function diminish(id){
   const rec=S.actLog[id];
   if(!rec)return 1;
-  const recent=rec.filter(y=>S.age-y<=8).length;
+  const recent=rec.filter(y=>S.age-y<=3).length;
   return Math.max(0.10, 1 - recent*0.22);
 }
 function noteAction(id){
@@ -11150,15 +11219,21 @@ function renderHeader(){
       <div class="ct mt">This year</div>
       <div class="kv"><span>Income</span><b class="bgood">${money(ledgerTotal('income'))}</b></div>
       <div class="kv"><span>Outgoings</span><b class="bbad">${money(ledgerTotal('spend'))}</b></div>
+      <div class="kv"><span>Job</span><b>${esc(occupation())}</b></div>
+      ${S.job?`<div class="kv"><span>Field</span><b>${esc((DATA.fieldNames&&DATA.fieldNames[S.job.field])||S.job.field)}</b></div>`:''}
       <div class="kv"><span>Actions left</span><b>${S.actionsLeft}/${actionsPerYear()}</b></div>
       ${S.track?`<div class="kv"><span>${esc(TRACK(S.track.id).n)}</span><b>${esc(TRACK_RANK(S.track).n)}</b></div>`:''}
-      <button class="btn wide mt" onclick="toggleStats();openMenuPage('stats')">Full profile</button>
+      <div class="grid2 mt">
+        <button class="btn mini" onclick="openMenuPage('career')">Job and field</button>
+        <button class="btn mini" onclick="toggleStats();openMenuPage('stats')">Full profile</button>
+      </div>
     </div></div>
     <div class="statrow">${DATA.statKeys.map(k=>{
       const v=Math.round(S.stats[k]), c=v>=70?'g':v>=40?'a':'r';
       return `<div class="stat ${c}" title="${DATA.statNames[k]}">
         <div class="si">${IC[k]||''}</div>
         <div class="sv">${Math.round(v)}</div>
+        <div class="sl">${esc(DATA.statNames[k])}</div>
         <div class="sbar"><i style="width:${v}%"></i></div></div>`;}).join('')}</div>`;
 }
 let LAST_PRIMARY='life';
@@ -11352,7 +11427,6 @@ function viewActs(){
     return `<div class="card secthead">
         <div class="secthead-bar">
           <button class="backbtn" onclick="closeSection()">\u2039 All sections</button>
-          <button class="refreshbtn" title="Refresh this page" onclick="refreshCurrentPage()">⟳ Refresh</button>
         </div>
         <div class="secttitle">${m.i} ${esc(S.section)}</div>
         <div class="hsub dim">${esc(m.d)}</div>
@@ -11364,7 +11438,8 @@ function viewActs(){
         const dm=diminish(a.id);
         return `<button class="row ${S.actionsLeft<=0?'spent':''} ${a.grp==='Crime'?'danger':''}" onclick="doAct('${a.id}')">
           <div><div class="rn">${esc(a.n)}</div>${a.d?`<div class="hsub dim">${esc(a.d)}</div>`:''}</div>
-          ${dm<1?`<i class="dim2">${Math.round(dm*100)}%</i>`:'<i>\u203a</i>'}</button>`;}).join('')}</div>`;
+          ${dm<1?`<i class="dim2" title="Repeating this within about three years gives less each time. It comes back to full after a few quiet years.">${Math.round(dm*100)}% value</i>`:'<i>\u203a</i>'}</button>`;}).join('')}</div>
+      ${groups[S.section].some(a=>diminish(a.id)<1)?'<div class="hsub dim" style="margin-top:6px">A percentage beside an action means it gives less than it first did, because you have done it recently. Leave it a few years and it returns to full.</div>':''}`;
   }
 
   /* otherwise: the hub */
@@ -11432,7 +11507,6 @@ function personPage(n){
   return `<div class="card secthead">
       <div class="secthead-bar">
         <button class="backbtn" onclick="closePerson()">\u2039 Everyone</button>
-        <button class="refreshbtn" title="Refresh this page" onclick="refreshCurrentPage()">⟳ Refresh</button>
       </div>
       <div class="personhead"><div class="npcav">${avatarMini(n,54)}</div>
         <div><div class="secttitle">${esc(n.name)}</div>
@@ -11452,6 +11526,26 @@ function personPage(n){
         <i class="price">${a.cost?money(a.cost):'\u203a'}</i></button>`).join('')}
     </div>`;
 }
+/* One year of catching up with everyone you have not seen yet, so a large
+   family does not need a tap per person. Each person is still seen once a
+   year at most, exactly as the individual actions work. */
+function visitEveryone(){
+  const live=S.npcs.filter(n=>n.alive&&n.lastSeen!==S.age);
+  if(!live.length)return popupOK('Everyone seen','You have already spent time with everyone this year.');
+  let total=0;
+  live.forEach(n=>{
+    const P=personality(n.pers);
+    const d=Math.round(ri(3,10)*P.talk);
+    n.r=clamp(n.r+d); n.lastSeen=S.age;
+    n.mem=n.mem||[]; n.mem.push({a:S.age,t:'talk'});
+    total+=d;
+  });
+  applyEff({happiness:Math.min(6,1+Math.floor(live.length/2))});
+  const first=live.slice(0,3).map(n=>n.name.split(' ')[0]).join(', ');
+  popupOK('A year of keeping up',
+    `${live.length} ${live.length===1?'person':'people'}: ${first}${live.length>3?' and others':''}. Relationship +${total} in all.`);
+  save(); renderAll();
+}
 function viewPeople(){
   const live=S.npcs.filter(n=>n.alive);
   if(S.person){
@@ -11467,7 +11561,12 @@ function viewPeople(){
     const ia=order.indexOf(a), ib=order.indexOf(b);
     return (ia<0?99:ia)-(ib<0?99:ib);
   });
-  return keys.map(g=>`<div class="card"><div class="ct">${g}${groups[g].length>1?'s':''} \u00b7 ${groups[g].length}</div>
+  const unseen=live.filter(n=>n.lastSeen!==S.age).length;
+  return `<div class="card"><div class="ctrow"><div class="ct">Spend time</div>
+      <div class="hsub dim">${unseen?(unseen+' not seen yet this year'):'everyone seen this year'}</div></div>
+    <button class="btn wide" onclick="visitEveryone()"${unseen?'':' disabled'}>Spend time with everyone</button>
+    <div class="hsub dim mt">A year of catching up with everyone you have not seen yet. Each person is seen once a year at most, the same as visiting them one by one.</div></div>`
+  + keys.map(g=>`<div class="card"><div class="ct">${g}${groups[g].length>1?'s':''} \u00b7 ${groups[g].length}</div>
     ${groups[g].map(n=>`<button class="row" onclick="openPerson('${n.id}')">
       <div class="npcwho"><div class="npcav">${avatarMini(n,38)}</div>
         <div><div class="rn">${esc(n.name)}${n.lastSeen===S.age?' <span class="owned">seen</span>':''}</div>
@@ -11557,6 +11656,57 @@ function moneyOverview(){
       ['Net worth','<b>'+money(netWorth())+'</b>']]
      .map(([k,v])=>`<div class="kv"><span>${k}</span><b>${v}</b></div>`).join('')}</div>`;
 }
+function noteBank(k,amt){
+  S.bankLog=S.bankLog||[];
+  S.bankLog.unshift({a:S.age,k:k,amt:Math.round(amt)});
+  if(S.bankLog.length>40)S.bankLog.pop();
+}
+function bankHistory(){
+  const log=S.bankLog||[];
+  if(!log.length)
+    return `<div class="card"><div class="ct">Statement</div>
+      <div class="hsub dim">Nothing has moved yet. Every sum you save, withdraw or repay is listed here with the age it happened.</div></div>`;
+  const K={dep:['Saved',1],wd:['Withdrawn',0],debt:['Repaid',1]};
+  const tot=k=>log.filter(x=>x.k===k).reduce((n,x)=>n+x.amt,0);
+  return `<div class="card"><div class="ct">Statement</div>
+    <div class="hsub dim mb">Saved ${money(tot('dep'))} \u00b7 Withdrawn ${money(tot('wd'))} \u00b7 Repaid ${money(tot('debt'))}</div>
+    ${log.slice(0,20).map(x=>{const k=K[x.k]||['Moved',1];
+      return `<div class="kv"><span>Age ${x.a} \u00b7 ${k[0]}</span><b class="${k[1]?'bgood':'bbad'}">${money(x.amt)}</b></div>`;}).join('')}</div>`;
+}
+/* Banking moves one pot by its nature: saving draws on cash, withdrawing draws
+   on savings, a repayment draws on cash. The amount is whatever the player
+   types, or All or Half of what that move could possibly take. The old buttons
+   were welded to 5,000, which is why nobody could move a larger sum. */
+function bank(what, amt){
+  if(S.age<18)return popupOK('Too young','You need to be 18 to use banking and investments.');
+  const asking=(amt==='all'||amt==='half')?amt:(amt!=null?amt:S.bankAmt);
+  if(asking!=='all'&&asking!=='half'
+     &&(asking==null||String(asking).trim()===''||isNaN(Number(asking))))
+    return popupOK('How much?','Type an amount, or use the All and Half buttons.');
+  const ceiling=what==='dep'?Math.floor(S.money)
+    :what==='wd'?Math.floor(S.savings)
+    :Math.min(Math.floor(S.debt),Math.floor(S.money));
+  let n=asking==='all'?ceiling:asking==='half'?Math.floor(ceiling/2):Math.floor(asking);
+  if(n<=0)return popupOK('Nothing to move',
+    what==='dep'?'You have no cash to save.':what==='wd'?'There is nothing in savings.':'There is no debt, or no cash to pay it with.');
+  if(what==='dep'){
+    if(S.money<n)return popupOK('Not enough cash',`You have ${money(S.money)} in cash.`);
+    S.money-=n; S.savings+=n; noteBank('dep',n);
+    popupOK('Saved',`${money(n)} moved into savings. You now hold ${money(S.savings)} there.`);
+  }
+  if(what==='wd'){
+    if(S.savings<n)return popupOK('Not enough saved',`You have ${money(S.savings)} in savings.`);
+    S.savings-=n; S.money+=n; noteBank('wd',n);
+    popupOK('Withdrawn',`${money(n)} moved into cash. You now hold ${money(S.money)} in cash.`);
+  }
+  if(what==='debt'){
+    const a=Math.min(n,S.debt,S.money);
+    if(a<=0)return popupOK('Nothing to repay','There is no debt you can pay down.');
+    S.money-=a; S.debt-=a; S.counters.debtCleared+=a; noteBank('debt',a);
+    popupOK('Repaid',`${money(a)} off the debt. ${S.debt>0?money(S.debt)+' still owed.':'You owe nothing.'}`);
+  }
+  S.bankAmt=null; save(); renderAll();
+}
 function moneyBanking(){
   if(S.age<18)return '<div class="card"><div class="muted">Banking opens at 18.</div></div>';
   return `<div class="card"><div class="ct">Banking</div>
@@ -11564,11 +11714,27 @@ function moneyBanking(){
    <div class="kv"><span>Savings (2.5%/yr)</span><b>${money(S.savings)}</b></div>
    <div class="kv"><span>Debt</span><b class="bad">${money(S.debt)}</b></div>
    <div class="kv"><span>Loans</span><b>${(S.loans&&S.loans.length)?S.loans.length+' active':'\u2014'}</b></div>
+   <div class="cl">Any amount
+     <div class="inrow"><input id="bankAmt" type="number" min="0" step="1" inputmode="numeric" placeholder="0"
+       value="${S.bankAmt!=null?esc(String(S.bankAmt)):''}" oninput="S.bankAmt=parseInt(this.value,10)||null">
+     </div>
+     <div class="grid3 mt">
+       <button class="mini" onclick="bank('dep')">Save it</button>
+       <button class="mini" onclick="bank('wd')">Withdraw it</button>
+       <button class="mini" onclick="bank('debt')">Repay it</button>
+     </div>
+   </div>
    <div class="grid3 mt">
-     <button class="mini" onclick="fin('dep')">Save $5k</button>
-     <button class="mini" onclick="fin('wd')">Withdraw $5k</button>
-     <button class="mini" onclick="fin('debt')">Repay $5k</button>
+     <button class="mini" onclick="bank('dep','all')">Save all cash</button>
+     <button class="mini" onclick="bank('wd','all')">Withdraw all</button>
+     <button class="mini" onclick="bank('debt','all')">Repay all</button>
+   </div>
+   <div class="grid3 mt">
+     <button class="mini" onclick="bank('dep','half')">Save half</button>
+     <button class="mini" onclick="bank('wd','half')">Withdraw half</button>
+     <button class="mini" onclick="bank('debt','half')">Repay half</button>
    </div></div>
+   ${bankHistory()}
    <div class="card"><div class="ct">Investments</div>
    <div class="kv"><span>Crypto</span><b>${money(cryptoValue())} <small class="dim">@ ${money(S.crypto.price)}</small></b></div>
    <div class="grid3 mt">
@@ -11801,17 +11967,19 @@ function buyProperty(id,withMortgage){
     const deposit=Math.round(price*0.15);
     if(price-deposit>maxLoan)
       return popupOK('Refused',`On ${money(income)} of income and a score of ${Math.round(sc)}, the most you can borrow is ${money(maxLoan)}. ${def.n} needs ${money(price-deposit)}.`);
-    if(!afford(deposit))return;
-    charge(deposit); ledger('spend','Deposit on '+def.n.toLowerCase(),deposit);
-    S.properties.push({t:id,value:price,mortgage:price-deposit,rented:false,cond:ri(55,90),home:false});
-    popupOK('Bought',`${def.n} for ${money(price)}. ${money(deposit)} deposit, ${money(price-deposit)} borrowed.`);
+    if(!payFor(deposit,'the deposit on '+def.n.toLowerCase(),(pot,used)=>{
+      ledger('spend','Deposit on '+def.n.toLowerCase(),deposit);
+      S.properties.push({t:id,value:price,mortgage:price-deposit,rented:false,cond:ri(55,90),home:false});
+      popupOK('Bought',`${def.n} for ${money(price)}. ${money(deposit)} deposit, ${money(price-deposit)} borrowed.${used?' Paid '+used+'.':''}`);
+      save(); renderAll(); }))return;
   } else {
-    if(!afford(price))return;
-    charge(price); ledger('spend','Bought '+def.n.toLowerCase(),price);
-    S.properties.push({t:id,value:price,mortgage:0,rented:false,cond:ri(55,90),home:false});
-    popupOK('Bought',`${def.n}, owned outright for ${money(price)}.`);
+    if(!payFor(price,def.n.toLowerCase(),(pot,used)=>{
+      ledger('spend','Bought '+def.n.toLowerCase(),price);
+      S.properties.push({t:id,value:price,mortgage:0,rented:false,cond:ri(55,90),home:false});
+      popupOK('Bought',`${def.n}, owned outright for ${money(price)}.${used?' Paid '+used+'.':''}`);
+      save(); renderAll(); }))return;
   }
-  save(); renderAll();
+  return;
 }
 function sellProperty(i){
   const pr=S.properties[i]; if(!pr)return; const def=PROP(pr.t);
@@ -11832,10 +12000,11 @@ function makeHome(i){ const pr=S.properties[i]; if(!pr)return;
   if(match[pr.t])S.home=match[pr.t];
   popupOK('Moved in',`You live in ${PROP(pr.t).n.toLowerCase()} now. No rent to pay.`); save(); renderAll(); }
 function repairProperty(i){ const pr=S.properties[i]; if(!pr)return;
-  const cost=Math.round(pr.value*0.04); if(!afford(cost))return;
-  charge(cost); ledger('spend','Renovation',cost); pr.cond=clamp(pr.cond+ri(25,45));
-  pr.value=Math.round(pr.value*1.03);
-  popupOK('Renovated',`${condWord(pr.cond)} now, and worth a little more.`); save(); renderAll(); }
+  const cost=Math.round(pr.value*0.04);
+  if(!payFor(cost,'a renovation',()=>{
+    ledger('spend','Renovation',cost); pr.cond=clamp(pr.cond+ri(25,45));
+    pr.value=Math.round(pr.value*1.03);
+    popupOK('Renovated',`${condWord(pr.cond)} now, and worth a little more.`); save(); renderAll(); }))return; }
 
 /* ---------------- VEHICLES ---------------- */
 function vehPrice(def){ return Math.round(def.base*country().col); }
@@ -11843,11 +12012,11 @@ function buyVehicle(id){
   const def=VEH(id), price=vehPrice(def);
   if(def.licence&&!S.flags.licence)
     return popupOK('No licence','You need a driving licence first.');
-  if(!afford(price))return;
-  charge(price); ledger('spend','Bought '+def.n.toLowerCase(),price);
-  S.vehicles.push({t:id,value:price,cond:ri(80,100)});
-  popupOK('Bought',`${def.n} for ${money(price)}. Running costs about ${money(Math.round(def.run*country().col))} a year.`);
-  save(); renderAll();
+  if(!payFor(price,def.n.toLowerCase(),(pot,used)=>{
+    ledger('spend','Bought '+def.n.toLowerCase(),price);
+    S.vehicles.push({t:id,value:price,cond:ri(80,100)});
+    popupOK('Bought',`${def.n} for ${money(price)}. Running costs about ${money(Math.round(def.run*country().col))} a year.${used?' Paid '+used+'.':''}`);
+    save(); renderAll(); }))return;
 }
 function sellVehicle(i){ const v=S.vehicles[i]; if(!v)return;
   const def=VEH(v.t), net=Math.round(v.value*(0.75+v.cond/400));
@@ -11856,28 +12025,37 @@ function sellVehicle(i){ const v=S.vehicles[i]; if(!v)return;
     popupOK('Sold',`${money(net)}.`); save(); renderAll(); }); }
 function serviceVehicle(i){ const v=S.vehicles[i]; if(!v)return;
   const def=VEH(v.t), cost=Math.round(def.base*0.04*country().col);
-  if(!afford(cost))return; charge(cost); ledger('spend','Service',cost);
-  v.cond=clamp(v.cond+ri(25,40));
-  popupOK('Serviced',`${def.n} is ${condWord(v.cond).toLowerCase()} again.`); save(); renderAll(); }
+  if(!payFor(cost,'servicing '+def.n.toLowerCase(),()=>{
+    ledger('spend','Service',cost);
+    v.cond=clamp(v.cond+ri(25,40));
+    popupOK('Serviced',`${def.n} is ${condWord(v.cond).toLowerCase()} again.`); save(); renderAll(); }))return; }
 
 /* ---------------- BUSINESSES ---------------- */
+/* This used to confirm here and then call a second confirmation, whose body did
+   the paying; if that second sheet failed its affordability test it returned
+   silently, so a business could be confirmed and never exist. One sheet now, and
+   the money question is answered on the sheet that starts it. */
 function startBusiness(id){
   const def=BIZ(id), cost=Math.round(def.cost*country().col);
   if(S.age<18)return popupOK('Too young','You cannot register a business yet.');
+  const held=potList().filter(p=>p[2]>0).map(p=>money(p[2])+' in '+p[1].toLowerCase()).join(', ')||'nothing';
   confirmDo('Start '+def.n.toLowerCase()+'?',
-    `${money(cost)} to set up. It earns more the better your ${DATA.skills[def.skill].name} is, and it can fail.`,()=>{
-    if(!afford(cost))return; charge(cost); ledger('spend','Started '+def.n.toLowerCase(),cost);
-    S.businesses.push({t:id,value:cost,staff:1,ups:[],rep:50});
-    S.flags.owns_business=true; S.counters.businesses++;
-    logLine(`You started ${def.n.toLowerCase()}.`,'good');
-    popupOK('Trading',`${def.n} is open. Hire people to grow it.`); save(); renderAll(); });
+    `${money(cost)} to set up. It earns more the better your ${DATA.skills[def.skill].name} is, and it can fail.\nYou hold ${held}.`,()=>{
+    payFor(cost,'starting '+def.n.toLowerCase(),(pot,used)=>{
+      ledger('spend','Started '+def.n.toLowerCase(),cost);
+      S.businesses.push({t:id,value:cost,staff:1,ups:[],rep:50});
+      S.flags.owns_business=true; S.counters.businesses++;
+      logLine(`You started ${def.n.toLowerCase()}.`,'good');
+      popupOK('Trading',`${def.n} is open. You own ${S.businesses.length} business${S.businesses.length>1?'es':''}.${used?' Paid '+used+'.':''}`);
+      save(); renderAll(); }); });
 }
 function hireStaff(i,n){
   const b=S.businesses[i]; if(!b)return; const def=BIZ(b.t);
   if(b.staff+n>def.maxStaff)return popupOK('No room',`${def.n} cannot support more than ${def.maxStaff}.`);
   const cost=Math.round(def.rev*0.12*n*country().col);
-  if(!afford(cost))return; charge(cost); ledger('spend','Recruitment',cost);
-  b.staff+=n; popupOK('Hired',`${b.staff} ${def.n_staff}${b.staff>1?'s':''} now.`); save(); renderAll();
+  if(!payFor(cost,'recruiting staff',()=>{
+    ledger('spend','Recruitment',cost);
+    b.staff+=n; popupOK('Hired',`${b.staff} ${def.n_staff}${b.staff>1?'s':''} now.`); save(); renderAll(); }))return;
 }
 function fireStaff(i){ const b=S.businesses[i]; if(!b||b.staff<=0)return;
   b.staff--; applyEff({reputation:-2}); popupOK('Let go','One fewer wage to pay.'); save(); renderAll(); }
@@ -11886,9 +12064,10 @@ function upgradeBusiness(i,upId){
   const up=BIZ_UPGRADES.find(u=>u.id===upId);
   if((b.ups||[]).includes(upId))return popupOK('Already done','You have already done that.');
   const cost=Math.round(b.value*up.cost);
-  if(!afford(cost))return; charge(cost); ledger('spend',up.n,cost);
-  b.ups=b.ups||[]; b.ups.push(upId); b.value=Math.round(b.value*1.08);
-  popupOK(up.n,`Done. Revenue should rise by about ${Math.round(up.rev*100)}%.`); save(); renderAll();
+  if(!payFor(cost,up.n,()=>{
+    ledger('spend',up.n,cost);
+    b.ups=b.ups||[]; b.ups.push(upId); b.value=Math.round(b.value*1.08);
+    popupOK(up.n,`Done. Revenue should rise by about ${Math.round(up.rev*100)}%.`); save(); renderAll(); }))return;
 }
 function sellBusiness(i){
   const b=S.businesses[i]; if(!b)return; const def=BIZ(b.t);
@@ -11949,17 +12128,15 @@ function moneyBusinesses(){
       <div class="hsub dim">${money(Math.round(def.cost*country().col))} to start \u00b7 up to ${def.maxStaff} staff \u00b7 needs ${DATA.skills[def.skill].name}</div></div>
       <i>\u203a</i></button>`).join('')}</div>`;
 }
-function confirmStartBusiness(id){
-  const def=BIZ(id); if(!def)return;
-  const cost=Math.round(def.cost*country().col);
-  confirmDo(`Start a ${def.n}?`,
-    `Starting capital: ${money(cost)}.\nYour funds: ${money(S.money)}\nRemaining after: ${money(S.money-cost)}`,
-    ()=>{ startBusiness(id); });
-}
+/* One sheet, not two: startBusiness owns the only confirmation. */
+function confirmStartBusiness(id){ startBusiness(id); }
 /* ---------------- THE MARKET ---------------- */
 function marketRefresh(force){
   if(!S.market)S.market={year:-1,vehicle:[],property:[],item:[]};
-  if(!force && S.market.year===S.age) return;
+  /* A year stamp is not proof that the lists were built: anything that writes
+     S.market.year without generating them would leave the market empty for
+     ever. Ask for the lists as well. */
+  if(!force && S.market.year===S.age && S.market.vehicle && S.market.property && S.market.item) return;
   const col=country().col, rnd=R, ri2=ri;
   const pickN=(arr,n)=>{ const c=arr.slice().sort(()=>rnd()-0.5); return c.slice(0,n); };
   S.market.vehicle = pickN(VEHICLES, 6).map(d=>makeVehicleListing(d,rnd,ri2,col));
@@ -12028,27 +12205,7 @@ function financeTick(out){
   });
 }
 function financeTotal(){ return (S.finance||[]).reduce((n,f)=>n+f.annual,0); }
-function buyListing(id,method){
-  const l=findListing(id); if(!l)return;
-  const price=l.price;
-  if(method==='cash'){
-    if(!afford(price))return;
-    charge(price); ledger('spend','Bought '+listingName(l),price);
-  } else {
-    const sc=S.credit==null?600:S.credit, band=creditBand(sc);
-    if(sc<560)return popupOK('Declined','No lender will finance this for you at your credit score.');
-    const deposit=Math.round(price*0.15);
-    if(!afford(deposit))return;
-    const term=l.kind==='property'?25:l.kind==='vehicle'?5:2;
-    const principal=price-deposit;
-    const annual=Math.round(principal*(1/term + band.rate));
-    const income=S.job?S.job.pay:Math.round(6500*country().col);
-    if(annual+financeTotal() > income*0.45)
-      return popupOK('Declined',`The repayments would be ${money(annual)} a year on top of ${money(financeTotal())} you already owe. They will not lend it.`);
-    charge(deposit); ledger('spend','Deposit on '+listingName(l),deposit);
-    S.finance=S.finance||[];
-    S.finance.push({l:listingName(l),annual:annual,left:term,principal:principal});
-  }
+function finishBuyListing(l,method,price,used){
   if(l.kind==='vehicle')S.vehicles.push({t:l.t,value:Math.round(price*0.92),cond:l.cond,warranty:!!l.warranty});
   if(l.kind==='property')S.properties.push({t:l.t,value:price,mortgage:0,rented:!!l.tenant,cond:l.cond,home:false});
   if(l.kind==='item'){ const it=DATA.items.find(i=>i.id===l.t);
@@ -12056,9 +12213,33 @@ function buyListing(id,method){
     else if(!S.items.includes(l.t))S.items.push(l.t);
     if(it&&it.once)applyEff(it.once);
   }
-  removeListing(id); S.listing=null;
-  popupOK('Bought',`${listingName(l)} for ${money(price)}${method==='finance'?', on finance':''}.`);
-  save(); renderAll();
+  removeListing(l.id); S.listing=null;
+  popupOK('Bought',`${listingName(l)} for ${money(price)}${method==='finance'?', on finance':''}.${used?' Paid '+used+'.':''}`);
+  checkAch(); save(); renderAll();
+}
+function buyListing(id,method){
+  const l=findListing(id); if(!l)return;
+  const price=l.price;
+  if(method==='cash'){
+    if(!payFor(price,listingName(l),(pot,used)=>{
+      ledger('spend','Bought '+listingName(l),price);
+      finishBuyListing(l,'cash',price,used); }))return;
+    return;
+  }
+  const sc=S.credit==null?600:S.credit, band=creditBand(sc);
+  if(sc<560)return popupOK('Declined','No lender will finance this for you at your credit score.');
+  const deposit=Math.round(price*0.15);
+  const term=l.kind==='property'?25:l.kind==='vehicle'?5:2;
+  const principal=price-deposit;
+  const annual=Math.round(principal*(1/term + band.rate));
+  const income=S.job?S.job.pay:Math.round(6500*country().col);
+  if(annual+financeTotal() > income*0.45)
+    return popupOK('Declined',`The repayments would be ${money(annual)} a year on top of ${money(financeTotal())} you already owe. They will not lend it.`);
+  if(!payFor(deposit,'the deposit on '+listingName(l),(pot,used)=>{
+    ledger('spend','Deposit on '+listingName(l),deposit);
+    S.finance=S.finance||[];
+    S.finance.push({l:listingName(l),annual:annual,left:term,principal:principal});
+    finishBuyListing(l,'finance',price,used); }))return;
 }
 function listingPage(l){
   const canFin=l.kind!=='item'||l.price>2000;
@@ -12139,7 +12320,6 @@ function viewMoney(){
     return `<div class="card secthead">
       <div class="secthead-bar">
         <button class="backbtn" onclick="closeMoney()">\u2039 Money</button>
-        <button class="refreshbtn" title="Refresh this page" onclick="refreshCurrentPage()">⟳ Refresh</button>
       </div>
       <div class="secttitle">${esc(title)}</div></div>` + body;
   }
@@ -12179,8 +12359,7 @@ function buy(id){
   if(S.buysThisYear==null)S.buysThisYear=0;
   if(S.buysThisYear>=3)return popupOK('Enough for one year','You have already done your shopping this year.');
   const price=Math.round(it.c*(1+newsMod('prices')));
-  if(!afford(price))return;
-  charge(price);
+  if(!payFor(price,it.n,()=>{
   ledger('spend','Bought '+it.n,price);
   if(it.cat==='Assets'){ S.assets=S.assets||[]; S.assets.push({id:it.id,value:it.c}); }
   else if(!S.items.includes(id)) S.items.push(id);
@@ -12188,6 +12367,7 @@ function buy(id){
   S.buysThisYear++;
   popupOK('Purchased',`You bought a ${it.n} for ${money(price)}.`);
   checkAch(); save(); renderAll();
+  }))return;
 }
 function buyV8(){
   if(!afford(9000))return; charge(9000); ledger('spend','The V8',9000);
@@ -12195,13 +12375,11 @@ function buyV8(){
   popupOK('The V8','It still smells of somebody else\u2019s life.');
   save(); renderAll();
 }
-function fin(w){
+function fin(w,amt){
   if(S.age<18)return popupOK('Too young','You need to be 18 to use banking and investments.');
-  if(w==='dep'){ if(!afford(5000))return; charge(5000);S.savings+=5000; }
-  if(w==='wd'){ const a=Math.min(5000,S.savings); S.savings-=a;S.money+=a; }
+  if(w==='dep'||w==='wd'||w==='debt')return bank(w,amt);
   if(w==='buyc'){ if(!afford(2000))return; charge(2000);S.crypto.units+=2000/S.crypto.price;S.counters.cryptoProfit-=2000;S.flags.holds_crypto=true; }
   if(w==='sellc'){ const v=Math.round(cryptoValue()); S.money+=v;S.counters.cryptoProfit+=v;S.crypto.units=0;S.flags.holds_crypto=false; popupOK('Sold',`You sold your crypto for ${money(v)}.`); }
-  if(w==='debt'){ const a=Math.min(5000,S.debt,S.money); S.money-=a;S.debt-=a;S.counters.debtCleared+=a; }
   if(w==='buyp'){ setTab('money'); openMoney('estate'); return; }
   checkAch(); save(); renderAll();
 }
@@ -12212,6 +12390,7 @@ function gotoGroup(g){
 }
 const MENU_PAGES=[
   ['stats','Profile','Identity, health, skills and history'],
+  ['career','Career','Your job, your field and how you stand'],
   ['ach','Awards','Achievements earned across every life'],
   ['goals','Goals','This life’s goals and challenges'],
   ['rec','Records','Personal bests and milestones'],
@@ -12257,14 +12436,53 @@ function setMore(v){ if(!S)return; S.moreView=v; renderTab('more'); }
 function viewMore(){
   const v=S.moreView||'stats';
   const meta=MENU_PAGES.find(x=>x[0]===v)||MENU_PAGES[0];
-  const body=({ach:viewAch,chal:viewChal,goals:viewGoals,rec:viewRec,save:viewSaves,
+  const body=({ach:viewAch,chal:viewChal,goals:viewGoals,rec:viewRec,save:viewSaves,career:viewCareer,
     shop:viewShop,plus:viewShop,settings:viewSettings,help:viewHelp}[v]||viewStats)();
   return `<div class="card secthead">
     <div class="secthead-bar">
-      <button class="backbtn" onclick="toggleMenu()">☰ Menu</button>
-      <button class="refreshbtn" title="Refresh this page" onclick="refreshCurrentPage()">⟳ Refresh</button>
+      <button class="backbtn" onclick="toggleMenu()">\u2039 Menu</button>
     </div>
     <div class="secttitle">${meta[1]}</div><div class="hsub dim">${meta[2]}</div></div>`+body;
+}
+/* What your working life actually is, in one place: the job, the field, the
+   employer, the pay, the performance, the odds of the next step, and the track
+   you are on. The Careers screen under Money is the market; this is you. */
+function viewCareer(){
+  const job=S.job;
+  const field=job?((DATA.fieldNames&&DATA.fieldNames[job.field])||job.field):null;
+  const perf=perfBand(S.perf==null?60:S.perf);
+  const promo=Math.max(0,Math.min(0.95,
+    0.30+(S.jobYears||0)*0.06+(S.skills.business||0)/300+(S.skills.charisma||0)/300+perf.promo-workPenalty()*0.3));
+  const next=job?DATA.jobs.slice(DATA.jobs.findIndex(j=>j.id===job.id)+1)
+    .find(j=>j.field===job.field&&jobLvl(j)<=(job.lvl||0)+1):null;
+  const rows=[
+    ['Occupation',occupation()],
+    ['Job title',job?job.t:null],
+    ['Field',field],
+    ['Employer',job?(job.emp||S.employer||null):null],
+    ['Manager',job?(S.boss||null):null],
+    ['Pay',job?(money(job.pay)+' a year'):null],
+    ['Take-home',job?(money(Math.round(job.pay*0.77))+' a year, after tax'):null],
+    ['Years in the job',job?(Math.round((S.jobYears||0)*10)/10):null],
+    ['Performance',job?(perf.n+' ('+Math.round(S.perf)+')'):null],
+    ['Promotion chance',job?(Math.round(promo*100)+'% each year'):null],
+    ['Next step up',job?(next?next.t+' \u00b7 '+money(next.pay)+' a year':'No rung above this in your field'):null],
+    ['Jobs held',S.jobsHeld||0],
+    ['Years worked',Math.round((S.totalWorked||0)*10)/10]
+  ].filter(r=>r[1]!=null);
+  const tr=S.track?TRACK(S.track.id):null;
+  const rk=S.track?TRACK_RANK(S.track):null;
+  const nxt=(tr&&tr.ranks&&rk)?tr.ranks.find(r=>r.need>rk.need):null;
+  return `<div class="card"><div class="ct">Working life</div>
+    ${rows.map(r=>`<div class="kv"><span>${esc(r[0])}</span><b>${esc(String(r[1]))}</b></div>`).join('')}
+    ${job?'':'<div class="hsub dim mt">You are not working. The Careers screen under Money lists every job, what it pays and what it needs. Unemployment support is paid while you are out of work between 18 and 65.</div>'}
+    ${S.jailLeft>0?`<div class="hsub dim mt">You cannot hold a job for another ${S.jailLeft} year${S.jailLeft>1?'s':''}.</div>`:''}
+  </div>
+  ${tr?`<div class="card"><div class="ct">${esc(tr.n)}</div>
+    <div class="kv"><span>Rank</span><b>${esc(rk.n)}</b></div>
+    <div class="kv"><span>${esc(tr.resN||'Progress')}</span><b>${Math.round(S.track.progress)}</b></div>
+    ${nxt?`<div class="hsub dim">Next rank: ${esc(nxt.n)} at ${nxt.need}.</div>`:'<div class="hsub dim">You are at the top rank of this path.</div>'}
+  </div>`:''}`;
 }
 function viewAch(){
   const un=Object.keys(META.ach).length, tot=ACHIEVEMENTS.length;
@@ -12801,6 +13019,9 @@ function gameBack(){
   }
   if(S&&S.person){ closePerson(); return true; }
   if(S&&S.section){ closeSection(); return true; }
+  /* Money unwinds one level at a time: a listing, then its market, then the
+     Money hub. It used to skip straight from a listing to out of Money. */
+  if(S&&S.listing){ closeListing(); return true; }
   if(S&&S.msection){ closeMoney(); return true; }
   const t=app().dataset.tab||'life';
   if(t==='more'){ setTab(LAST_PRIMARY||'life'); return true; }

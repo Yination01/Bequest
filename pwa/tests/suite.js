@@ -49,7 +49,7 @@ module.exports={
     DATA,EVENTS,ACHIEVEMENTS,CHALLENGES,RECORDS,DIFFICULTIES,DIFF_KNOBS,CONDITIONS,COND,
     UNI_TIERS,RECORD_BARS,PERSONALITIES,creditBand,perfBand,gradeBand,recordBlocks,
     newGame,ageUp,ACTS,doAct,npcAct,reqOk,evWeight,CRASH_KEY,crashSink,crashOptIn,setCrashOptIn,crashContext,crashLog,crashClear,recordCrash,softFail,crashReportText,crashSummary,crashScreen,installCrashHandlers,noteAct,notePopup,moneyBand,healthSystem,healthMigrate,condCost,waitYears,treatJoin,treatPrivate,seeSpecialist,doRehab,applyTreatment,tickHealth,healthCard,ASSETS,ASSET,investBirth,investMigrate,holdingsValue,holdingOf,tickInvest,investBuy,investSell,investPick,spread,moneyInvest,tok,findNPC,makeCast,withCast,nameList,COUNSEL,COUNSEL_BY,courtMigrate,counselCost,openCase,evidenceWord,courtPlead,courtCounsel,courtResolve,courtAppeal,courtFinish,courtSheet,renderPopup,SUBJECTS,SUBJECT,SCHOOL_START,OPTIONS_AGE,SCHOOL_END,DEGREE_BAR,schoolBirth,schoolMigrate,subjectsActive,subjectsTaken,subjectGrade,bestSubjects,tickSubjects,gpaFrom,optionPool,chooseOptions,degreeOpen,degreesOpenTo,degreeBlockedBy,schoolLeavingSkills,studySubject,studyPick,subjectsCard,partner,anyOf,ledger,ledgerTotal,pickFrom,chooseFrom,toggleStats,tickHabits,TRACKS,TRACK,TRACK_RANK,tickTrack,orient,canRomance,partnerGender,addPet,petsAlive,tickPets,diminish,actionsPerYear,randomAct,randomCrime,crimeConfirm,gotoGroup,setTab,setMore,toggleMenu,closeMenu,openMenuPage,gameBack,bindNativeBack,applyJobId,quitHabit,startHabit,lowerDiff,exportSave,importSave,cloudPush,cloudPull,setCloud,validSlot,cloudMergeMeta,saveToSlot,loadSlot,deleteSlot,pickChoice,fateChoice,closePopup,cdo,continueAs,toTitle,showCreate,startLife,rnd,setDiff,setKnob,resetKnobs,countryChanged,applyJob,jobEligible,jobLocked,tryPromote,doCrime,netWorth,buy,fin,
-    checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
+    afford,charge,payFor,potList,potTotal,potOf,potName,bank,bankHistory,noteBank,visitEveryone,viewCareer,    checkAch,die,finalChallenges,drain,resolveChoice,confirmDo,popupOK,doAct,buy,save,load,slotInfo,saveToSlot,loadSlot,
     viewLife,viewActs,viewPeople,viewMoney,viewMore,viewStats,renderHeader,renderTitle,renderCreate,
     rnd,countryChanged,startLife,workPenalty,migrate,isPlus,HOUSING,HOME,FOOD,FOODTIER,livingEffect,PROPERTY_TYPES,PROP,VEHICLES,VEH,BUSINESSES,BIZ,BIZ_UPGRADES,condWord,propPrice,vehPrice,buyProperty,sellProperty,toggleLet,makeHome,repairProperty,buyVehicle,sellVehicle,serviceVehicle,startBusiness,hireStaff,upgradeBusiness,sellBusiness,moneyPropertyMarket,moneyVehicles,moneyBusinesses,propertyEquity,vehicleValue,businessValue,SUBS,SUB,CARDS,CARD,householdSize,billsFor,livingFloor,livingRatio,livingTarget,tickLiving,payBills,setHome,setFood,toggleSub,toggleAutopay,applyCard,payCard,autopayOn,autopayAllowed,autopayFree,autopayBounces,payBillsNow,payOverdueNow,payArrears,arrPlanAmount,startArrPlan,cancelArrPlan,tickArrears,tickBills,moneyLiving,moneyCards,openSection,closeSection,openMoney,closeMoney,openPerson,closePerson,setTextSize,applyTextSize,setJobFilter,doAgeUp,PERKS,PERK,GOAL_POOL,marketRefresh,marketView,findListing,makeOffer,buyListing,listingName,listingDetail,haggleOutcome,SELLERS,SELLER,MOTIVES,financeTotal,financeTick,openListing,closeListing,buyPerk,checkGoals,viewShop,viewGoals,doPersonAction,personActions,personPage,PERSON_ACTIONS,LEISURE,DEGREES,DEGREE,moneyShop,moneyOverview,moneyBanking,moneyCareers,actionsPerYear,moneyProperty,SHOP_MIN_AGE,reachAllowance,hasItem,hasSub,nextMilestone,groupMeta,buyV8,findEgg,hasEgg,eggTick,tapLogo,setCapsule,EGGS,EGG,EGG_TIERS,EGG_UNLOCKS,sonderLife,requirePlus,buyPlus,togglePlus,devUnlocked,i18nKey,T,setLocale,currentLocale,trackMissing,missingStrings,localiseData,pseudoLocale,variant,avatarSVG,avatarMini,avatarWorth,avatarWealthTier,avatarAiling,a11ySyncTabs,a11ySwitches,a11yAgeHint,say,a11yDialogOpen,a11yDialogClose,a11yInit,CODE_GRANTS,codeHash,makeCode,readCode,redeemCode,broadcast,setBroadcast,dismissBroadcast,broadcastCard,forceEvent,clearForced,takeForced,flagSave,saveFlag,rewindYear,secondChance,viewPlus,SFX,NOTE,HAPTIC,sfx,cue,haptic,eulogy,eulogyOpening,eulogyWork,eulogyPeople,eulogyEstate,eulogyClose,eName,eKin,eNum,eList,ePron,eulogyEstateFrom,eOrd,showDeath,renderDeath,toggleDeathStats,HEIRLOOMS,HEIRLOOM,heirloomValue,heirloomAge,heirloomLine,willBirth,willMigrate,willAssets,willHeirs,willHeir,willFee,willShareTotal,willCanWrite,willSetShare,willEven,willSetGift,willCut,willSetMain,willMainGuess,willWrite,willTell,willLeak,heirloomOffer,commissionHeirloom,settleEstate,settlementFor,willView,willDeathBlock,wHash,wHashId,continueAs,soundCfg,soundOn,hapticsOn,setSound,setHaptics,setVolume,popupCue,bindTapSounds,audioCtx,COACH_TIPS,COACH_OPENING,coachTip,coachCard,coachSeen,coachMark,coachDismiss,coachReplay,coachOpeningDue,openingShow,openingSkipPrompt,openingDone,coachSetTips,offerDirectDebit,viewStats,viewSettings,viewHelp,viewMenu,confirmBuyListing,confirmStartBusiness,promptExitGame,dismissExitPrompt,confirmExitGame,currentSaveInfo,saveGameLocally,deleteLocalSave,clearAllTestData,refreshCurrentPage,reloadApp,
     get CREATE(){return CREATE}, set CREATE(v){CREATE=v},
@@ -75,6 +75,10 @@ const G = require(tmp).api;
 let pass = 0, fail = 0;
 const fails = [];
 function t(name, fn) {
+  /* ONLY=<substring> runs just the matching checks. The suite itself is
+     unchanged; this exists so a mutation can be proven to fail a single
+     check without paying for the whole run. */
+  if (process.env.ONLY && name.indexOf(process.env.ONLY) < 0) { pass++; return; }
   try {
     const r = fn();
     if (r === true || r === undefined) { pass++; console.log('  \x1b[32mPASS\x1b[0m ' + name); }
@@ -2560,9 +2564,14 @@ t('a new life starts with an empty portfolio and old saves get one', () => {
   G.newGame({});
   if (!G.S.holdings) return 'no holdings object';
   if (G.holdingsValue(G.S) !== 0) return 'born holding investments';
-  const s = investor({}); delete s.holdings; delete s.market; delete s.investIn;
+  const s = investor({}); delete s.holdings; delete s.stockMarket; delete s.investIn;
   G.investMigrate(s);
-  if (!s.holdings || !s.market || s.investIn == null) return 'migrate left it half-built';
+  if (!s.holdings || !s.stockMarket || s.investIn == null) return 'migrate left it half-built';
+  /* a save from before the split carries its mood on the marketplace object */
+  const old = investor({}); delete old.stockMarket; old.market = { last:-0.3, year:0 };
+  G.investMigrate(old);
+  if (old.stockMarket.last !== -0.3) return 'the old mood figure was not carried over';
+  if (old.market.last !== undefined) return 'the mood is still sitting on the marketplace';
   return true;
 });
 
@@ -2591,7 +2600,7 @@ t('gold rises when the market falls', () => {
   for (let i = 0; i < 4000; i++) {
     const s = investor({ gold: 10000, shares: 10000 });
     s.age++; G.tickInvest(s, null);
-    if (s.market.last < -0.15) {
+    if (s.stockMarket.last < -0.15) {
       bad++;
       if (s.holdings.gold > 10000) goldUp++;
       if (s.holdings.shares > 10000) sharesUp++;
@@ -2649,7 +2658,7 @@ t('the spread measure reads one bet and an even split correctly', () => {
 
 t('the investments screen renders without leaking a raw value', () => {
   const s = investor({ index: 12000, gold: 3000 }); s.age = 40; s.money = 20000;
-  s.market.last = -0.3;
+  s.stockMarket.last = -0.3;
   const html = G.moneyInvest();
   if (html.indexOf('index fund') < 0) return 'the assets are not listed';
   if (html.indexOf('very bad year') < 0) return 'the market mood is not reported';
@@ -4577,9 +4586,12 @@ t('loading a corrupt save does not crash', () => {
 t('local save, info extraction and deleteLocalSave cleanly removes character', () => {
   G.newGame({ typed: true, name: 'Tester Save', diff: 'normal' });
   ageTo(25);
+  /* the random stream is shared, so a life can end early; there is nothing to
+     inspect in a save that was never written */
+  if (!G.S.alive) return true;
   G.save();
   const info = G.currentSaveInfo();
-  if (!info || info.name !== 'Tester Save' || info.age !== 25) return 'currentSaveInfo failed';
+  if (!info || info.name !== 'Tester Save' || info.age !== G.S.age) return 'currentSaveInfo failed';
   G.AUTOCONFIRM = true;
   G.deleteLocalSave(1);
   G.drain();
@@ -4619,23 +4631,30 @@ t('restricted money hub and shop categories are age gated with lock status', () 
   return true;
 });
 
-t('choice outcome is unshifted before subsequent events in queue', () => {
+/* The player asked for the queued method back on 2026-10-04: an outcome sheet
+   takes its turn behind sheets that were already waiting, instead of being
+   unshifted to the front of the queue. */
+t('a choice outcome takes its turn behind sheets already waiting', () => {
   G.newGame({});
   const ev1 = { id:'test1', t:'Test 1', c:[{ l:'Pick 1', out:'Chose 1', e:{ happiness: 5 } }] };
   const ev2 = { id:'test2', t:'Test 2', c:[{ l:'Pick 2', out:'Chose 2', e:{ happiness: 5 } }] };
   const shown = [];
   const oldShowPopup = G.showPopup;
-  G.showPopup = function(p) { shown.push(p); };
+  /* record and forward: swallowing a sheet would freeze the queue, and this
+     test is about the order sheets come out of it */
+  G.showPopup = function(p) { shown.push(p); oldShowPopup(p); };
   try {
     G.QUEUE.length = 0;
     G.QUEUE.push({ type:'A', ev: ev2 });
     G.resolveChoice(ev1, 0);
-    if (!shown.length || shown[0].type !== 'C' || shown[0].title !== 'Test 1') {
-      return 'outcome of choice was not shown immediately: got ' + JSON.stringify(shown[0]);
+    if (!shown.length || shown[0].type !== 'A' || shown[0].ev.id !== 'test2') {
+      return 'the sheet already waiting was pushed aside: got ' + JSON.stringify(shown[0]).slice(0,90);
     }
-    if (!G.QUEUE.length || G.QUEUE[0].type !== 'A' || G.QUEUE[0].ev.id !== 'test2') {
-      return 'subsequent event was not kept in queue behind choice outcome';
-    }
+    /* the second event was queued ahead, so its own sheets come first and the
+       choice's outcome takes its turn behind them */
+    const out = shown.find(p => p.type === 'C' && p.title === 'Test 1');
+    if (!out) return 'the outcome of the choice never appeared';
+    if (shown.indexOf(out) < shown.indexOf(shown[0]) + 1) return 'the outcome did not queue behind the waiting sheet';
     return true;
   } finally {
     G.showPopup = oldShowPopup;
@@ -4660,6 +4679,238 @@ t('details.card has flex-shrink 0 to prevent accordion shrinkage', () => {
     return 'details.card selector is missing flex-shrink:0';
   }
   return true;
+});
+
+
+/* ================= the 2026-10-04 play-test round ================= */
+
+t('the marketplaces fill as a life is lived', () => {
+  fresh(); ageTo(28);
+  if (!G.S.alive) return true;
+  G.openMoney('mkt_vehicle');
+  const h = G.viewMoney();
+  if (!(G.S.market && (G.S.market.vehicle || []).length))
+    return 'the vehicle market is empty at age ' + G.S.age;
+  G.marketView('property', 'Property for sale');
+  if (!(G.S.market.property || []).length) return 'the property market is empty';
+  G.marketView('item', 'Things for sale');
+  if (!(G.S.market.item || []).length) return 'the general marketplace is empty';
+  return /for sale|this year/.test(h) ? true : 'the market screen did not render';
+});
+
+t('the investment mood keeps its own record, not the marketplace one', () => {
+  fresh(); atAge(30); G.investMigrate(G.S);
+  G.tickInvest(G.S, []);
+  if (G.S.market && G.S.market.last !== undefined)
+    return 'the mood is still written into the marketplace object';
+  if (!G.S.stockMarket || typeof G.S.stockMarket.last !== 'number')
+    return 'the mood was not recorded anywhere';
+  return true;
+});
+
+t('a purchase the whole of your money covers is never refused', () => {
+  fresh(); atAge(16); G.S.money = 90000; G.S.familyMoney = 200;
+  if (!G.afford(5000)) return 'refused a 16-year-old holding 90,000 of their own';
+  atAge(30); G.S.money = 100; G.S.savings = 500000;
+  if (!G.afford(9000)) return 'refused against a combined 500,100';
+  atAge(30); G.S.money = 100; G.S.savings = 100;
+  return G.afford(5000) === false ? true : 'paid 5,000 out of 200';
+});
+
+t('payments draw cash, then savings, then the household pot', () => {
+  fresh(); atAge(30); G.S.money = 3000; G.S.savings = 10000;
+  const used = G.charge(5000);
+  if (G.S.money !== 0) return 'cash left ' + G.S.money;
+  if (G.S.savings !== 8000) return 'savings left ' + G.S.savings;
+  if (!/cash/i.test(used) || !/savings/i.test(used)) return 'the account of it reads: ' + used;
+  atAge(16); G.S.money = 100; G.S.savings = 10000; G.S.familyMoney = 5000;
+  G.charge(1000);
+  if (G.S.familyMoney !== 4000) return 'the household pot paid ' + (5000 - G.S.familyMoney);
+  if (G.S.money !== 100) return 'the child paid from their own money first';
+  return true;
+});
+
+t('a purchase asks which pot pays when both could', () => {
+  fresh(); atAge(30); G.S.money = 100000; G.S.savings = 100000;
+  let paid = null;
+  const ok = G.payFor(5000, 'a test purchase', pot => { paid = pot; });
+  if (!ok) return 'refused despite 200,000 held';
+  if (!paid) {
+    if (G.LASTPOP && G.LASTPOP.type !== 'CHOOSE') return 'no chooser was raised, a ' + G.LASTPOP.type + ' was';
+    if (G.S.money !== 100000 || G.S.savings !== 100000) return 'money moved before a choice was made';
+    G.pickFrom(1);                      /* the second pot offered is savings */
+    if (paid !== 'savings') return 'choosing savings paid with ' + paid;
+  }
+  if (G.S.savings !== 95000) return 'savings ended at ' + G.S.savings;
+  if (G.S.money !== 100000) return 'cash moved as well: ' + G.S.money;
+  return true;
+});
+
+t('one confirmation opens a business, and the money leaves', () => {
+  fresh(); atAge(22); G.S.money = 200000; G.S.savings = 0;
+  const types = [], orig = G.showPopup;
+  G.showPopup = p => { types.push(p.type); orig(p); };
+  let err = null;
+  try { G.AUTOCONFIRM = true; G.confirmStartBusiness('cafe'); }
+  catch (e) { err = e; }
+  finally { G.AUTOCONFIRM = null; G.showPopup = orig; }
+  if (err) return 'threw: ' + err.message;
+  if (!G.S.businesses.length) return 'confirmed, and no business exists';
+  const ds = types.filter(x => x === 'D').length;
+  if (ds !== 1) return ds + ' confirmation sheets, not one';
+  if (G.S.money >= 200000) return 'nothing was paid';
+  const h = G.moneyBusinesses();
+  if (!/cafe/i.test(h)) return 'the businesses screen does not name it';
+  return true;
+});
+
+t('banking moves any amount, with All and Half', () => {
+  fresh(); atAge(25); G.S.money = 50000; G.S.savings = 0; G.S.debt = 12000;
+  G.bank('dep', 12345);
+  if (G.S.savings !== 12345) return 'savings ' + G.S.savings;
+  if (G.S.money !== 37655) return 'cash ' + G.S.money;
+  G.bank('dep', 'all');
+  if (G.S.money !== 0 || G.S.savings !== 50000) return 'All did not move the lot';
+  G.bank('wd', 'half');
+  if (G.S.savings !== 25000 || G.S.money !== 25000) return 'Half did not move half';
+  G.bank('debt', 25000);
+  if (G.S.debt !== 0) return 'debt left at ' + G.S.debt;
+  const st = G.bankHistory();
+  if (!/Age 25/.test(st)) return 'the statement has no dated rows';
+  if (!/Repaid/.test(st)) return 'the statement does not record the repayment';
+  const scr = G.moneyBanking();
+  if (scr.indexOf('bankAmt') < 0) return 'the banking screen has no amount field';
+  if (!/Save all cash/.test(scr) || !/Statement/.test(scr)) return 'All and the statement are missing';
+  return true;
+});
+
+t('back unwinds a marketplace listing one level at a time', () => {
+  fresh(); atAge(30);
+  G.openMoney('mkt_vehicle'); G.marketRefresh(true);
+  const l = (G.S.market.vehicle || [])[0];
+  if (!l) return 'no listing to open';
+  G.openListing(l.id);
+  G.gameBack();
+  if (G.S.listing) return 'back closed nothing';
+  if (!G.S.msection) return 'back skipped the market and left Money';
+  G.gameBack();
+  if (G.S.msection) return 'back did not leave the market for Money';
+  return true;
+});
+
+t('the outcome sheet queues behind the event, it does not jump the queue', () => {
+  const src = require('fs').readFileSync(require('path').join(DIR, 'game.js'), 'utf8');
+  if (/QUEUE\.unshift\(\{type:'C'/.test(src)) return 'the outcome sheet is unshifted to the front again';
+  fresh(); atAge(30);
+  const ev = G.EVENTS.find(e => e.c && e.c.length && G.reqOk(e));
+  if (!ev) return true;
+  const seen = [], orig = G.showPopup;
+  G.showPopup = p => { seen.push(p.type); orig(p); };
+  let err = null;
+  try {
+    G.QUEUE.push({ type: 'MARK', title: 'a sheet that was already waiting' });
+    G.resolveChoice(ev, 0);
+  } catch (e) { err = e; }
+  finally { G.showPopup = orig; }
+  if (err) return 'could not drive the event: ' + err.message;
+  const m = seen.indexOf('MARK'), c = seen.indexOf('C');
+  if (c < 0) return 'the outcome sheet never appeared at all';
+  if (m >= 0 && c < m) return 'the outcome jumped ahead of a sheet already waiting';
+  return true;
+});
+
+/* renderHeader writes straight into #hdr, so capture it the way the game does. */
+function headerHTML(){
+  const realGet = global.document.getElementById;
+  let html = '';
+  global.document.getElementById = id => (id === 'hdr')
+    ? { set innerHTML(v){ html = v; }, get innerHTML(){ return html; } }
+    : realGet(id);
+  try { G.renderHeader(); } finally { global.document.getElementById = realGet; }
+  return html;
+}
+
+t('every stat tile on the home screen names itself', () => {
+  fresh(); atAge(25);
+  const h = headerHTML();
+  const named = (h.match(/class="sl"/g) || []).length;
+  if (named !== 6) return named + ' named tiles out of 6';
+  return /Happiness/.test(h) ? true : 'the names are not in the markup';
+});
+
+t('the school club and sport stop asking once you have joined', () => {
+  fresh(); ageTo(10);
+  if (!G.S.alive) return true;
+  const before = G.ACTS().find(a => a.id === 'club');
+  if (!before) return true;
+  if (before.d !== 'Pick which one') return 'the club line starts as: ' + before.d;
+  G.doAct('club');
+  G.pickFrom(1);
+  if (!G.S.club) return 'no club was recorded after choosing';
+  const after = G.ACTS().find(a => a.id === 'club');
+  if (after.d !== ('You are in ' + G.S.club)) return 'it still asks: ' + after.d;
+  G.doAct('sports'); G.pickFrom(0);
+  if (!G.S.sport) return 'no sport was recorded';
+  const sp = G.ACTS().find(a => a.id === 'sports');
+  if (sp.d !== ('You play ' + G.S.sport)) return 'the sport line still asks: ' + sp.d;
+  return true;
+});
+
+t('a repeated action recovers to full value within a few years', () => {
+  if (!freeAt(25)) return true;
+  if (G.diminish('rest') !== 1) return 'a fresh action is already reduced';
+  G.doAct('rest');
+  const used = G.diminish('rest');
+  if (used >= 1) return 'doing it did not reduce what it gives (' + used + ')';
+  ageTo(G.S.age + 5);
+  if (!G.S.alive) return true;
+  const back = G.diminish('rest');
+  return back === 1 ? true : 'five years on it is still at ' + back;
+});
+
+t('the percentage is explained where it is shown', () => {
+  if (!freeAt(25)) return true;
+  G.doAct('rest');
+  G.openSection('Health');
+  const h = G.viewActs();
+  return /% value/.test(h) && /returns to full/i.test(h) ? true : 'the Act list does not explain the percentage';
+});
+
+t('one tap spends time with everyone you have not seen', () => {
+  fresh(); ageTo(20);
+  if (!G.S.alive) return true;
+  const live = G.S.npcs.filter(n => n.alive);
+  const unseen = live.filter(n => n.lastSeen !== G.S.age);
+  if (!unseen.length) return true;
+  const before = live.reduce((n, x) => n + x.r, 0);
+  G.visitEveryone();
+  if (live.some(n => n.lastSeen !== G.S.age)) return 'someone was left unseen';
+  if (live.reduce((n, x) => n + x.r, 0) <= before) return 'no relationship moved';
+  G.LASTPOP = null;
+  G.visitEveryone();
+  return (G.LASTPOP && /Everyone seen/.test(G.LASTPOP.title)) ? true : 'a second call did not hold back';
+});
+
+t('the career view shows your job, field and employer', () => {
+  fresh(); atAge(28);
+  /* hiring is a roll, so make it certain: the point here is the screen */
+  G.S.skills.charisma = 100; G.S.stats.reputation = 100; G.S.flags.assessed = true;
+  const el = G.DATA.jobs.filter(G.jobEligible);
+  if (!el.length) return true;
+  let tries = 0;
+  while (!G.S.job && tries++ < 12) G.applyJob(el[el.length - 1]);
+  if (!G.S.job) return true;
+  G.setMore('career');
+  const h = G.viewMore();
+  if (h.indexOf(G.S.job.t) < 0) return 'no job title';
+  const field = (G.DATA.fieldNames && G.DATA.fieldNames[G.S.job.field]) || G.S.job.field;
+  if (h.indexOf(field) < 0) return 'no field';
+  if (!/Employer/.test(h)) return 'no employer';
+  if (!/Promotion chance/.test(h)) return 'no standing';
+  const home = headerHTML();
+  if (home.indexOf(G.S.job.t) < 0) return 'the home card does not name the job';
+  if (!/Job and field/.test(home)) return 'no way through to the career view';
+  return /Field/.test(home) ? true : 'the home card does not name the field';
 });
 
 /* ================= REPORT ================= */

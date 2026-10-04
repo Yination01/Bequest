@@ -382,6 +382,7 @@ details.card[open]>summary:after{transform:rotate(90deg)}details.card>.detailbod
 .stat .si svg[stroke]{fill:none}
 .stat.g{color:var(--g)} .stat.a{color:var(--a)} .stat.r{color:var(--r)}
 .stat .sv{font-size:13px;font-weight:800;color:var(--tx);line-height:1.2}
+.stat .sl{font-size:8px;font-weight:700;color:var(--dim);letter-spacing:.02em;line-height:1.1;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat .sbar{height:3px;border-radius:2px;background:rgba(0,0,0,.35);overflow:hidden;margin-top:3px}
 .stat .sbar i{display:block;height:100%;background:currentColor;transition:width .55s cubic-bezier(.2,.8,.3,1)}
 

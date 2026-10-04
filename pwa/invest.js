@@ -30,13 +30,16 @@ const ASSET = id => ASSETS.find(a => a.id === id) || ASSETS[0];
 
 function investBirth(s){
   s.holdings = {};
-  s.market = { last:0, year:0 };
+  s.stockMarket = { last:0, year:0 };
   s.investIn = 0;      /* everything ever put in  */
   s.investOut = 0;     /* everything ever taken out */
 }
 function investMigrate(s){
   if(!s.holdings) s.holdings = {};
-  if(!s.market) s.market = { last:0, year:0 };
+  /* The mood used to live on s.market, which belongs to the property and
+     vehicle marketplace in game.js. Move it off, and never recreate it there. */
+  if(!s.stockMarket) s.stockMarket = { last:(s.market && s.market.last) || 0, year:0 };
+  if(s.market && s.market.last !== undefined) delete s.market.last;
   if(s.investIn == null) s.investIn = 0;
   if(s.investOut == null) s.investOut = 0;
 }
@@ -59,9 +62,14 @@ function tickInvest(s, notes){
   let mkt = gauss() * 0.13;
   if(R() < 0.055) mkt = -0.22 - R() * 0.26;          /* a crash */
   else if(R() < 0.05) mkt = 0.20 + R() * 0.18;       /* a run */
-  mkt += (typeof newsMod === 'function' ? newsMod('crypto') * 0.3 : 0);
-  s.market.last = mkt;
-  s.market.year = s.age;
+  /* The investment market keeps its own record. It used to write into S.market,
+     which is the property/vehicle/item marketplace in game.js: the mood tick set
+     S.market.year = S.age every year, and marketRefresh() then saw the year as
+     already handled and returned before generating a single listing, so both
+     marketplaces were permanently empty. Separate objects, separate concerns. */
+  if(!s.stockMarket) s.stockMarket = { last: 0, year: -1 };
+  s.stockMarket.last = mkt;
+  s.stockMarket.year = s.age;
 
   const held = Object.keys(s.holdings).filter(k => s.holdings[k] > 0);
   if(!held.length) return;
@@ -136,7 +144,7 @@ function moneyInvest(){
   if(S.age < 18) return '<div class="card"><div class="muted">Investing opens at 18.</div></div>';
   investMigrate(S);
   const tot = holdingsValue(S);
-  const m = S.market.last || 0;
+  const m = (S.stockMarket && S.stockMarket.last) || 0;
   const mood = m <= -0.22 ? 'a very bad year' : m < -0.06 ? 'a poor year'
     : m > 0.18 ? 'a very good year' : m > 0.05 ? 'a good year' : 'a flat year';
 
