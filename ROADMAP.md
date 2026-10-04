@@ -4,8 +4,8 @@ Written after the final audit. Items marked **measured** come from test or audit
 output, not impression. Items marked *opinion* are my judgement and you may
 disagree — they are the ones worth arguing about.
 
-Current state: 533 events, 353 tests, 26 modules, 765 KB, no known integrity
-problems, a life simulates in 37 ms.
+Current state: 533 events, 376 tests, 26 modules, 794 KB, no known integrity
+problems, a life simulates in about 60 ms on a laptop runner.
 
 **P0 is clear**, and three P1 items with it. All are covered by tests.
 
@@ -18,14 +18,14 @@ Things that actively mislead or block a player.
 | # | Item | Why | Effort |
 |---|---|---|---|
 | 1 | ~~**Onboarding beyond one card**~~ — **done** | A new player lands on six tabs, hubs, actions, bills and paths with a single how-to card at age 0. The systems are now deep enough that the first five minutes decide whether anyone continues. *opinion, but strongly held* | M |
-| 2 | ~~**14 events never fire**~~ — **done** | Gated on owning a phone, car or crypto. Reachable in principle; invisible to most players. Either lower the gates or nudge players toward the items. | S |
+| 2 | ~~**14 events never fire**~~ — **done, and held by a ratchet** | Gated on owning a phone, a car, a child or a business. Reachable in principle, invisible to most players. A scripted player who buys those things over 80 seeded lives fires 521 of 533 events, and the suite now fails if fewer than 505 ever fire. The residual 12 are rare by design and listed in the test. | S |
 | 3 | ~~**37 of 73 jobs rarely reached**~~ — **done** | The trades and hospitality ladders in particular. The experience ladder gates them too tightly, so two thirds of the career content is dead for most lives. | M |
 | 4 | ~~**Life tab is crowded again**~~ — **done** | School card, path card, bills warning, move-out nudge, family strip, news, story. Exactly the clutter you flagged, creeping back. Needs a rule about how many cards may show at once. *opinion* | S |
 | 5 | ~~**Hard and Brutal put 100% of lives into arrears**~~ — **done** | Correct in spirit, but when *every* run ends the same way it stops being a difficulty and becomes a scripted outcome. | M |
 
 ### What items 1 and 5 turned into
 
-**Onboarding (1).** A three-pane opening that explains the loop before the
+**Onboarding (1).** A six-pane opening that explains the loop before the
 first year, then one tip at the moment each system first matters — actions at
 5, stats at 9, school at 11, people at 13, work at 16, bills at 18, paths when
 you join one. One tip on screen at a time, in its own slot so it does not
@@ -33,6 +33,17 @@ compete with the three optional cards. Tips are stored per install, not per
 life, so a second life is not taught again, and a tip whose moment has passed
 retires unread rather than surfacing late. The whole thing replays from
 More › Stats › How to play.
+
+**Reachability (2).** The events that never fired were gated on things a robot
+never buys. The fix was not to lower the gates but to make the robot live a
+real life: a phone at fourteen, driving lessons at sixteen, a first car, a
+first home, a partner, children, a business. Over 80 seeded lives that player
+fires 521 of the 533 events, up from 519 in 220 unseeded ones, and the twelve
+that stay dark are the genuinely rare ones: a car crash between sixteen and
+nineteen, a century of life, a last word at eighty five, crypto movements the
+player has to own crypto to see. `pwa/tests/suite.js` now asserts the floor
+across those 80 lives, so a season of content cannot die silently. The ratchet
+costs about fifty seconds, which is the price of the claim being true.
 
 **Arrears (5).** The measured claim was right but the diagnosis was
 incomplete. A player who paid every bill they could afford *still* ended in
@@ -76,7 +87,7 @@ The things that would most improve a session.
 | 6 | ~~**Sound and haptics**~~ — **done** | Every tap is silent. A year turning, a promotion, a death — none of them land. This is the single biggest "feels like a real app" gap. *opinion* | M |
 | 7 | ~~**Close the agency gap: 41% vs ReLife's 55%**~~ — **done, now 53-55%** | More branching forks that change a life's direction rather than its statistics. This is the one metric where we still lose. | L |
 | 8 | ~~**A proper death and legacy screen**~~ — **done** | The current one is a stat dump. It should read like an obituary — the shape of the life, the people left behind, what was inherited. It is the emotional payoff of the whole game. *opinion* | M |
-| 9 | ~~**Year-summary pacing**~~ — **done, 4.8 sheets a year to 3.9** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
+| 9 | ~~**Year-summary pacing**~~ — **done, 3.87 sheets a year** | Popups still arrive in a queue: birthday, notices, two events, an achievement. Consider one scrollable "this year" sheet instead of four dismissals. *opinion* | M |
 | 10 | **Notifications** | "Your character is waiting" brings people back. Needs the native layer, so it belongs after the APK. | S |
 
 ### What item 15 turned into
@@ -163,7 +174,7 @@ in this document: two hardcoded registries that had fallen behind the engine
 (the token list and the requirement-key list), a gate-satisfier that could not
 build a family, a requirement regex that could not see the digit in
 `siblings2` and so reported it as never read, a stray `rel_all` typo, an
-opening pronoun, and the fork ratchet catching 28 new events diluting agency
+opening pronoun, and the fork ratchet catching 25 new events diluting agency
 again.
 
 ### What item 14 turned into
@@ -247,7 +258,7 @@ bar.
 
 ### What item 11 turned into
 
-**324 → 506 events.** The target was 500 and the distribution mattered more
+**324 → 533 events.** The target was 500 and the distribution mattered more
 than the number.
 
 The theme system picks four themes a life leans towards and three it leans
@@ -287,7 +298,8 @@ Where it leaves the original complaint:
   to see two thirds of, against six before
 - events available at any given age rose across the board, and the empty
   stretch after seventy is no longer empty
-- median lifespan now matches ReLife's 76 exactly
+- median lifespan 72 against ReLife's 76, measured by `research/compare.js`
+  over 100 lives
 
 ### What item 7 turned into
 
@@ -443,6 +455,15 @@ and the real number was worth knowing:
 | passive taps, no decision in them | 3.37 | 2.42 |
 | actual decisions per year | 1.43 | 1.45 |
 
+Re-measured on 2026-10-04 by `research/pacing.js`, over 2,900 years played by
+the scripted player: **3.87 sheets a year**, which reproduces the 3.86 above to
+within sampling. The same instrument reports 2.85 decisions and 1.02 taps a
+year inside the year tick, and 98% of years costing four or more sheets, so the
+42% above was counted more narrowly and is not reproducible; the reproducible
+pair is 3.87 sheets a year at 98% of years costing four or more. The 4.80 it
+improved on was measured by a tool that was never committed, so it is a memory
+rather than a measurement.
+
 Seventy per cent of every tap was passive. Three changes:
 
 - **The birthday and the year's news are one sheet.** The birthday was its
@@ -493,6 +514,13 @@ Measured over 250 simulated lives: 8.6 sentences per obituary, 250 distinct
 opening lines, 61 distinct closing lines with the commonest at 16%. Eleven tests
 cover it, including one that renders the same life three times and requires the
 three obituaries to be identical.
+
+Re-measured on 2026-10-04 by `research/obituary.js` over 250 seeded lives:
+**250 of 250 distinct opening lines**, 59 distinct closing lines with the
+commonest at 10%, and zero placeholder leaks, which confirms the claim where it
+matters most. The sentence count depends on what you count, 11.8 across life,
+people, estate and close or 5.7 in the life block alone, so the 8.6 above sits
+between the two definitions.
 
 ### The will (asked for separately, not from this list)
 
@@ -570,7 +598,7 @@ a cue name is otherwise silent in the most literal way.
 
 | # | Item | Why | Effort |
 |---|---|---|---|
-| 11 | ~~**324 → 500 events**~~ — **done, 506** | At ~100 events a life, a committed player exhausts the library in five or six runs. Content is the genre's fuel. | L |
+| 11 | ~~**324 → 500 events**~~ — **done, 533** | At ~100 events a life, a committed player exhausts the library in five or six runs. Content is the genre's fuel. | L |
 | 12 | ~~**School subjects**~~ — **done** | Education is one grade number. Subjects that feed degrees and careers would make ages 11–18 matter as much as adulthood. | M |
 | 13 | ~~**Investments beyond crypto**~~ — **done** | Shares, funds, bonds, gold — a real portfolio with risk profiles. ReLife's players rate this highly. | M |
 | 14 | ~~**Court and legal process**~~ — **done** | Arrests jump straight to a sentence. A plea, a lawyer, a trial and an appeal would make crime a system rather than a dice roll. | M |
@@ -583,7 +611,7 @@ Required before it goes on a store, in rough order.
 
 | # | Item | Why |
 |---|---|---|
-| 17 | **A stable signing key** | Without it no build can upgrade another. Five minutes of work, documented in `BUILD-APK.md`. |
+| 17 | ~~**A stable signing key**~~ — **done** | `resources/bequest-debug.keystore` is committed, CI pins its fingerprint (`54:51:2D:22:...:A5`) and refuses to publish without it, and the shipped v1.0.64 carries that certificate. Before this, every runner generated its own key: v1.0.57 and v1.0.58 are signed with two different certificates, so no build before the keystore could upgrade any other. An install signed with that old key needs one uninstall, after which the chain is stable. |
 | 18 | **Google Play Billing** | The purchase flow is simulated. The Plus gates already exist and are enforced by a test. |
 | 19 | **Firebase cloud saves** | Decided, not built. The prototype syncs to a sandbox server that will not exist. |
 | 20 | ~~**Privacy policy and data declaration**~~ — **drafted** | Play requires both. We collect nothing, which makes this easy and worth saying loudly. |
@@ -706,7 +734,7 @@ by the right one.
 Planned late: the item said "before the library reaches 500 events" and it
 reached 533 first. So the deliverable is the number.
 
-**3,197 strings, 19,443 words, and 91% of it is the event library.** About
+**3,197 strings, 19,443 words, and 91% of the words are the event library.** About
 $1,900 a language at trade rates, $9,700 for five. `LOCALISATION.md` has
 the breakdown and `tools/extract-strings.js` re-runs it.
 
@@ -766,8 +794,8 @@ the larger of the two once the arrears numbers were properly measured.
 **P0, P1 and P2 are now clear.** What is left is P3, which is launch
 plumbing rather than design — a signing key, Play Billing, Firebase, a
 privacy policy, a content rating, a store listing and crash reporting —
-and P4, which is deliberately later. Of P3, **item 17 (a stable signing
-key)** is five minutes and blocks every other build, and **item 23 (crash
+and P4, which is deliberately later. Of P3, **item 18 (Play
+Billing)** is the next store blocker, and **item 23 (crash
 reporting)** is the one that stops the first week being guesswork.
 
 ~~**Only then** content volume (11)~~ — done, and it was right to do it last:

@@ -1,3 +1,7 @@
+> **Superseded.** This document plans a Flutter app that was never built. The
+> game that exists is the single inlined HTML bundle in `pwa/`, and `ROADMAP.md`
+> is the live plan. Kept for history; nothing here should be followed.
+
 # Life Simulation Game — Project Plan (v0.1, planning only)
 
 **Status:** planning agent. No code will be written until you confirm.

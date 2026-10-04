@@ -17,8 +17,8 @@ ReLife; the design deliberately diverges from all three (see `research/COMPARISO
 
 | | |
 |---|---|
-| Life events | **324**, age-gated 0–115, with text variants and dynamic names |
-| Direction-changing forks | **23** (struck off, deported, bankrupt, custody, retraining) |
+| Life events | **533**, age-gated 0–115, with text variants and dynamic names |
+| Direction-changing forks | **133** (struck off, deported, bankrupt, custody, retraining) |
 | Countries | **32**, each with its own wages, costs, healthcare, crime and life expectancy |
 | Careers | **73** across 13 fields, with an experience ladder and record checks |
 | Skills / habits / traits | 12 / 10 / 22 |
@@ -29,7 +29,7 @@ ReLife; the design deliberately diverges from all three (see `research/COMPARISO
 | Difficulties | 5 (Easy → Brutal, plus a 12-slider Custom) |
 | Pets | 9 species that age, bond, sicken and die |
 | Orientations | 5, set at birth, discoverable and changeable |
-| Automated tests | **108** |
+| Automated tests | **376** |
 
 **Twelve systems that interlock:** health with 15 real conditions, education with
 grades and university tiers, careers with performance reviews, money with a credit
@@ -42,7 +42,7 @@ investments, fame, world news and generational legacy.
     Bequest.html        the standalone build — this is the game
     pwa/                    source
       data.js               countries, jobs, items, crimes, news, traits, epitaphs
-      events.js             all 324 life events
+      events.js             all 533 life events
       systems.js            health, money, career, relationships, legal, education
       difficulty.js         the five presets and twelve knobs
       easter.js             the egg registry
@@ -59,15 +59,20 @@ investments, fame, world news and generational legacy.
       compare.js            the four-engine comparative study
       COMPARISON.md         its findings
       audit.js              impossible-state hunter
+      steer.js              the scripted player the tools and one test share
+      pacing.js             sheets per year, measured
+      obituary.js           the death screen's variety, measured
     PLAN.md GDD.md MECHANICS.md DECISIONS.md CONTENT.md LEGAL.md
 
 ## Working on it
 
     cd pwa
-    node tests/suite.js          # 99 tests, exits non-zero on failure
+    node tests/suite.js          # 376 tests, exits non-zero on failure
     node tests/suite.js --life   # prints an annotated sample life
     python3 build.py             # rebuild index.html after editing any source
     node ../research/audit.js    # hunt for impossible game states
+    node ../research/pacing.js   # sheets per year, measured (~35s)
+    node ../research/obituary.js # death screen variety, measured (~2.5 min)
 
 `data.js`, `events.js` and `easter.js` are pure data. Adding content needs no
 engine changes.
@@ -87,4 +92,5 @@ engine changes.
   Run `npm install && npx cap add android && npm run apk:debug`, or push and let CI do it.
 - Firebase integration (the prototype syncs to a local endpoint)
 - Store billing plumbing (the purchase flow is simulated)
-- Agency scores 41% against ReLife's modelled 55% — the one measurable deficit
+- Agency scores 53% against ReLife's modelled 55%, the one measurable deficit and
+  far closer than the 41% once quoted here
