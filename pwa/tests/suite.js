@@ -62,6 +62,13 @@ module.exports={
 
 const tmp = path.join(require('os').tmpdir(), 'bequest-test-bundle.js');
 fs.writeFileSync(tmp, SRC + HARNESS);
+/* A pinned clock, set before the bundle loads. game.js seeds its RNG from
+   Date.now() and newGame() rolls the character (name, country, smarts) from
+   that same stream, so with a real clock the seeded lives the ratchet plays
+   would differ on every run and every machine. Nothing in this suite wants
+   the wall clock: the one place that needs an expiry in the past says so
+   absolutely rather than by subtraction. */
+Date.now = () => 1700000000000;
 const G = require(tmp).api;
 
 /* ---------- tiny test framework ---------- */
@@ -1920,8 +1927,8 @@ t('a broadcast shows, dismisses, and stays dismissed', () => {
   if (G.broadcastCard() !== '') return 'it came back after being dismissed';
   G.setBroadcast('');
   if (G.broadcast()) return 'clearing it left something behind';
-  // and an expired one never shows
-  G.setBroadcast('old news', Date.now() - 1000);
+  // and an expired one never shows (an absolute past stamp: the clock is pinned)
+  G.setBroadcast('old news', 1);
   if (G.broadcastCard() !== '') return 'an expired note still showed';
   G.setBroadcast('');
   return true;
@@ -4385,6 +4392,77 @@ t('difficulty reduces wealth, allowing for sampling noise', () => {
   const endToEnd = o[0] > o[3] * 1.5;
   return (stepsOk && endToEnd) ? true : o.map(Math.round).join(' > ');
 });
+/* ---- the reachability ratchet ------------------------------------------
+   ROADMAP item 2: an event no player ever sees is content that does not exist.
+   Every gate flag is settable, which is why audit.js finds no impossible state,
+   but a robot that never buys a phone, never learns to drive, never has a child
+   and never starts a business leaves whole shelves dark. So the ratchet does
+   not measure the library against a passive player. It plays 80 seeded lives
+   the way a player lives and records how much of the library that reaches.
+
+   Measured 521 of 533 on 2026-10-04, deterministic down to the event set. The
+   floor is 505, loose enough to survive a content change moving the stream and
+   tight enough that a season of content (the smallest added so far was 53
+   events) cannot die silently. The residual twelve are rare by design: a car
+   crash between sixteen and nineteen, a century of life, a last word at eighty
+   five, crypto movements you have to own crypto to see.
+
+   The policy below is a copy of research/steer.js, kept here because the suite
+   must not depend on anything outside pwa/. Change one, change the other. */
+t('at least 505 of 533 events are reachable across 80 steered lives', () => {
+  const FLOOR = 505;
+  const mulberry32 = a => () => { a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a);
+    t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+  const fired = new Set();
+  for (let k = 1; k <= 80; k++) {
+    const realRandom = Math.random;
+    Math.random = mulberry32(k);
+    try {
+      G.newGame({}); G.FIRED = [];
+      G.S.seed = k; G.save(); G.load();     /* load() reseeds the engine RNG from S.seed */
+      G.AUTOCHOICE = k % 4;
+      G.AUTOCONFIRM = (k % 2 === 0);
+      G.AUTOPLEA = (k % 3 === 0 ? 'guilty' : 'notguilty');
+      G.AUTOCOUNSEL = 'duty';
+      let g = 0;
+      while (G.S.alive && g++ < 140) {
+        G.ageUp(); if (!G.S.alive) break;
+        let budget = 0;
+        while (G.S.actionsLeft > 0 && budget++ < 8) {
+          const acts = G.ACTS(); if (!acts.length) break;
+          const lawful = acts.filter(a => a.grp !== 'Crime');
+          const pool = (lawful.length && Math.random() > 0.03) ? lawful : acts;
+          G.doAct(pool[Math.floor(Math.random() * pool.length)].id); G.drain();
+        }
+        if (G.S.age >= 18 && !G.S.job && !G.S.flags.retired && !G.S.flags.inCollege) {
+          const el = G.DATA.jobs.filter(G.jobEligible);
+          if (el.length) { G.applyJob(el[el.length - 1]); G.drain(); }
+        }
+        if (G.S.job && Math.random() < 0.5) { G.tryPromote(); G.drain(); }
+        try {   /* the ordinary life: a phone, a car, a home, a family, a business */
+          const acts = G.ACTS(), has = id => acts.some(a => a.id === id);
+          if (G.S.age >= 16 && !G.S.flags.licence && Math.random() < 0.8 && has('lessons')) G.doAct('lessons');
+          if (!G.hasItem('phone') && G.S.money >= 900) G.buy('phone');
+          if (G.S.flags.licence && !(G.S.vehicles||[]).length && G.S.money >= 2600) G.buyVehicle('banger');
+          if (!(G.S.properties||[]).length && G.S.money >= 60000) G.buyProperty('bedsit');
+          if (G.S.age >= 20 && !G.S.partner && has('date')) G.doAct('date');
+          if (G.S.partner && G.S.age >= 25 && has('propose')) G.doAct('propose');
+          const kids = (G.S.npcs || []).filter(n => n.rel === 'child' && n.alive).length;
+          if (G.S.age >= 30 && G.S.partner && kids < 2) { if (has('ivf')) G.doAct('ivf'); else if (has('adopt')) G.doAct('adopt'); }
+          if (G.S.age >= 32 && !(G.S.businesses||[]).length && G.S.money >= 60000 && has('startbiz')) G.doAct('startbiz');
+        } catch (e) { /* gated or unaffordable: the player just moves on */ }
+        G.drain();
+      }
+      G.FIRED.forEach(id => fired.add(id));
+    } finally { Math.random = realRandom; }
+  }
+  G.AUTOCHOICE = null; G.AUTOCONFIRM = null; G.AUTOPLEA = null; G.AUTOCOUNSEL = null;
+  const missing = G.EVENTS.filter(e => !fired.has(e.id)).map(e => e.id);
+  const allowed = G.EVENTS.length - FLOOR;
+  return missing.length <= allowed ? true
+    : missing.length + ' events never fired, more than the ' + allowed + ' the floor allows: ' + missing.join(', ');
+});
+
 t('stats never escape 0-100', () => {
   let bad = 0;
   for (let i=0;i<40;i++){ G.newGame({}); let g=0;
