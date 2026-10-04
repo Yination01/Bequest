@@ -147,6 +147,15 @@ html = f"""<!doctype html>
 (d/'index.html').write_text(html)
 print('built index.html  %.1f KB' % (len(html)/1024))
 
+# The committed twins. Nothing used to write these: the root Bequest.html and
+# the copy beside index.html were kept in step by hand, nothing tested them,
+# and CI uploads Bequest.html with the web bundle, so an edit to any inlined
+# file could ship an artifact carrying the previous bundle. Written here
+# instead, so they cannot drift.
+for twin in (d / 'Bequest.html', d.parent / 'Bequest.html'):
+    twin.write_text(html)
+print('synced Bequest.html twins')
+
 # ---------------------------------------------------------------------------
 # dist/ is what actually ships.
 #
