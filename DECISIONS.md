@@ -141,3 +141,47 @@ gesture.
 3. **Restricted Places Display**: Housing options beyond current income and age-gated money hub tiles/shop categories are visually dimmed with `.locked` and `.out-of-reach` (`opacity: .45; filter: grayscale(.4)`). Tapping restricted items triggers an informative modal explaining the exact age or income requirements.
 4. **Age Up Pacing**: Event outcomes are unshifted to the front of `QUEUE` upon choice resolution (`resolveChoice`), ensuring the immediate consequence of each decision is seen before any subsequent year event is presented (`Event -> Outcome -> Next Event`).
 
+# Play-test rulings and what they changed — 2026-10-04
+
+Fourteen issues were reported against the preview-16 build (v1.0.64). Everything
+that could be reproduced was fixed, and every fix carries a check that was proven
+to fail when the fix is reverted (fifteen checks, fifteen mutations caught).
+
+1. **Event pacing. This replaces item 4 of 2026-10-02.** An outcome sheet takes
+   its turn behind sheets that are already waiting; it is no longer unshifted to
+   the front of the queue. The player reversed the 2026-10-02 reading after a
+   play test: Event, next event, outcome, in the order the queue was filled.
+2. **Money is held in pots.** Cash, savings and, under 18, the household pot.
+   Affordability counts all of them, and payment is drawn in the order cash, then
+   savings, then the household pot (the household pot first for minors, as it
+   always was). A deliberate purchase that two pots could each cover asks which
+   should pay, with the usual order offered first. One tap yearly actions draw in
+   the order without asking, so they never strand money in a pot that cannot be
+   reached. This is why a teenager with 90,000 of their own was refused a 5,000
+   present, and why a confirmed business never opened.
+3. **Banking takes any amount**, with All and Half beside it, and keeps a
+   statement of every save, withdrawal and repayment with the age it happened.
+   The old three buttons were welded to 5,000.
+4. **The investment mood and the marketplaces are separate state.** The mood
+   lived on `S.market`, the property/vehicle/item marketplace's own object, and
+   stamped its year every year, so `marketRefresh()` believed the year was done
+   and both markets were empty in every life. The mood lives on `S.stockMarket`
+   now and old saves are migrated.
+5. **Navigation.** One hamburger, the shell button. Menu page headers carry a back
+   control instead of a second menu button. The page header Refresh buttons are
+   removed; Reload app stays in Settings. Back unwinds one layer at a time: a
+   listing, then its market, then Money.
+6. **Repeated actions recover faster.** The percentage beside an action is what it
+   currently gives, explained where it is shown, and the window that reduces it is
+   three years rather than eight.
+7. **School and People.** The school club and the sport remember what you joined.
+   People gains Spend time with everyone: a year of catching up with everyone not
+   yet seen this year, at the same once-a-year limit as visiting one by one.
+8. **Work is visible.** A Career screen (from Menu, or Job and field on the home
+   card) shows occupation, job title, field, employer, manager, pay, take-home,
+   years in the job, performance, promotion chance, the next step up and the
+   track. The home card names the job and the field, and the home stat tiles
+   carry their names.
+
+One report could not be reproduced: the profile page breaking. It is left open
+pending the exact symptom.
