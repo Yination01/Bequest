@@ -185,3 +185,14 @@ to fail when the fix is reverted (fifteen checks, fifteen mutations caught).
 
 One report could not be reproduced: the profile page breaking. It is left open
 pending the exact symptom.
+
+# Install-over and the signing key — 2026-10-04
+
+The play-test build on the phone was run 61 (`5b79bed`), signed with a throwaway debug key the
+runner generated. Runs up to 62 all used throwaway keys, each different, so those builds cannot
+update each other and nothing can update them. The permanent keystore is committed at
+`resources/bequest-debug.keystore`, the workflow refuses to pass unless the APK fingerprint is
+`54:51:2D:22:56:78:F0:76:D0:61:3E:AD:2C:07:86:08:A0:4A:D6:B3:46:88:E6:18:40:EF:77:D7:22:00:59:A5`,
+and that has held from run 64 onward (verified on runs 64, 65 and 66). An install over run 61
+requires one uninstall, because that key no longer exists. After that, install-over is guaranteed
+by the pin, not by habit.
