@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const PWA = path.resolve('/home/user/Bequest/pwa');
+const PWA = path.resolve(__dirname, '..', 'pwa');
 
 const stub = () => ({
   innerHTML: '', className: '', dataset: {}, scrollTop: 0, scrollHeight: 0,
@@ -56,7 +56,7 @@ const bundlePath = '/tmp/stress_bundle.js';
 fs.writeFileSync(bundlePath, SRC);
 const G = require(bundlePath).api;
 
-const LOG_FILE = '/home/user/audit_long_run.log';
+const LOG_FILE = path.join(__dirname, 'audit_long_run.log');
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}\n`;
   fs.appendFileSync(LOG_FILE, line);

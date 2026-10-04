@@ -16,6 +16,7 @@ ios/
 
 # local runtime junk
 pwa/.cloud/
+research/*.log
 pwa/.icon-b64.txt
 **/__pycache__/
 *.pyc
